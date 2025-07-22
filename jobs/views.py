@@ -41,3 +41,4 @@ def update_application_status(request, application_id):
     else:
         form = StatusUpdateForm(instance=application)
     return render(request, 'jobs/update_status.html', {'form': form})
+
