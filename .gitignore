@@ -1,17 +1,43 @@
+# ============================
 # Python
+# ============================
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
 
-# Environment
+# Bytecode compiled cache
+*.pyc
+*.pyd
+
+# ============================
+# Virtual Environments
+# ============================
 env/
 venv/
 jobenv/
+
+# Environment Variables
 *.env
 
+# ============================
 # Django
+# ============================
 db.sqlite3
 *.log
+*.pot
+*.pyc
+local_settings.py
+media/
 
-# VS Code
+# ============================
+# IDEs and Editors
+# ============================
 .vscode/
+.idea/
+*.swp
+
+# ============================
+# OS-specific
+# ============================
+.DS_Store
+Thumbs.db
