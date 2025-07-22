@@ -1,5 +1,17 @@
-jobs/__pycache__
+# Python
+__pycache__/
+*.pyc
+*.pyo
 
-jobportal/__pycache__
+# Environment
+env/
+venv/
+jobenv/
+*.env
 
-jobenv
+# Django
+db.sqlite3
+*.log
+
+# VS Code
+.vscode/
