@@ -1,51 +1,45 @@
-<!-- jobs/templates/Jobs/main.html -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Smart Job Portal</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
+<!-- templates/home.html -->
+{% extends "base.html" %}
 
-  <div class="container py-5">
-    <h1 class="text-center mb-3">🚀 Smart Job Portal</h1>
-    <p class="text-center lead">Your one-stop platform for campus placements — Students & Companies.</p>
+{% block title %}Home - Smart Job Portal{% endblock %}
 
-    <div class="row text-center mt-5 g-4">
-      <div class="col-md-6">
-        <div class="card p-4 shadow-sm h-100">
-          <h4 class="mb-2">🎓 Student</h4>
-          <p>Find and apply for the latest campus jobs.</p>
-          <a href="/student/login/" class="btn btn-primary" aria-label="Student Login">Student Login</a>
-        </div>
-      </div>
-      <div class="col-md-6">
-        <div class="card p-4 shadow-sm h-100">
-          <h4 class="mb-2">🏢 Company</h4>
-          <p>Post jobs and manage student applications.</p>
-          <a href="/company/login/" class="btn btn-success" aria-label="Company Login">Company Login</a>
-        </div>
+{% block content %}
+<div class="py-5">
+  <h1 class="text-center mb-3">🚀 Smart Job Portal</h1>
+  <p class="text-center lead">Your one-stop platform for campus placements — Students & Companies.</p>
+
+  <div class="row text-center mt-5 g-4">
+    <div class="col-md-6">
+      <div class="card p-4 shadow-sm h-100">
+        <h4 class="mb-2">🎓 Student</h4>
+        <p>Find and apply for the latest campus jobs.</p>
+        <a href="/student/login/" class="btn btn-primary">Student Login</a>
       </div>
     </div>
-
-    <hr class="my-5">
-
-    <div class="row text-center">
-      <div class="col-md-4 mb-3">
-        <h5>👨‍🎓 Students Enrolled</h5>
-        <p><strong>120</strong></p>
-      </div>
-      <div class="col-md-4 mb-3">
-        <h5>🏢 Verified Companies</h5>
-        <p><strong>25</strong></p>
-      </div>
-      <div class="col-md-4 mb-3">
-        <h5>💼 Jobs Posted</h5>
-        <p><strong>89</strong></p>
+    <div class="col-md-6">
+      <div class="card p-4 shadow-sm h-100">
+        <h4 class="mb-2">🏢 Company</h4>
+        <p>Post jobs and manage student applications.</p>
+        <a href="/company/login/" class="btn btn-success">Company Login</a>
       </div>
     </div>
   </div>
 
-</body>
-</html>
+  <hr class="my-5">
+
+  <div class="row text-center">
+    <div class="col-md-4 mb-3">
+      <h5>👨‍🎓 Students Enrolled</h5>
+      <p><strong>120</strong></p>
+    </div>
+    <div class="col-md-4 mb-3">
+      <h5>🏢 Verified Companies</h5>
+      <p><strong>25</strong></p>
+    </div>
+    <div class="col-md-4 mb-3">
+      <h5>💼 Jobs Posted</h5>
+      <p><strong>89</strong></p>
+    </div>
+  </div>
+</div>
+{% endblock %}

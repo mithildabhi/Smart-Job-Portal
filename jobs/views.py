@@ -17,8 +17,10 @@ def main(request):
         'latest_jobs': latest_jobs,
         'top_companies': top_companies,
     }
-    return render(request, 'Jobs/main.html', context)
+    return render(request, 'main.html', context)
 
+def contact(request):
+    return render(request, 'jobs/contact.html')
 
 @login_required
 def recruiter_dashboard(request):
