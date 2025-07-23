@@ -1,10 +1,16 @@
 from django.shortcuts import render
-
+from django .http import HttpResponse
+from django.template import loader
 # Create your views here.
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from .models import Job, Application
 from .forms import JobForm, StatusUpdateForm
+
+def main(request):
+    template = loader.get_template('templates/Jobs/main.html')
+    return HttpResponse(template.render()) 
+
 
 @login_required
 def recruiter_dashboard(request):
