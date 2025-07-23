@@ -1,0 +1,48 @@
+
+✅ Setting Up a Clean Django Project with Git and Virtual Environment
+
+🔹 1. Create Virtual Environment
+python -m venv jobenv
+
+🔹 2. Activate Virtual Environment
+# On Windows:
+jobenv\Scripts\activate
+
+# On macOS/Linux:
+source jobenv/bin/activate
+
+🔹 3. Create or Update .gitignore File
+# Add the following lines to .gitignore
+
+# Virtual environment
+jobenv/
+
+# SQLite database
+db.sqlite3
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Environment variables
+.env
+
+# VS Code settings
+.vscode/
+
+# Static & media (optional)
+staticfiles/
+media/
+
+🔹 4. Remove Already Tracked Files from Git
+git rm -r --cached jobenv/
+git rm --cached db.sqlite3
+
+# Then commit the cleanup
+git commit -m "Remove jobenv and db.sqlite3 from tracking"
+
+🔹 5. Freeze Installed Packages
+pip freeze > requirements.txt
+
+🔹 6. Install Requirements on Another Machine or Collaborator Setup
+pip install -r requirements.txt
