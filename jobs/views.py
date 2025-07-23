@@ -1,7 +1,9 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django .http import HttpResponse
+from django.http import HttpResponse
 from django.template import loader
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import authenticate, login, logout
+from django.contrib import messages
 from .models import Job, Application
 from .forms import JobForm, StatusUpdateForm
 from jobs.models import Job  # Import your models as needed
@@ -14,18 +16,43 @@ def main(request):
     latest_jobs = Job.objects.all().order_by('-posted_on')[:5]
     top_companies = Company.objects.all()[:5]
     context = {
-        'latest_jobs': latest_jobs,
-        'top_companies': top_companies,
-    }
+   }
     return render(request, 'main.html', context)
 
 def contact(request):
     return render(request, 'jobs/contact.html')
 
-@login_required
-def recruiter_dashboard(request):
-    jobs = Job.objects.filter(recruiter=request.user)
-    return render(request, 'jobs/recruiter_dashboard.html', {'jobs': jobs})
+def login_view(request):
+    """Login view"""
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect('main')
+        else:
+            messages.error(request, 'Invalid credentials')
+    return render(request, 'Jobs/login.html')
+
+def logout_view(request):
+    """Logout view"""
+    logout(request)
+    return redirect('main')
+
+def contact(request):
+    """Contact page view"""
+    return render(request, 'Jobs/contact.html')
+
+def post_job(request):
+    """Post job view"""
+    return render(request, 'Jobs/post_job.html')
+
+
+def view_applications(request):
+    """View applications"""
+    return render(request, 'view_applications.html')
+
 
 @login_required
 def post_job(request):
@@ -40,21 +67,7 @@ def post_job(request):
         form = JobForm()
     return render(request, 'jobs/post_job.html', {'form': form})
 
-@login_required
-def view_applicants(request, job_id):
-    job = get_object_or_404(Job, id=job_id, recruiter=request.user)
-    applications = Application.objects.filter(job=job)
-    return render(request, 'jobs/applicants.html', {'job': job, 'applications': applications})
 
-@login_required
-def update_application_status(request, application_id):
-    application = get_object_or_404(Application, id=application_id)
-    if request.method == 'POST':
-        form = StatusUpdateForm(request.POST, instance=application)
-        if form.is_valid():
-            form.save()
-            return redirect('view_applicants', job_id=application.job.id)
-    else:
-        form = StatusUpdateForm(instance=application)
-    return render(request, 'jobs/update_status.html', {'form': form})
-
+def job_list(request):
+    """Contact page view"""
+    return render(request, 'Jobs/job_list.html')
