@@ -1,15 +1,23 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404, redirect
 from django .http import HttpResponse
 from django.template import loader
-# Create your views here.
-from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from .models import Job, Application
 from .forms import JobForm, StatusUpdateForm
+from jobs.models import Job  # Import your models as needed
+from companies.models import Company
+from django.shortcuts import render
 
+from .models import Job
 def main(request):
-    template = loader.get_template('Jobs/main.html')
-    return HttpResponse(template.render()) 
+    # Efficient querying: fetch limited data for featured sections
+    latest_jobs = Job.objects.all().order_by('-posted_on')[:5]
+    top_companies = Company.objects.all()[:5]
+    context = {
+        'latest_jobs': latest_jobs,
+        'top_companies': top_companies,
+    }
+    return render(request, 'Jobs/main.html', context)
 
 
 @login_required
