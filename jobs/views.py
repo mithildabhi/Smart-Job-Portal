@@ -8,7 +8,7 @@ from .models import Job, Application
 from .forms import JobForm, StatusUpdateForm
 
 def main(request):
-    template = loader.get_template('templates/Jobs/main.html')
+    template = loader.get_template('Jobs/main.html')
     return HttpResponse(template.render()) 
 
 
