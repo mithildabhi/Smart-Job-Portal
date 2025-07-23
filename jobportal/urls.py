@@ -26,6 +26,9 @@ urlpatterns = [
     path('', include('jobs.urls')),
     path('accounts/login/', auth_views.LoginView.as_view(template_name='jobs/login.html'), name='login'),
     path('accounts/logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
+    path('students/', include('students.urls')),
+    path('companies/', include('companies.urls')),
+
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
