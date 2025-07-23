@@ -1,6 +1,288 @@
 {% extends 'base.html' %}
-{% block title %}Student Login{% endblock %}
+
+{% block title %}Student Login - Smart Job Portal{% endblock %}
+
 {% block content %}
-  <h2>Student Login</h2>
-  <p>Please enter your credentials to log in.</p>
+<style>
+  .auth-container {
+    max-width: 450px;
+    margin: 3rem auto;
+    background: white;
+    border-radius: 20px;
+    padding: 3rem;
+    box-shadow: 0 15px 50px rgba(102, 126, 234, 0.15);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .auth-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+  }
+  
+  .auth-title {
+    text-align: center;
+    font-size: 2.2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+
+  .auth-subtitle {
+    text-align: center;
+    color: #6c757d;
+    margin-bottom: 3rem;
+    font-size: 1rem;
+  }
+  
+  .form-group {
+    margin-bottom: 1.5rem;
+    position: relative;
+  }
+
+  .form-label {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+  }
+
+  .form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: #f8f9fa;
+  }
+  
+  .form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+    background: white;
+    outline: none;
+  }
+
+  .input-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+  }
+  
+  .btn-auth {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border: none;
+    color: white;
+    padding: 0.9rem 2rem;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    width: 100%;
+    transition: all 0.3s ease;
+    margin-top: 1rem;
+  }
+  
+  .btn-auth:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+    color: white;
+  }
+
+  .btn-auth:active {
+    transform: translateY(-1px);
+  }
+  
+  .forgot-password {
+    text-align: center;
+    margin-top: 1.5rem;
+  }
+
+  .forgot-password a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+  }
+
+  .forgot-password a:hover {
+    color: #764ba2;
+    text-decoration: underline;
+  }
+  
+  .register-link {
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #e9ecef;
+  }
+
+  .register-link p {
+    margin-bottom: 1rem;
+    color: #6c757d;
+  }
+
+  .btn-register {
+    background: transparent;
+    border: 2px solid #667eea;
+    color: #667eea;
+    padding: 0.75rem 2rem;
+    border-radius: 25px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s ease;
+  }
+
+  .btn-register:hover {
+    background: #667eea;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+  }
+
+  .welcome-back {
+    background: linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%);
+    border-radius: 15px;
+    padding: 1.5rem;
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .welcome-back i {
+    font-size: 3rem;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 1rem;
+  }
+
+  .alert {
+    border-radius: 10px;
+    border: none;
+    margin-bottom: 2rem;
+  }
+
+  .alert-danger {
+    background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%);
+    color: white;
+  }
+
+  .alert-success {
+    background: linear-gradient(135deg, #48c6ef 0%, #6f86d6 100%);
+    color: white;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 576px) {
+    .auth-container {
+      margin: 1rem;
+      padding: 2rem 1.5rem;
+    }
+    
+    .auth-title {
+      font-size: 1.8rem;
+    }
+  }
+</style>
+
+<div class="auth-container">
+  <!-- Welcome Section -->
+  <div class="welcome-back">
+    <i class="fas fa-user-graduate"></i>
+    <h3 style="color: #2c3e50; margin: 0;">Welcome Back!</h3>
+  </div>
+
+  <h2 class="auth-title">Student Login</h2>
+  <p class="auth-subtitle">Sign in to access your dashboard</p>
+  
+  <!-- Display Messages -->
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        <i class="fas fa-info-circle me-2"></i>{{ message }}
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+  
+  <!-- Login Form -->
+  <form method="post">
+    {% csrf_token %}
+    
+    <div class="form-group">
+      <label for="username" class="form-label">
+        <i class="fas fa-user me-2"></i>Username
+      </label>
+      <input type="text" class="form-control" id="username" name="username" 
+             placeholder="Enter your username" required>
+    </div>
+    
+    <div class="form-group">
+      <label for="password" class="form-label">
+        <i class="fas fa-lock me-2"></i>Password
+      </label>
+      <input type="password" class="form-control" id="password" name="password" 
+             placeholder="Enter your password" required>
+      <i class="fas fa-eye input-icon" id="togglePassword" style="cursor: pointer;"></i>
+    </div>
+    
+    <button type="submit" class="btn btn-auth">
+      <i class="fas fa-sign-in-alt me-2"></i>Login to Dashboard
+    </button>
+  </form>
+  
+  <!-- Forgot Password -->
+  <div class="forgot-password">
+    <a href="#" onclick="alert('Feature coming soon!')">
+      <i class="fas fa-key me-1"></i>Forgot your password?
+    </a>
+  </div>
+  
+  <!-- Register Link -->
+  <div class="register-link">
+    <p><i class="fas fa-question-circle me-2"></i>Don't have an account yet?</p>
+    <a href="{% url 'students:student_register' %}" class="btn-register">
+      <i class="fas fa-user-plus me-2"></i>Create Student Account
+    </a>
+  </div>
+</div>
+
+<!-- JavaScript for Password Toggle -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const togglePassword = document.querySelector('#togglePassword');
+    const password = document.querySelector('#password');
+
+    if (togglePassword) {
+        togglePassword.addEventListener('click', function (e) {
+            // Toggle the type attribute
+            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+            password.setAttribute('type', type);
+            
+            // Toggle the eye / eye slash icon
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
+        });
+    }
+
+    // Form validation feedback
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function() {
+        const submitBtn = document.querySelector('.btn-auth');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Logging in...';
+        submitBtn.disabled = true;
+    });
+});
+</script>
+
 {% endblock %}

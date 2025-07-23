@@ -1,1 +1,316 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
+
+{% block title %}Student Dashboard - Smart Job Portal{% endblock %}
+
+{% block content %}
+<style>
+  .dashboard-header {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border-radius: 20px;
+    padding: 2.5rem;
+    margin-bottom: 3rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .dashboard-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
+    33% { transform: translate(30px, -30px) rotate(120deg); }
+    66% { transform: translate(-20px, 20px) rotate(240deg); }
+  }
+
+  .dashboard-content {
+    position: relative;
+    z-index: 2;
+  }
+
+  .welcome-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  .welcome-subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+  }
+
+  .dashboard-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+  }
+
+  .dashboard-card {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    border-top: 4px solid transparent;
+  }
+
+  .dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+  }
+
+  .dashboard-card:nth-child(1) { border-top-color: #667eea; }
+  .dashboard-card:nth-child(2) { border-top-color: #f093fb; }
+  .dashboard-card:nth-child(3) { border-top-color: #4facfe; }
+  .dashboard-card:nth-child(4) { border-top-color: #43e97b; }
+
+  .card-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .card-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+  }
+
+  .card-description {
+    color: #6c757d;
+    margin-bottom: 1.5rem;
+  }
+
+  .card-button {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s ease;
+  }
+
+  .card-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    color: white;
+  }
+
+  .stats-section {
+    background: white;
+    border-radius: 20px;
+    padding: 2.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    margin-bottom: 3rem;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 2rem;
+    text-align: center;
+  }
+
+  .stat-item {
+    padding: 1rem;
+    border-radius: 15px;
+    background: linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%);
+  }
+
+  .stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #667eea;
+    margin-bottom: 0.5rem;
+  }
+
+  .stat-label {
+    color: #6c757d;
+    font-weight: 500;
+  }
+
+  .recent-activities {
+    background: white;
+    border-radius: 20px;
+    padding: 2.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  }
+
+  .activity-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background 0.3s ease;
+  }
+
+  .activity-item:hover {
+    background: #f8f9ff;
+    border-radius: 10px;
+  }
+
+  .activity-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+  }
+
+  .activity-content h6 {
+    margin: 0 0 0.25rem 0;
+    color: #2c3e50;
+    font-weight: 600;
+  }
+
+  .activity-content p {
+    margin: 0;
+    color: #6c757d;
+    font-size: 0.9rem;
+  }
+</style>
+
+<div class="dashboard-header">
+  <div class="dashboard-content">
+    <h1 class="welcome-title">Welcome back, {{ user.first_name }}!</h1>
+    <p class="welcome-subtitle">Ready to take the next step in your career journey?</p>
+  </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="dashboard-cards">
+  <div class="dashboard-card">
+    <div class="card-icon">
+      <i class="fas fa-search"></i>
+    </div>
+    <h3 class="card-title">Browse Jobs</h3>
+    <p class="card-description">Discover new job opportunities that match your skills and interests.</p>
+    <a href="{% url 'jobs:job_list' %}" class="card-button">
+      <i class="fas fa-arrow-right me-2"></i>View Jobs
+    </a>
+  </div>
+
+  <div class="dashboard-card">
+    <div class="card-icon">
+      <i class="fas fa-user-edit"></i>
+    </div>
+    <h3 class="card-title">Update Profile</h3>
+    <p class="card-description">Keep your profile updated to attract the best opportunities.</p>
+    <a href="{% url 'students:student_profile' %}" class="card-button">
+      <i class="fas fa-edit me-2"></i>Edit Profile
+    </a>
+  </div>
+
+  <div class="dashboard-card">
+    <div class="card-icon">
+      <i class="fas fa-file-alt"></i>
+    </div>
+    <h3 class="card-title">My Applications</h3>
+    <p class="card-description">Track the status of your job applications and follow up.</p>
+    <a href="{% url 'students:student_applications' %}" class="card-button">
+      <i class="fas fa-list me-2"></i>View Applications
+    </a>
+  </div>
+
+  <div class="dashboard-card">
+    <div class="card-icon">
+      <i class="fas fa-heart"></i>
+    </div>
+    <h3 class="card-title">Saved Jobs</h3>
+    <p class="card-description">Review and apply to jobs you've saved for later.</p>
+    <a href="{% url 'students:saved_jobs' %}" class="card-button">
+      <i class="fas fa-bookmark me-2"></i>Saved Jobs
+    </a>
+  </div>
+</div>
+
+<!-- Statistics -->
+<div class="stats-section">
+  <h3 class="text-center mb-4" style="color: #2c3e50; font-weight: 700;">Your Statistics</h3>
+  <div class="stats-grid">
+    <div class="stat-item">
+      <div class="stat-number">5</div>
+      <div class="stat-label">Applications Sent</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number">12</div>
+      <div class="stat-label">Profile Views</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number">3</div>
+      <div class="stat-label">Saved Jobs</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number">2</div>
+      <div class="stat-label">Interview Calls</div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Activities -->
+<div class="recent-activities">
+  <h3 class="mb-4" style="color: #2c3e50; font-weight: 700;">Recent Activities</h3>
+  
+  <div class="activity-item">
+    <div class="activity-icon">
+      <i class="fas fa-paper-plane"></i>
+    </div>
+    <div class="activity-content">
+      <h6>Applied to Software Engineer position</h6>
+      <p>at TechCorp Solutions • 2 hours ago</p>
+    </div>
+  </div>
+
+  <div class="activity-item">
+    <div class="activity-icon">
+      <i class="fas fa-eye"></i>
+    </div>
+    <div class="activity-content">
+      <h6>Profile viewed by recruiter</h6>
+      <p>DataDriven Inc • 1 day ago</p>
+    </div>
+  </div>
+
+  <div class="activity-item">
+    <div class="activity-icon">
+      <i class="fas fa-heart"></i>
+    </div>
+    <div class="activity-content">
+      <h6>Saved job: Data Analyst</h6>
+      <p>at Analytics Corp • 2 days ago</p>
+    </div>
+  </div>
+
+  <div class="activity-item">
+    <div class="activity-icon">
+      <i class="fas fa-user-edit"></i>
+    </div>
+    <div class="activity-content">
+      <h6>Updated profile information</h6>
+      <p>Added new skills and experience • 3 days ago</p>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

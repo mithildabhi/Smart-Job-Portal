@@ -1,0 +1,596 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile - Smart Job Portal{% endblock %}
+
+{% block content %}
+<style>
+  .profile-header {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border-radius: 20px;
+    padding: 2.5rem;
+    margin-bottom: 3rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .profile-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
+    33% { transform: translate(30px, -30px) rotate(120deg); }
+    66% { transform: translate(-20px, 20px) rotate(240deg); }
+  }
+
+  .profile-content {
+    position: relative;
+    z-index: 2;
+  }
+
+  .profile-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    margin: 0 auto 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .profile-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+  }
+
+  .profile-name {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  .profile-subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+  }
+
+  .profile-sections {
+    display: grid;
+    gap: 2rem;
+  }
+
+  .profile-card {
+    background: white;
+    border-radius: 20px;
+    padding: 2.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    border-top: 4px solid #667eea;
+  }
+
+  .profile-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .section-icon {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 1.5rem;
+  }
+
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .info-row:last-child {
+    border-bottom: none;
+  }
+
+  .info-label {
+    font-weight: 600;
+    color: #2c3e50;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .info-value {
+    color: #6c757d;
+    font-weight: 500;
+  }
+
+  .btn-edit {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 25px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s ease;
+    margin-top: 1rem;
+  }
+
+  .btn-edit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    color: white;
+  }
+
+  .skill-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+
+  .skill-tag {
+    background: linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%);
+    color: #667eea;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border: 1px solid rgba(102, 126, 234, 0.2);
+  }
+
+  .progress-bar-container {
+    margin: 1rem 0;
+  }
+
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+  }
+
+  .progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 4px;
+    transition: width 0.5s ease;
+  }
+
+  .education-item, .experience-item {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%);
+    border-radius: 15px;
+    margin-bottom: 1rem;
+    border-left: 4px solid #667eea;
+  }
+
+  .item-title {
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+  }
+
+  .item-subtitle {
+    color: #667eea;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+  }
+
+  .item-duration {
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .item-description {
+    color: #6c757d;
+    line-height: 1.6;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+  }
+
+  .stat-item {
+    text-align: center;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%);
+    border-radius: 15px;
+  }
+
+  .stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #667eea;
+    margin-bottom: 0.5rem;
+  }
+
+  .stat-label {
+    color: #6c757d;
+    font-weight: 500;
+    font-size: 0.9rem;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: #6c757d;
+  }
+
+  .empty-state i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.3;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .profile-sections {
+      gap: 1.5rem;
+    }
+    
+    .profile-card {
+      padding: 1.5rem;
+    }
+    
+    .info-row {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+  }
+</style>
+
+<!-- Profile Header -->
+<div class="profile-header">
+  <div class="profile-content">
+    <div class="profile-avatar">
+      {% if user.profile_picture %}
+        <img src="{{ user.profile_picture.url }}" alt="Profile Picture">
+      {% else %}
+        <i class="fas fa-user-graduate"></i>
+      {% endif %}
+    </div>
+    <h1 class="profile-name">{{ user.first_name }} {{ user.last_name }}</h1>
+    <p class="profile-subtitle">Computer Science Student • Looking for Opportunities</p>
+  </div>
+</div>
+
+<!-- Profile Sections -->
+<div class="profile-sections">
+  
+  <!-- Personal Information -->
+  <div class="profile-card">
+    <h2 class="section-title">
+      <i class="fas fa-user section-icon"></i>
+      Personal Information
+    </h2>
+    
+    <div class="info-row">
+      <span class="info-label">
+        <i class="fas fa-envelope"></i>
+        Email
+      </span>
+      <span class="info-value">{{ user.email }}</span>
+    </div>
+    
+    <div class="info-row">
+      <span class="info-label">
+        <i class="fas fa-phone"></i>
+        Phone
+      </span>
+      <span class="info-value">+91 9876543210</span>
+    </div>
+    
+    <div class="info-row">
+      <span class="info-label">
+        <i class="fas fa-map-marker-alt"></i>
+        Location
+      </span>
+      <span class="info-value">Mumbai, Maharashtra</span>
+    </div>
+    
+    <div class="info-row">
+      <span class="info-label">
+        <i class="fas fa-birthday-cake"></i>
+        Date of Birth
+      </span>
+      <span class="info-value">January 15, 2001</span>
+    </div>
+    
+    <div class="info-row">
+      <span class="info-label">
+        <i class="fas fa-linkedin"></i>
+        LinkedIn
+      </span>
+      <span class="info-value">linkedin.com/in/johndoe</span>
+    </div>
+    
+    <a href="#" class="btn-edit">
+      <i class="fas fa-edit me-2"></i>Edit Information
+    </a>
+  </div>
+
+  <!-- Skills & Expertise -->
+  <div class="profile-card">
+    <h2 class="section-title">
+      <i class="fas fa-cogs section-icon"></i>
+      Skills & Expertise
+    </h2>
+    
+    <div class="progress-bar-container">
+      <div class="progress-label">
+        <span>Python</span>
+        <span>90%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 90%"></div>
+      </div>
+    </div>
+    
+    <div class="progress-bar-container">
+      <div class="progress-label">
+        <span>JavaScript</span>
+        <span>85%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 85%"></div>
+      </div>
+    </div>
+    
+    <div class="progress-bar-container">
+      <div class="progress-label">
+        <span>Django</span>
+        <span>80%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 80%"></div>
+      </div>
+    </div>
+    
+    <div class="progress-bar-container">
+      <div class="progress-label">
+        <span>React</span>
+        <span>75%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 75%"></div>
+      </div>
+    </div>
+    
+    <div class="skill-tags">
+      <span class="skill-tag">Python</span>
+      <span class="skill-tag">Django</span>
+      <span class="skill-tag">JavaScript</span>
+      <span class="skill-tag">React</span>
+      <span class="skill-tag">Node.js</span>
+      <span class="skill-tag">MySQL</span>
+      <span class="skill-tag">Git</span>
+      <span class="skill-tag">AWS</span>
+    </div>
+    
+    <a href="#" class="btn-edit">
+      <i class="fas fa-plus me-2"></i>Add Skills
+    </a>
+  </div>
+
+  <!-- Education -->
+  <div class="profile-card">
+    <h2 class="section-title">
+      <i class="fas fa-graduation-cap section-icon"></i>
+      Education
+    </h2>
+    
+    <div class="education-item">
+      <div class="item-title">Bachelor of Engineering in Computer Science</div>
+      <div class="item-subtitle">Mumbai University</div>
+      <div class="item-duration">2020 - 2024 • Expected</div>
+      <div class="item-description">
+        CGPA: 8.5/10 • Relevant coursework: Data Structures, Algorithms, Web Development, Database Management, Software Engineering
+      </div>
+    </div>
+    
+    <div class="education-item">
+      <div class="item-title">Higher Secondary Certificate (HSC)</div>
+      <div class="item-subtitle">St. Xavier's College</div>
+      <div class="item-duration">2018 - 2020</div>
+      <div class="item-description">
+        Percentage: 92% • Science Stream with Mathematics and Computer Science
+      </div>
+    </div>
+    
+    <a href="#" class="btn-edit">
+      <i class="fas fa-plus me-2"></i>Add Education
+    </a>
+  </div>
+
+  <!-- Experience -->
+  <div class="profile-card">
+    <h2 class="section-title">
+      <i class="fas fa-briefcase section-icon"></i>
+      Experience
+    </h2>
+    
+    <div class="experience-item">
+      <div class="item-title">Web Development Intern</div>
+      <div class="item-subtitle">TechStart Solutions</div>
+      <div class="item-duration">June 2023 - August 2023 • 3 months</div>
+      <div class="item-description">
+        Developed responsive web applications using Django and React. Collaborated with senior developers to implement new features and optimize database queries. Reduced page load time by 30% through code optimization.
+      </div>
+    </div>
+    
+    <div class="experience-item">
+      <div class="item-title">Freelance Web Developer</div>
+      <div class="item-subtitle">Self-Employed</div>
+      <div class="item-duration">January 2023 - Present</div>
+      <div class="item-description">
+        Created custom websites for small businesses using modern web technologies. Managed 5+ client projects simultaneously, delivering quality solutions on time and within budget.
+      </div>
+    </div>
+    
+    <a href="#" class="btn-edit">
+      <i class="fas fa-plus me-2"></i>Add Experience
+    </a>
+  </div>
+
+  <!-- Projects -->
+  <div class="profile-card">
+    <h2 class="section-title">
+      <i class="fas fa-code section-icon"></i>
+      Projects
+    </h2>
+    
+    <div class="experience-item">
+      <div class="item-title">E-Commerce Platform</div>
+      <div class="item-subtitle">Django, React, PostgreSQL</div>
+      <div class="item-duration">March 2024 - May 2024</div>
+      <div class="item-description">
+        Built a full-stack e-commerce platform with user authentication, product catalog, shopping cart, and payment integration. Implemented REST APIs and responsive frontend design.
+      </div>
+    </div>
+    
+    <div class="experience-item">
+      <div class="item-title">Task Management App</div>
+      <div class="item-subtitle">React Native, Node.js, MongoDB</div>
+      <div class="item-duration">January 2024 - February 2024</div>
+      <div class="item-description">
+        Developed a mobile app for task management with real-time synchronization, push notifications, and collaborative features. Published on Google Play Store with 100+ downloads.
+      </div>
+    </div>
+    
+    <a href="#" class="btn-edit">
+      <i class="fas fa-plus me-2"></i>Add Project
+    </a>
+  </div>
+
+  <!-- Statistics -->
+  <div class="profile-card">
+    <h2 class="section-title">
+      <i class="fas fa-chart-bar section-icon"></i>
+      Profile Statistics
+    </h2>
+    
+    <div class="stats-grid">
+      <div class="stat-item">
+        <div class="stat-number">15</div>
+        <div class="stat-label">Profile Views</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">8</div>
+        <div class="stat-label">Applications</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">3</div>
+        <div class="stat-label">Interviews</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">95%</div>
+        <div class="stat-label">Profile Complete</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Back to Dashboard -->
+<div class="text-center mt-4 mb-5">
+  <a href="{% url 'students:student_dashboard' %}" class="btn-edit">
+    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+  </a>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animate progress bars on scroll
+    const progressBars = document.querySelectorAll('.progress-fill');
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const width = entry.target.style.width;
+                entry.target.style.width = '0%';
+                setTimeout(() => {
+                    entry.target.style.width = width;
+                }, 100);
+                observer.unobserve(entry.target);
+            }
+        });
+    });
+
+    progressBars.forEach(bar => observer.observe(bar));
+
+    // Animate stats on scroll
+    const statNumbers = document.querySelectorAll('.stat-number');
+    
+    const animateValue = (element, start, end, duration) => {
+        let startTimestamp = null;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            const currentValue = Math.floor(progress * (end - start) + start);
+            element.textContent = currentValue + (element.textContent.includes('%') ? '%' : '');
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            }
+        };
+        window.requestAnimationFrame(step);
+    };
+
+    const statsObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const text = entry.target.textContent;
+                const number = parseInt(text.replace(/\D/g, ''));
+                animateValue(entry.target, 0, number, 1500);
+                statsObserver.unobserve(entry.target);
+            }
+        });
+    });
+
+    statNumbers.forEach(stat => statsObserver.observe(stat));
+});
+</script>
+
+{% endblock %}
