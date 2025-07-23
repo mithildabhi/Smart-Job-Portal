@@ -19,9 +19,6 @@ def main(request):
    }
     return render(request, 'main.html', context)
 
-def contact(request):
-    return render(request, 'jobs/contact.html')
-
 def login_view(request):
     """Login view"""
     if request.method == 'POST':
@@ -40,9 +37,14 @@ def logout_view(request):
     logout(request)
     return redirect('main')
 
-def contact(request):
+def aboutus(request):
     """Contact page view"""
-    return render(request, 'Jobs/contact.html')
+    return render(request, 'Jobs/aboutus.html')
+
+def contactus(request):
+    """Contact page view"""
+    return render(request, 'Jobs/contactus.html')
+
 
 def post_job(request):
     """Post job view"""
@@ -52,20 +54,6 @@ def post_job(request):
 def view_applications(request):
     """View applications"""
     return render(request, 'view_applications.html')
-
-
-@login_required
-def post_job(request):
-    if request.method == 'POST':
-        form = JobForm(request.POST)
-        if form.is_valid():
-            job = form.save(commit=False)
-            job.recruiter = request.user
-            job.save()
-            return redirect('recruiter_dashboard')
-    else:
-        form = JobForm()
-    return render(request, 'jobs/post_job.html', {'form': form})
 
 
 def job_list(request):

@@ -127,71 +127,31 @@
     </button>
 
     <div class="collapse navbar-collapse" id="navbarNav">
+      <!-- Left side navigation - empty now since About Us is removed -->
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'jobs:main' %}">
-            <i class="fas fa-home me-1"></i>Home
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'jobs:job_list' %}">
-            <i class="fas fa-briefcase me-1"></i>Jobs
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'jobs:contact' %}">
-            <i class="fas fa-envelope me-1"></i>Contact
-          </a>
-        </li>
+        <!-- About Us section removed as requested -->
       </ul>
 
+      <!-- Right side navigation -->
       <ul class="navbar-nav">
-        {% if user.is_authenticated %}
-          {% if user.studentprofile %}
-            <li class="nav-item me-2">
-              <a class="nav-link" href="{% url 'students:student_dashboard' %}">
-                <i class="fas fa-tachometer-alt me-1"></i>Dashboard
-              </a>
-            </li>
-            <li class="nav-item me-2">
-              <a class="nav-link" href="{% url 'students:student_profile' %}">
-                <i class="fas fa-user me-1"></i>Profile
-              </a>
-            </li>
-          {% elif user.companyprofile %}
-            <li class="nav-item me-2">
-              <a class="nav-link" href="{% url 'jobs:post_job' %}">
-                <i class="fas fa-plus-circle me-1"></i>Post Job
-              </a>
-            </li>
-            <li class="nav-item me-2">
-              <a class="nav-link" href="{% url 'jobs:view_applications' %}">
-                <i class="fas fa-file-alt me-1"></i>Applications
-              </a>
-            </li>
-          {% endif %}
-          <li class="nav-item">
-            <a class="btn-nav-primary" href="{% url 'students:student_logout' %}">
-              <i class="fas fa-sign-out-alt me-1"></i>Logout
-            </a>
-          </li>
-        {% else %}
-          <li class="nav-item me-2">
-            <a class="btn-nav-primary" href="{% url 'students:student_login' %}">
-              <i class="fas fa-sign-in-alt me-1"></i>Login
-            </a>
-          </li>
-          <li class="nav-item me-2">
-            <a class="btn-nav-outline" href="{% url 'students:student_register' %}">
-              <i class="fas fa-user-graduate me-1"></i>Student
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="btn-nav-outline" href="{% url 'companies:company_register' %}">
-              <i class="fas fa-building me-1"></i>Company
-            </a>
-          </li>
-        {% endif %}
+        <!-- Contact Us moved to right side -->
+        <li class="nav-item me-2">
+          <a class="nav-link" href="{% url 'jobs:contactus' %}">
+            <i class="fas fa-envelope me-1"></i>Contact Us
+          </a>
+        </li>
+        <!-- Student Login -->
+        <li class="nav-item me-2">
+          <a class="btn-nav-primary" href="{% url 'students:student_login' %}">
+            <i class="fas fa-user-graduate me-1"></i>Student Login
+          </a>
+        </li>
+        <!-- Company Login -->
+        <li class="nav-item">
+          <a class="btn-nav-outline" href="{% url 'companies:company_login' %}">
+            <i class="fas fa-building me-1"></i>Company Login
+          </a>
+        </li>
       </ul>
     </div>
   </div>

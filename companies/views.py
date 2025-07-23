@@ -7,6 +7,9 @@ from django.contrib.auth.decorators import login_required
 def company_home(request):
     return HttpResponse("Welcome to the Company section!")
 
+def company_login(request):
+    return render(request, 'companies/company_login.html')
+
 @login_required
 def post_job(request):
     return render(request, 'companies/post_job.html')

@@ -7,6 +7,7 @@ app_name = 'companies'
 
 urlpatterns = [
     path('dashboard/', views.company_home, name='company_home'),
+    path('login/', views.company_login, name='company_login'),
 
     # Company registration & authentication
     # path('register/', views.company_register, name='company_register'),
