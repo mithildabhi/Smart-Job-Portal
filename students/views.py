@@ -13,3 +13,11 @@ def student_dashboard(request):
 @login_required
 def student_profile(request):
     return render(request, 'students/profile.html')
+
+@login_required
+def student_login(request):
+    return render(request, 'students/student_login.html')
+
+@login_required
+def student_logout(request):
+    return render(request, 'students/student_logout.html')
