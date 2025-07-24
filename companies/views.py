@@ -295,15 +295,27 @@ def company_dashboard(request):
     try:
         company = Company.objects.get(user=request.user)
         
-        # Get dashboard statistics
-        total_jobs = Job.objects.filter(recruiter=request.user).count()
-        active_jobs = Job.objects.filter(recruiter=request.user, is_active=True).count() if hasattr(Job, 'is_active') else total_jobs
+        # ✅ FIX: Use 'company' field instead of 'recruiter'
+        total_jobs = Job.objects.filter(company=company).count()
+        active_jobs = Job.objects.filter(company=company, is_active=True).count()
+        inactive_jobs = Job.objects.filter(company=company, is_active=False).count()
+        
+        # Get recent applications for company jobs
+        recent_applications = Application.objects.filter(
+            job__company=company
+        ).order_by('-applied_on')[:5]
+        
+        # Get total applications count
+        total_applications = Application.objects.filter(job__company=company).count()
         
         context = {
             'company': company,
             'user': request.user,
             'total_jobs': total_jobs,
             'active_jobs': active_jobs,
+            'inactive_jobs': inactive_jobs,
+            'recent_applications': recent_applications,
+            'total_applications': total_applications,
         }
         return render(request, 'companies/company_dashboard.html', context)
         

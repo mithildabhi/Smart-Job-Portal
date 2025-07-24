@@ -4,70 +4,63 @@
 
 {% block content %}
 <style>
-  /* Main Container Styling */
+  /* Perfect Page Centering */
   .main-content {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 100vh;
-    padding: 1rem 0;
+    min-height: 70vh; /* Reduced by 30% from 100vh */
+    padding: 0;
+    margin: 0;
   }
 
   .auth-container {
+    top: 30px;
     max-width: 520px;
     width: 90%;
     background: white;
     border-radius: 20px;
-    padding: 2.5rem;
+    padding: 1.5rem; /* Reduced from 2.5rem */
     box-shadow: 0 15px 50px rgba(102, 126, 234, 0.15);
     position: relative;
+    /* Removed the ::before pseudo-element for top colored line */
   }
 
-  .auth-container::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 5px;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-  }
-
-  /* Text Styling */
+  /* Text Styling - Compact */
   .auth-title {
     text-align: center;
-    font-size: 2rem;
+    font-size: 1.6rem; /* Reduced from 2rem */
     font-weight: 700;
     background: linear-gradient(135deg, #667eea, #764ba2);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.2rem; /* Reduced spacing */
   }
 
   .auth-subtitle {
     text-align: center;
     color: #6c757d;
-    margin-bottom: 2rem;
-    font-size: 0.95rem;
+    margin-bottom: 1.2rem; /* Reduced from 2rem */
+    font-size: 0.85rem; /* Smaller font */
   }
 
-  /* Form Styling */
+  /* Compact Form Styling */
   .form-group {
-    margin-bottom: 1.2rem;
+    margin-bottom: 0.8rem; /* Reduced from 1.2rem */
   }
 
   .form-label {
     font-weight: 600;
     color: #2c3e50;
-    margin-bottom: 0.4rem;
-    font-size: 0.95rem;
+    margin-bottom: 0.2rem; /* Reduced spacing */
+    font-size: 0.85rem; /* Smaller font */
   }
 
   .form-control {
     border: 2px solid #e9ecef;
     border-radius: 10px;
-    padding: 0.65rem 3rem 0.65rem 1rem;
-    font-size: 0.95rem;
+    padding: 0.5rem 3rem 0.5rem 1rem; /* Reduced padding */
+    font-size: 0.85rem; /* Smaller font */
     background: #f8f9fa;
     width: 100%;
     transition: all 0.3s ease;
@@ -97,40 +90,40 @@
     transform: translateY(-50%);
     color: #6c757d;
     cursor: pointer;
-    font-size: 1rem;
+    font-size: 0.9rem;
   }
 
   .toggle-password:hover {
     color: #667eea;
   }
 
-  /* Buttons */
+  /* Compact Buttons */
   .btn-auth {
     background: linear-gradient(135deg, #667eea, #764ba2);
     border: none;
     color: white;
-    padding: 0.8rem 2rem;
+    padding: 0.6rem 2rem; /* Reduced padding */
     border-radius: 25px;
     font-weight: 600;
-    font-size: 1rem;
+    font-size: 0.9rem; /* Smaller font */
     width: 100%;
-    margin-top: 0.8rem;
+    margin-top: 0.4rem; /* Reduced margin */
     transition: all 0.3s ease;
   }
 
   .btn-auth:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
   }
 
   .btn-register {
     background: transparent;
     border: 2px solid #667eea;
     color: #667eea;
-    padding: 0.65rem 1.8rem;
+    padding: 0.5rem 1.4rem; /* Reduced padding */
     border-radius: 25px;
     font-weight: 600;
-    font-size: 0.95rem;
+    font-size: 0.85rem; /* Smaller font */
     text-decoration: none;
     transition: all 0.3s ease;
   }
@@ -138,29 +131,45 @@
   .btn-register:hover {
     background: #667eea;
     color: white;
-    transform: translateY(-2px);
+    transform: translateY(-1px);
   }
 
-  /* Links and Sections */
+  /* Compact Links and Sections */
   .forgot-password {
     text-align: center;
-    margin-top: 1.2rem;
+    margin-top: 0.8rem; /* Reduced spacing */
   }
 
   .forgot-password a {
     color: #667eea;
     text-decoration: none;
-    font-size: 0.9rem;
+    font-size: 0.8rem; /* Smaller font */
   }
 
   .register-section {
     text-align: center;
-    margin-top: 1.5rem;
-    padding-top: 1.5rem;
+    margin-top: 1rem; /* Reduced spacing */
+    padding-top: 1rem; /* Reduced spacing */
     border-top: 1px solid #e9ecef;
   }
 
-  /* Error Popup */
+  .register-section p {
+    margin-bottom: 0.5rem;
+    font-size: 0.8rem; /* Smaller font */
+    color: #6c757d;
+  }
+
+  /* Cross-login link */
+  .cross-login {
+    text-align: center;
+    margin-top: 0.6rem;
+  }
+
+  .cross-login small {
+    font-size: 0.75rem; /* Smaller text */
+  }
+
+  /* Compact Error Popup */
   .error-popup {
     position: fixed;
     top: 50%;
@@ -168,11 +177,11 @@
     transform: translate(-50%, -50%);
     background: white;
     border-radius: 20px;
-    padding: 2rem;
+    padding: 1.5rem; /* Reduced padding */
     box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
     z-index: 1050;
     text-align: center;
-    min-width: 320px;
+    min-width: 280px; /* Smaller popup */
   }
 
   .popup-overlay {
@@ -188,16 +197,35 @@
   /* Animations */
   @keyframes shake {
     0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-8px); }
-    75% { transform: translateX(8px); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
   }
 
   /* Mobile Responsive */
   @media (max-width: 576px) {
     .auth-container {
-      margin: 0.5rem;
-      padding: 2rem 1.5rem;
+      margin: 0.2rem;
+      padding: 1.2rem;
       max-width: 95%;
+    }
+    
+    .main-content {
+      min-height: 75vh; /* Slightly more height on mobile */
+    }
+  }
+
+  /* Very compact for short screens */
+  @media (max-height: 600px) {
+    .main-content {
+      min-height: 65vh;
+    }
+    
+    .auth-container {
+      padding: 1rem;
+    }
+    
+    .form-group {
+      margin-bottom: 0.6rem;
     }
   }
 
@@ -209,7 +237,7 @@
   <div class="auth-container">
     <!-- Title -->
     <h2 class="auth-title">Student Login</h2>
-    <p class="auth-subtitle">Sign in to access your dashboard</p>
+    <p class="auth-subtitle">Sign in to access your dashboard and browse opportunities</p>
     
     <!-- Django Messages (Hidden) -->
     {% if messages %}
@@ -263,6 +291,13 @@
         <i class="fas fa-user-plus me-2"></i>Create Student Account
       </a>
     </div>
+    
+    <!-- Cross-Login Link -->
+    <div class="cross-login">
+      <small class="text-muted">
+        Looking for company login? <a href="{% url 'companies:company_login' %}" style="color: #667eea;">Click here</a>
+      </small>
+    </div>
   </div>
 </div>
 
@@ -270,12 +305,12 @@
 <div id="errorPopup" style="display: none;">
   <div class="popup-overlay" onclick="closeErrorPopup()"></div>
   <div class="error-popup">
-    <div style="font-size: 3.5rem; color: #dc3545; margin-bottom: 1rem;">
+    <div style="font-size: 2.5rem; color: #dc3545; margin-bottom: 0.6rem;">
       <i class="fas fa-exclamation-triangle"></i>
     </div>
-    <h3>Login Failed!</h3>
-    <p>Invalid username or password. Please try again.</p>
-    <button onclick="closeErrorPopup()" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 0.8rem 2rem; border-radius: 25px; cursor: pointer;">
+    <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;">Login Failed!</h3>
+    <p style="font-size: 0.85rem; margin-bottom: 1rem;">Invalid username or password. Please check your credentials and try again.</p>
+    <button onclick="closeErrorPopup()" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 0.6rem 1.5rem; border-radius: 25px; cursor: pointer; font-size: 0.85rem;">
       Try Again
     </button>
   </div>

@@ -4,206 +4,518 @@
 
 {% block content %}
 <style>
+  /* Perfect Page Centering */
+  .main-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 70vh; /* Reduced height like login pages */
+    padding: 0;
+    margin: 0;
+  }
+
   .auth-container {
-    max-width: 600px;
-    margin: 2rem auto;
+    top: 10px;
+    bottom: 10px;
+    max-width: 520px; /* Same width as login */
+    width: 90%;
     background: white;
     border-radius: 20px;
-    padding: 3rem;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem; /* Reduced padding like login */
+    box-shadow: 0 15px 50px rgba(102, 126, 234, 0.15);
+    position: relative;
   }
   
+  /* Text Styling - Compact */
   .auth-title {
     text-align: center;
-    font-size: 2rem;
+    font-size: 1.6rem; /* Same as login */
     font-weight: 700;
     background: linear-gradient(135deg, #667eea, #764ba2);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    margin-bottom: 2rem;
+    margin-bottom: 0.2rem; /* Reduced spacing */
   }
 
-  .company-header {
-    background: linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%);
-    border-radius: 15px;
-    padding: 1.5rem;
+  .auth-subtitle {
     text-align: center;
-    margin-bottom: 2rem;
+    color: #6c757d;
+    margin-bottom: 1.2rem; /* Reduced spacing */
+    font-size: 0.85rem; /* Smaller font */
   }
 
-  .company-header i {
-    font-size: 3rem;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin-bottom: 1rem;
-  }
-  
-  .form-control:focus {
-    border-color: #667eea;
-    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-  }
-  
-  .btn-auth {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    border: none;
-    color: white;
-    padding: 0.75rem 2rem;
-    border-radius: 25px;
-    font-weight: 600;
-    width: 100%;
-    transition: all 0.3s ease;
-  }
-  
-  .btn-auth:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-    color: white;
+  /* Compact Form Styling */
+  .form-group {
+    margin-bottom: 0.8rem; /* Reduced spacing */
   }
 
   .form-label {
     font-weight: 600;
     color: #2c3e50;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.2rem; /* Reduced spacing */
+    font-size: 0.85rem; /* Smaller font */
   }
 
   .form-control {
     border: 2px solid #e9ecef;
     border-radius: 10px;
-    padding: 0.75rem 1rem;
-    font-size: 1rem;
-    transition: all 0.3s ease;
+    padding: 0.5rem 1rem; /* Reduced padding */
+    font-size: 0.85rem; /* Smaller font */
     background: #f8f9fa;
+    width: 100%;
+    transition: all 0.3s ease;
   }
-
+  
   .form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
     background: white;
     outline: none;
   }
+  
+  .form-control.error {
+    border-color: #dc3545;
+    animation: shake 0.5s ease-in-out;
+  }
+  
+  .form-control.success {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+  }
+  
+  /* Compact Buttons */
+  .btn-auth {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border: none;
+    color: white;
+    padding: 0.6rem 2rem; /* Reduced padding */
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 0.9rem; /* Smaller font */
+    width: 100%;
+    margin-top: 0.4rem; /* Reduced margin */
+    transition: all 0.3s ease;
+  }
+  
+  .btn-auth:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    color: white;
+  }
+
+  .btn-auth:disabled {
+    background: #6c757d;
+    transform: none;
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+
+  /* Password Match Indicator */
+  .password-match-indicator {
+    font-size: 0.75rem; /* Smaller text */
+    margin-top: 0.2rem; /* Reduced spacing */
+    font-weight: 500;
+  }
+
+  .password-match-indicator.match {
+    color: #28a745;
+  }
+
+  .password-match-indicator.no-match {
+    color: #dc3545;
+  }
+
+  /* Login Link Section */
+  .login-section {
+    text-align: center;
+    margin-top: 1rem; /* Reduced spacing */
+    padding-top: 1rem; /* Reduced spacing */
+    border-top: 1px solid #e9ecef;
+  }
+
+  .login-section p {
+    margin-bottom: 0;
+    font-size: 0.8rem; /* Smaller font */
+    color: #6c757d;
+  }
+
+  /* Compact Error Popup */
+  .custom-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border-radius: 20px;
+    padding: 1.5rem; /* Reduced padding */
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+    z-index: 1050;
+    text-align: center;
+    min-width: 280px; /* Smaller popup */
+  }
+
+  .popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1049;
+  }
+
+  .popup-icon {
+    font-size: 2.5rem; /* Smaller icon */
+    color: #dc3545;
+    margin-bottom: 0.8rem; /* Reduced spacing */
+  }
+
+  .popup-title {
+    font-size: 1.2rem; /* Smaller title */
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 0.8rem; /* Reduced spacing */
+  }
+
+  .popup-message {
+    color: #6c757d;
+    margin-bottom: 1.2rem; /* Reduced spacing */
+    line-height: 1.5;
+    font-size: 0.85rem; /* Smaller text */
+  }
+
+  .popup-button {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    padding: 0.6rem 1.5rem; /* Reduced padding */
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.85rem; /* Smaller font */
+  }
+
+  .popup-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+  }
+
+  /* Animations */
+  .fade-in {
+    animation: fadeIn 0.3s ease-in;
+  }
+
+  .fade-out {
+    animation: fadeOut 0.3s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translate(-50%, -60%); }
+    to { opacity: 1; transform: translate(-50%, -50%); }
+  }
+
+  @keyframes fadeOut {
+    from { opacity: 1; transform: translate(-50%, -50%); }
+    to { opacity: 0; transform: translate(-50%, -60%); }
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+  }
+
+  /* Mobile Responsive */
+  @media (max-width: 576px) {
+    .auth-container {
+      margin: 0.2rem;
+      padding: 1.2rem;
+      max-width: 95%;
+    }
+    
+    .main-content {
+      min-height: 75vh; /* Slightly more height on mobile */
+    }
+  }
+
+  /* Very compact for short screens */
+  @media (max-height: 700px) {
+    .main-content {
+      min-height: 65vh;
+    }
+    
+    .auth-container {
+      padding: 1rem;
+    }
+    
+    .form-group {
+      margin-bottom: 0.6rem;
+    }
+  }
+
+  /* Hide Django messages initially */
+  .alert { 
+    margin-bottom: 1rem;
+    font-size: 0.85rem; /* Smaller alert text */
+  }
 </style>
 
-<div class="auth-container">
-  <div class="company-header">
-    <i class="fas fa-building"></i>
-    <h3 style="color: #2c3e50; margin: 0;">Join Our Partner Network</h3>
+<div class="main-content">
+  <div class="auth-container">
+    <!-- Title -->
+    <h2 class="auth-title">Company Registration</h2>
+    <p class="auth-subtitle">Join our partner network and find top talent</p>
+    
+    <!-- Django Messages -->
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+    
+    <!-- Registration Form -->
+    <form method="post" id="registrationForm">
+      {% csrf_token %}
+      
+      <!-- Row 1: Company Name & Username -->
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label for="company_name" class="form-label">
+              <i class="fas fa-building me-2"></i>Company Name
+            </label>
+            <input type="text" class="form-control" id="company_name" name="company_name" 
+                   value="{{ request.POST.company_name|default:'' }}" required>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label for="username" class="form-label">
+              <i class="fas fa-user me-2"></i>Username
+            </label>
+            <input type="text" class="form-control" id="username" name="username" 
+                   value="{{ request.POST.username|default:'' }}" required>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Row 2: Email & Phone -->
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label for="email" class="form-label">
+              <i class="fas fa-envelope me-2"></i>Company Email
+            </label>
+            <input type="email" class="form-control" id="email" name="email" 
+                   value="{{ request.POST.email|default:'' }}" required>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label for="phone" class="form-label">
+              <i class="fas fa-phone me-2"></i>Phone Number
+            </label>
+            <input type="tel" class="form-control" id="phone" name="phone" 
+                   value="{{ request.POST.phone|default:'' }}" required>
+          </div>
+        </div>
+      </div>
+
+      <!-- Industry -->
+      <div class="form-group">
+        <label for="industry" class="form-label">
+          <i class="fas fa-industry me-2"></i>Industry
+        </label>
+        <select class="form-control" id="industry" name="industry" required>
+          <option value="">Select Industry</option>
+          <option value="technology" {% if request.POST.industry == 'technology' %}selected{% endif %}>Technology</option>
+          <option value="finance" {% if request.POST.industry == 'finance' %}selected{% endif %}>Finance</option>
+          <option value="healthcare" {% if request.POST.industry == 'healthcare' %}selected{% endif %}>Healthcare</option>
+          <option value="education" {% if request.POST.industry == 'education' %}selected{% endif %}>Education</option>
+          <option value="manufacturing" {% if request.POST.industry == 'manufacturing' %}selected{% endif %}>Manufacturing</option>
+          <option value="retail" {% if request.POST.industry == 'retail' %}selected{% endif %}>Retail</option>
+          <option value="consulting" {% if request.POST.industry == 'consulting' %}selected{% endif %}>Consulting</option>
+          <option value="other" {% if request.POST.industry == 'other' %}selected{% endif %}>Other</option>
+        </select>
+      </div>
+
+      <!-- Website (Optional) -->
+      <div class="form-group">
+        <label for="website" class="form-label">
+          <i class="fas fa-globe me-2"></i>Company Website (Optional)
+        </label>
+        <input type="url" class="form-control" id="website" name="website" 
+               value="{{ request.POST.website|default:'' }}" placeholder="https://www.company.com">
+      </div>
+      
+      <!-- Passwords -->
+      <div class="form-group">
+        <label for="password1" class="form-label">
+          <i class="fas fa-lock me-2"></i>Password
+        </label>
+        <input type="password" class="form-control" id="password1" name="password1" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="password2" class="form-label">
+          <i class="fas fa-lock me-2"></i>Confirm Password
+        </label>
+        <input type="password" class="form-control" id="password2" name="password2" required>
+        <div id="passwordMatchIndicator" class="password-match-indicator" style="display: none;"></div>
+      </div>
+      
+      <!-- Submit Button -->
+      <button type="submit" class="btn btn-auth" id="submitBtn">
+        <i class="fas fa-building me-2"></i>Register Company
+      </button>
+    </form>
+    
+    <!-- Login Section -->
+    <div class="login-section">
+      <p>Already have an account? <a href="{% url 'companies:company_login' %}" style="color: #667eea;">Login here</a></p>
+    </div>
+
+    <!-- Cross-Login Link -->
   </div>
+</div>
 
-  <h2 class="auth-title">Company Registration</h2>
-  
-  {% if messages %}
-    {% for message in messages %}
-      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-      </div>
-    {% endfor %}
-  {% endif %}
-  
-  <form method="post" id="registrationForm">
-    {% csrf_token %}
-    
-    <div class="row">
-      <div class="col-md-6">
-        <div class="mb-3">
-          <label for="company_name" class="form-label">
-            <i class="fas fa-building me-2"></i>Company Name
-          </label>
-          <input type="text" class="form-control" id="company_name" name="company_name" 
-                 value="{{ request.POST.company_name|default:'' }}" required>
-        </div>
-      </div>
-      <div class="col-md-6">
-        <div class="mb-3">
-          <label for="username" class="form-label">
-            <i class="fas fa-user me-2"></i>Username
-          </label>
-          <input type="text" class="form-control" id="username" name="username" 
-                 value="{{ request.POST.username|default:'' }}" required>
-        </div>
-      </div>
+<!-- Password Mismatch Popup -->
+<div id="passwordMismatchPopup" style="display: none;">
+  <div class="popup-overlay" onclick="closePopup()"></div>
+  <div class="custom-popup fade-in">
+    <div class="popup-icon">
+      <i class="fas fa-exclamation-triangle"></i>
     </div>
-    
-    <div class="row">
-      <div class="col-md-6">
-        <div class="mb-3">
-          <label for="email" class="form-label">
-            <i class="fas fa-envelope me-2"></i>Company Email
-          </label>
-          <input type="email" class="form-control" id="email" name="email" 
-                 value="{{ request.POST.email|default:'' }}" required>
-        </div>
-      </div>
-      <div class="col-md-6">
-        <div class="mb-3">
-          <label for="phone" class="form-label">
-            <i class="fas fa-phone me-2"></i>Phone Number
-          </label>
-          <input type="tel" class="form-control" id="phone" name="phone" 
-                 value="{{ request.POST.phone|default:'' }}" required>
-        </div>
-      </div>
+    <div class="popup-title">Password Mismatch!</div>
+    <div class="popup-message">
+      The passwords you entered do not match. Please make sure both password fields contain exactly the same password.
     </div>
-
-    <div class="mb-3">
-      <label for="industry" class="form-label">
-        <i class="fas fa-industry me-2"></i>Industry
-      </label>
-      <select class="form-control" id="industry" name="industry" required>
-        <option value="">Select Industry</option>
-        <option value="technology">Technology</option>
-        <option value="finance">Finance</option>
-        <option value="healthcare">Healthcare</option>
-        <option value="education">Education</option>
-        <option value="manufacturing">Manufacturing</option>
-        <option value="retail">Retail</option>
-        <option value="consulting">Consulting</option>
-        <option value="other">Other</option>
-      </select>
-    </div>
-
-    <div class="mb-3">
-      <label for="website" class="form-label">
-        <i class="fas fa-globe me-2"></i>Company Website (Optional)
-      </label>
-      <input type="url" class="form-control" id="website" name="website" 
-             value="{{ request.POST.website|default:'' }}" placeholder="https://www.company.com">
-    </div>
-    
-    <div class="mb-3">
-      <label for="password1" class="form-label">
-        <i class="fas fa-lock me-2"></i>Password
-      </label>
-      <input type="password" class="form-control" id="password1" name="password1" required>
-    </div>
-    
-    <div class="mb-3">
-      <label for="password2" class="form-label">
-        <i class="fas fa-lock me-2"></i>Confirm Password
-      </label>
-      <input type="password" class="form-control" id="password2" name="password2" required>
-    </div>
-    
-    <button type="submit" class="btn btn-auth" id="submitBtn">
-      <i class="fas fa-building me-2"></i>Register Company
+    <button class="popup-button" onclick="closePopup()">
+      <i class="fas fa-check me-2"></i>Got it!
     </button>
-  </form>
-  
-  <div class="text-center mt-3">
-    <p>Already have an account? <a href="{% url 'companies:company_login' %}">Login here</a></p>
   </div>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('registrationForm');
+    const password1 = document.getElementById('password1');
+    const password2 = document.getElementById('password2');
     const submitBtn = document.getElementById('submitBtn');
+    const indicator = document.getElementById('passwordMatchIndicator');
+    const popup = document.getElementById('passwordMismatchPopup');
 
+    let passwordsMatch = false;
+
+    // Function to check password match
+    function checkPasswordMatch() {
+        const pass1 = password1.value;
+        const pass2 = password2.value;
+
+        if (pass2.length === 0) {
+            // Hide indicator when confirm password is empty
+            indicator.style.display = 'none';
+            password2.classList.remove('error', 'success');
+            passwordsMatch = false;
+            return;
+        }
+
+        if (pass1 === pass2) {
+            // Passwords match
+            password2.classList.remove('error');
+            password2.classList.add('success');
+            indicator.textContent = '✓ Passwords match';
+            indicator.className = 'password-match-indicator match';
+            indicator.style.display = 'block';
+            passwordsMatch = true;
+        } else {
+            // Passwords don't match
+            password2.classList.remove('success');
+            password2.classList.add('error');
+            indicator.textContent = '✗ Passwords do not match';
+            indicator.className = 'password-match-indicator no-match';
+            indicator.style.display = 'block';
+            passwordsMatch = false;
+        }
+
+        // Enable/disable submit button
+        if (passwordsMatch && password1.value.length >= 6) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-building me-2"></i>Register Company';
+        } else {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-lock me-2"></i>Complete Form';
+        }
+    }
+
+    // Real-time password matching
+    password1.addEventListener('input', checkPasswordMatch);
+    password2.addEventListener('input', checkPasswordMatch);
+
+    // Form submission validation
     form.addEventListener('submit', function(e) {
+        if (!passwordsMatch) {
+            e.preventDefault();
+            showPopup();
+            
+            // Clear password fields
+            password1.value = '';
+            password2.value = '';
+            password1.focus();
+            
+            // Reset styling
+            password2.classList.remove('error', 'success');
+            indicator.style.display = 'none';
+            
+            return false;
+        }
+
+        // Show loading state
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating Account...';
     });
+
+    // Popup functions
+    function showPopup() {
+        popup.style.display = 'block';
+        // Add shake animation to password fields
+        password1.style.animation = 'shake 0.5s ease-in-out';
+        password2.style.animation = 'shake 0.5s ease-in-out';
+        
+        setTimeout(() => {
+            password1.style.animation = '';
+            password2.style.animation = '';
+        }, 500);
+    }
+
+    window.closePopup = function() {
+        const popupElement = popup.querySelector('.custom-popup');
+        popupElement.classList.remove('fade-in');
+        popupElement.classList.add('fade-out');
+        
+        setTimeout(() => {
+            popup.style.display = 'none';
+            popupElement.classList.remove('fade-out');
+            popupElement.classList.add('fade-in');
+        }, 300);
+    }
+
+    // Close popup with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && popup.style.display === 'block') {
+            closePopup();
+        }
+    });
+
+    // Initial check on page load (for form errors)
+    if (password1.value || password2.value) {
+        checkPasswordMatch();
+    }
 });
 </script>
 
