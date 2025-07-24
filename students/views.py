@@ -23,17 +23,17 @@ def student_register(request):
                     'email': email,
                     'first_name': first_name,
                     'last_name': last_name,
-                }
+                }  
             }
-            return render(request, 'students/register.html', context)
+            return render(request, 'students/student_register.html', context)
         
         if User.objects.filter(username=username).exists():
             messages.error(request, 'Username already exists')
-            return render(request, 'students/register.html')
+            return render(request, 'students/student_register.html')
         
         if User.objects.filter(email=email).exists():
             messages.error(request, 'Email already registered')
-            return render(request, 'students/register.html')
+            return render(request, 'students/student_register.html')
         
         # Create user
         user = User.objects.create_user(username=username, email=email, password=password1)
