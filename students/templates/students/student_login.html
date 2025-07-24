@@ -328,10 +328,7 @@
 
 <div class="auth-container">
   <!-- Welcome Section -->
-  <div class="welcome-back">
-    <i class="fas fa-user-graduate"></i>
-    <h3 style="color: #2c3e50; margin: 0;">Welcome Back!</h3>
-  </div>
+
 
   <h2 class="auth-title">Student Login</h2>
   <p class="auth-subtitle">Sign in to access your dashboard</p>
@@ -478,8 +475,23 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Login error:', hasLoginError);
     console.log('Messages:', messageCount);
 
-    // Show popup if there's an error
-    if (hasLoginError || messageCount > 0) {
+    // ENHANCED: Only show popup if there's an error AND fields are not empty
+    function shouldShowPopup() {
+        const usernameValue = username ? username.value.trim() : '';
+        const passwordValue = password ? password.value.trim() : '';
+        
+        // Don't show popup if either field is empty
+        if (!usernameValue || !passwordValue) {
+            console.log('Fields are empty, not showing popup');
+            return false;
+        }
+        
+        // Show popup only if there's a login error and both fields have values
+        return hasLoginError || messageCount > 0;
+    }
+
+    // Show popup only if fields are filled and there's an error
+    if (shouldShowPopup()) {
         showErrorPopup();
         
         // Add error styling
@@ -503,26 +515,88 @@ document.addEventListener('DOMContentLoaded', function() {
             
             this.classList.toggle('fa-eye');
             this.classList.toggle('fa-eye-slash');
+            
+            // Update title attribute for accessibility
+            this.setAttribute('title', type === 'password' ? 'Show Password' : 'Hide Password');
         });
     }
 
-    // Form submission
+    // Enhanced form submission with validation
     if (loginForm && loginBtn) {
         loginForm.addEventListener('submit', function(e) {
+            const usernameValue = username.value.trim();
+            const passwordValue = password.value.trim();
+            
+            // Client-side validation - don't submit if fields are empty
+            if (!usernameValue || !passwordValue) {
+                e.preventDefault();
+                
+                // Add error styling to empty fields
+                if (!usernameValue) {
+                    username.classList.add('error');
+                    if (!username.placeholder) username.placeholder = 'Username is required';
+                }
+                if (!passwordValue) {
+                    password.classList.add('error');
+                    if (!password.placeholder) password.placeholder = 'Password is required';
+                }
+                
+                // Focus on first empty field
+                if (!usernameValue) {
+                    username.focus();
+                } else if (!passwordValue) {
+                    password.focus();
+                }
+                
+                // Remove error styling after 3 seconds
+                setTimeout(() => {
+                    username.classList.remove('error');
+                    password.classList.remove('error');
+                }, 3000);
+                
+                return false;
+            }
+            
+            // If validation passes, show loading state
             loginBtn.disabled = true;
             loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Logging in...';
         });
     }
 
-    // Close with Escape key
+    // Remove error styling when user starts typing
+    if (username) {
+        username.addEventListener('input', function() {
+            this.classList.remove('error');
+            if (this.placeholder === 'Username is required') {
+                this.placeholder = 'Enter your username';
+            }
+        });
+    }
+
+    if (password) {
+        password.addEventListener('input', function() {
+            this.classList.remove('error');
+            if (this.placeholder === 'Password is required') {
+                this.placeholder = 'Enter your password';
+            }
+        });
+    }
+
+    // Close popup with Escape key
     document.addEventListener('keydown', function(e) {
         const errorPopup = document.querySelector('#errorPopup');
         if (e.key === 'Escape' && errorPopup && errorPopup.style.display === 'block') {
             closeErrorPopup();
         }
     });
+
+    // Auto-focus on username field if empty
+    if (username && !username.value) {
+        username.focus();
+    }
 });
 </script>
+
 
 
 <!-- Debug test (add after your script tag) -->

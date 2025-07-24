@@ -15,7 +15,7 @@ from .models import Company                # Company model from local companies 
 
 
 def company_register(request):
-    """Company registration view with proper redirect"""
+    """Company registration with proper user type separation"""
     if request.method == 'POST':
         # Get form data
         company_name = request.POST.get('company_name')
@@ -27,29 +27,29 @@ def company_register(request):
         password1 = request.POST.get('password1')
         password2 = request.POST.get('password2')
         
-        # Debug: Print form data (remove this after testing)
-        print(f"Form submitted with username: {username}")
+        # Preserve form data for error cases
+        context = {'form_data': request.POST}
         
         # Validation
         if not all([company_name, username, email, phone, industry, password1, password2]):
             messages.error(request, 'All required fields must be filled')
-            return render(request, 'companies/company_register.html', {'form_data': request.POST})
+            return render(request, 'companies/company_register.html', context)
         
         if password1 != password2:
             messages.error(request, 'Passwords do not match')
-            return render(request, 'companies/company_register.html', {'form_data': request.POST})
+            return render(request, 'companies/company_register.html', context)
         
         if len(password1) < 6:
             messages.error(request, 'Password must be at least 6 characters long')
-            return render(request, 'companies/company_register.html', {'form_data': request.POST})
+            return render(request, 'companies/company_register.html', context)
         
         if User.objects.filter(username=username).exists():
             messages.error(request, 'Username already exists')
-            return render(request, 'companies/company_register.html', {'form_data': request.POST})
+            return render(request, 'companies/company_register.html', context)
         
         if User.objects.filter(email=email).exists():
             messages.error(request, 'Email already registered')
-            return render(request, 'companies/company_register.html', {'form_data': request.POST})
+            return render(request, 'companies/company_register.html', context)
         
         try:
             # Create user account
@@ -60,7 +60,7 @@ def company_register(request):
                 first_name=company_name
             )
             
-            # Create company profile
+            # ✅ Create company profile (ensures proper user type separation)
             company = Company.objects.create(
                 user=user,
                 company_name=company_name,
@@ -69,53 +69,91 @@ def company_register(request):
                 website=website if website else None
             )
             
-            # Success message and redirect
             messages.success(request, f'Registration successful for {company_name}! Please login with your credentials.')
-            print(f"Registration successful, redirecting to login")  # Debug line
             return redirect('companies:company_login')
             
         except Exception as e:
-            print(f"Registration error: {e}")  # Debug line
-            messages.error(request, 'Registration failed. Please try again.')
-            return render(request, 'companies/company_register.html', {'form_data': request.POST})
+            messages.error(request, f'Registration failed: {str(e)}')
+            return render(request, 'companies/company_register.html', context)
     
-    # GET request - show empty form
     return render(request, 'companies/company_register.html')
+
+def company_login(request):
+    """Company login view with strict user type validation"""
+    context = {}
+    
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '').strip()
+        
+        # Preserve username for form repopulation
+        context['username'] = username
+        
+        # Server-side validation for empty fields
+        if not username or not password:
+            if not username and not password:
+                messages.error(request, 'Please enter both username and password')
+            elif not username:
+                messages.error(request, 'Please enter your username')
+            else:
+                messages.error(request, 'Please enter your password')
+            
+            return render(request, 'companies/company_login.html', context)
+        
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            # ✅ STRICT: Check if user is actually a company
+            try:
+                company = Company.objects.get(user=user)
+                
+                if user.is_active:
+                    login(request, user)
+                    messages.success(request, f'Welcome back, {company.company_name}!')
+                    return redirect('companies:company_dashboard')
+                else:
+                    messages.error(request, 'Your account is disabled. Please contact support.')
+                    context['login_error'] = True
+                    
+            except Company.DoesNotExist:
+                # User exists but is NOT a company
+                messages.error(request, 'This account is not registered as a company. Please use the student login.')
+                context['login_error'] = True
+                
+        else:
+            messages.error(request, 'Invalid username or password. Please try again.')
+            context['login_error'] = True
+    
+    return render(request, 'companies/company_login.html', context)
 
 # companies/views.py
 @login_required
 def post_job(request):
-    """Post a new job"""
+    """Post job with company validation"""
+    try:
+        company = Company.objects.get(user=request.user)
+    except Company.DoesNotExist:
+        messages.error(request, 'Access denied. Company profile required.')
+        return redirect('companies:company_login')
+    
     if request.method == 'POST':
         try:
-            company = Company.objects.get(user=request.user)
-            
             job = Job.objects.create(
                 title=request.POST['title'],
                 description=request.POST['description'],
-                company=company,
+                recruiter=request.user,  # Using recruiter field as per your model
                 location=request.POST['location'],
                 salary=request.POST.get('salary', ''),
                 requirements=request.POST.get('requirements', ''),
                 job_type=request.POST.get('job_type', 'full_time'),
-                is_active=True
             )
             
             messages.success(request, f'Job "{job.title}" posted successfully!')
-            return redirect('companies:job_list')
+            return redirect('companies:manage_jobs')
             
-        except Company.DoesNotExist:
-            messages.error(request, 'Company profile not found.')
-            return redirect('companies:company_register')
         except Exception as e:
-            messages.error(request, 'Failed to post job. Please try again.')
+            messages.error(request, f'Failed to post job: {str(e)}')
     
-    try:
-        company = Company.objects.get(user=request.user)
-        return render(request, 'companies/post_job.html', {'company': company})
-    except Company.DoesNotExist:
-        messages.error(request, 'Company profile not found.')
-        return redirect('companies:company_register')
+    return render(request, 'companies/post_job.html', {'company': company})
 
 # companies/views.py
 @login_required
@@ -208,159 +246,138 @@ def manage_jobs(request):
 
 @login_required
 def view_applications(request):
-    """View applications using your current model structure"""
+    """View applications with company validation"""
     try:
         company = Company.objects.get(user=request.user)
-        
-        # Get jobs posted by this user (recruiter)
-        company_jobs = Job.objects.filter(recruiter=request.user)
-        
-        # Get applications for those jobs
-        applications = Application.objects.filter(
-            job__in=company_jobs
-        ).order_by('-applied_on')
-        
-        # Group applications by job
-        jobs_with_applications = []
-        for job in company_jobs:
-            job_applications = applications.filter(job=job)
-            if job_applications.exists():
-                jobs_with_applications.append({
-                    'job': job,
-                    'applications': job_applications,
-                    'application_count': job_applications.count(),
-                    'pending_count': job_applications.filter(status='Pending').count(),
-                    'accepted_count': job_applications.filter(status='Shortlisted').count(),
-                })
-        
-        context = {
-            'company': company,
-            'applications': applications,
-            'jobs_with_applications': jobs_with_applications,
-            'company_jobs': company_jobs,
-            'total_applications': applications.count(),
-            'pending_applications': applications.filter(status='Pending').count(),
-            'accepted_applications': applications.filter(status='Shortlisted').count(),
-            'rejected_applications': applications.filter(status='Rejected').count(),
-        }
-        return render(request, 'companies/view_applications.html', context)
-        
     except Company.DoesNotExist:
-        messages.error(request, 'Company profile not found.')
-        return redirect('companies:company_register')
-
-
-
-def company_login(request):
-    """Company login view with welcome message"""
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        
-        print(f"Login attempt for username: {username}")  # Debug line
-        
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            try:
-                company = Company.objects.get(user=user)
-                messages.success(request, f'Welcome back, {company.company_name}!')
-                print(f"Login successful for {company.company_name}")  # Debug line
-                return redirect('companies:company_dashboard')
-            except Company.DoesNotExist:
-                messages.error(request, 'Company profile not found. Please contact support.')
-                return redirect('companies:company_register')
-        else:
-            messages.error(request, 'Invalid username or password. Please try again.')
-            print("Login failed - invalid credentials")  # Debug line
+        messages.error(request, 'Access denied. Company profile required.')
+        return redirect('companies:company_login')
     
-    return render(request, 'companies/company_login.html')
+    # Get jobs posted by this user (recruiter)
+    company_jobs = Job.objects.filter(recruiter=request.user)
+    
+    # Get applications for those jobs
+    applications = Application.objects.filter(
+        job__in=company_jobs
+    ).order_by('-applied_on')
+    
+    # Group applications by job
+    jobs_with_applications = []
+    for job in company_jobs:
+        job_applications = applications.filter(job=job)
+        if job_applications.exists():
+            jobs_with_applications.append({
+                'job': job,
+                'applications': job_applications,
+                'application_count': job_applications.count(),
+                'pending_count': job_applications.filter(status='Pending').count() if hasattr(Application, 'status') else 0,
+                'accepted_count': job_applications.filter(status='Shortlisted').count() if hasattr(Application, 'status') else 0,
+            })
+    
+    context = {
+        'company': company,
+        'applications': applications,
+        'jobs_with_applications': jobs_with_applications,
+        'company_jobs': company_jobs,
+        'total_applications': applications.count(),
+        'pending_applications': applications.filter(status='Pending').count() if hasattr(Application, 'status') else applications.count(),
+        'accepted_applications': applications.filter(status='Shortlisted').count() if hasattr(Application, 'status') else 0,
+        'rejected_applications': applications.filter(status='Rejected').count() if hasattr(Application, 'status') else 0,
+    }
+    return render(request, 'companies/view_applications.html', context)
+
+
+
 
 @login_required
 def company_dashboard(request):
-    """Company dashboard with welcome message using company name"""
+    """Company dashboard with user type protection"""
     try:
         company = Company.objects.get(user=request.user)
-        print(f"Dashboard loaded for: {company.company_name}")  # Debug line
+        
+        # Get dashboard statistics
+        total_jobs = Job.objects.filter(recruiter=request.user).count()
+        active_jobs = Job.objects.filter(recruiter=request.user, is_active=True).count() if hasattr(Job, 'is_active') else total_jobs
         
         context = {
             'company': company,
             'user': request.user,
+            'total_jobs': total_jobs,
+            'active_jobs': active_jobs,
         }
         return render(request, 'companies/company_dashboard.html', context)
+        
     except Company.DoesNotExist:
-        messages.error(request, 'Company profile not found. Please complete your registration.')
-        return redirect('companies:company_register')
+        messages.error(request, 'Access denied. Company profile required.')
+        return redirect('companies:company_login')
 
 @login_required
 def company_profile(request):
-    """Company profile view"""
+    """Company profile view with protection"""
     try:
         company = Company.objects.get(user=request.user)
         return render(request, 'companies/recruiter_profile.html', {'company': company})
     except Company.DoesNotExist:
-        messages.error(request, 'Company profile not found.')
-        return redirect('companies:company_register')
+        messages.error(request, 'Access denied. Company profile required.')
+        return redirect('companies:company_login')
     
 @login_required
 def manage_jobs(request):
-    """Enhanced job management with activate/deactivate/delete functionality"""
+    """Enhanced job management with company validation"""
     try:
         company = Company.objects.get(user=request.user)
-        jobs = Job.objects.filter(company=company).order_by('-posted_on')
-        
-        # Handle job actions (activate/deactivate/delete)
-        if request.method == 'POST':
-            action = request.POST.get('action')
-            job_id = request.POST.get('job_id')
-            
-            try:
-                job = get_object_or_404(Job, id=job_id, company=company)
-                
-                if action == 'activate':
-                    job.is_active = True
-                    job.save()
-                    messages.success(request, f'Job "{job.title}" activated successfully!')
-                elif action == 'deactivate':
-                    job.is_active = False
-                    job.save()
-                    messages.success(request, f'Job "{job.title}" deactivated successfully!')
-                elif action == 'delete':
-                    job_title = job.title
-                    job.delete()
-                    messages.success(request, f'Job "{job_title}" deleted successfully!')
-                    
-            except Job.DoesNotExist:
-                messages.error(request, 'Job not found.')
-                
-            return redirect('companies:manage_jobs')
-        
-        # Get statistics for each job
-        job_stats = []
-        for job in jobs:
-            applications_count = Application.objects.filter(job=job).count()
-            recent_applications = Application.objects.filter(job=job).order_by('-applied_on')[:3]
-            job_stats.append({
-                'job': job,
-                'applications_count': applications_count,
-                'recent_applications': recent_applications,
-                'days_active': (job.posted_on).days if hasattr(job.posted_on, 'days') else 0
-            })
-        
-        context = {
-            'company': company,
-            'job_stats': job_stats,
-            'total_jobs': jobs.count(),
-            'active_jobs': jobs.filter(is_active=True).count(),
-            'inactive_jobs': jobs.filter(is_active=False).count(),
-            'total_applications': sum([stat['applications_count'] for stat in job_stats])
-        }
-        return render(request, 'companies/manage_jobs.html', context)
-        
     except Company.DoesNotExist:
-        messages.error(request, 'Company profile not found.')
-        return redirect('companies:company_register')
-
+        messages.error(request, 'Access denied. Company profile required.')
+        return redirect('companies:company_login')
+        
+    # Filter jobs by recruiter (which is the company user)
+    jobs = Job.objects.filter(recruiter=request.user).order_by('-posted_on')
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        job_id = request.POST.get('job_id')
+        
+        try:
+            job = get_object_or_404(Job, id=job_id, recruiter=request.user)
+            
+            if action == 'activate' and hasattr(job, 'is_active'):
+                job.is_active = True
+                job.save()
+                messages.success(request, f'Job "{job.title}" activated successfully!')
+            elif action == 'deactivate' and hasattr(job, 'is_active'):
+                job.is_active = False
+                job.save()
+                messages.success(request, f'Job "{job.title}" deactivated successfully!')
+            elif action == 'delete':
+                job_title = job.title
+                job.delete()
+                messages.success(request, f'Job "{job_title}" deleted successfully!')
+                
+        except Job.DoesNotExist:
+            messages.error(request, 'Job not found.')
+            
+        return redirect('companies:manage_jobs')
+    
+    # Get statistics for each job
+    job_stats = []
+    for job in jobs:
+        applications_count = Application.objects.filter(job=job).count()
+        recent_applications = Application.objects.filter(job=job).order_by('-applied_on')[:3]
+        job_stats.append({
+            'job': job,
+            'applications_count': applications_count,
+            'recent_applications': recent_applications,
+        })
+    
+    context = {
+        'company': company,
+        'job_stats': job_stats,
+        'total_jobs': jobs.count(),
+        'active_jobs': jobs.filter(is_active=True).count() if hasattr(Job, 'is_active') else jobs.count(),
+        'inactive_jobs': jobs.count() - jobs.filter(is_active=True).count() if hasattr(Job, 'is_active') else 0,
+        'total_applications': sum([stat['applications_count'] for stat in job_stats])
+    }
+    return render(request, 'companies/manage_jobs.html', context)
 @login_required
 def view_applications(request):
     """View all applications for company jobs with filtering and status management"""
