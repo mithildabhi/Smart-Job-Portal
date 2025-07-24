@@ -4,59 +4,407 @@
 
 {% block content %}
 <style>
+  /* Perfect Page Centering */
+  .main-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 70vh; /* Reduced by 30% from 100vh */
+    padding: 0;
+    margin: 0;
+    
+  }
+
   .auth-container {
-    max-width: 450px;
-    margin: 3rem auto;
+    top: 60px;
+    max-width: 520px;
+    width: 90%;
     background: white;
     border-radius: 20px;
-    padding: 3rem;
+    padding: 1.5rem; /* Reduced from 2.5rem */
     box-shadow: 0 15px 50px rgba(102, 126, 234, 0.15);
     position: relative;
-    overflow: hidden;
+    /* Removed the ::before pseudo-element for top colored line */
   }
-  
-  /* Add your existing CSS styles here */
+
+  /* Text Styling - Compact */
+  .auth-title {
+    text-align: center;
+    font-size: 1.6rem; /* Reduced from 2rem */
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.2rem; /* Reduced spacing */
+  }
+
+  .auth-subtitle {
+    text-align: center;
+    color: #6c757d;
+    margin-bottom: 1.2rem; /* Reduced from 2rem */
+    font-size: 0.85rem; /* Smaller font */
+  }
+
+  /* Compact Form Styling */
+  .form-group {
+    margin-bottom: 0.8rem; /* Reduced from 1.2rem */
+  }
+
+  .form-label {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 0.2rem; /* Reduced spacing */
+    font-size: 0.85rem; /* Smaller font */
+  }
+
+  .form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    padding: 0.5rem 3rem 0.5rem 1rem; /* Reduced padding */
+    font-size: 0.85rem; /* Smaller font */
+    background: #f8f9fa;
+    width: 100%;
+    transition: all 0.3s ease;
+  }
+
+  .form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+    background: white;
+    outline: none;
+  }
+
+  .form-control.error {
+    border-color: #dc3545;
+    animation: shake 0.5s ease-in-out;
+  }
+
+  /* Password Toggle */
+  .password-wrapper {
+    position: relative;
+  }
+
+  .toggle-password {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+    cursor: pointer;
+    font-size: 0.9rem;
+  }
+
+  .toggle-password:hover {
+    color: #667eea;
+  }
+
+  /* Compact Buttons */
+  .btn-auth {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border: none;
+    color: white;
+    padding: 0.6rem 2rem; /* Reduced padding */
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 0.9rem; /* Smaller font */
+    width: 100%;
+    margin-top: 0.4rem; /* Reduced margin */
+    transition: all 0.3s ease;
+  }
+
+  .btn-auth:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  }
+
+  .btn-register {
+    background: transparent;
+    border: 2px solid #667eea;
+    color: #667eea;
+    padding: 0.5rem 1.4rem; /* Reduced padding */
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 0.85rem; /* Smaller font */
+    text-decoration: none;
+    transition: all 0.3s ease;
+  }
+
+  .btn-register:hover {
+    background: #667eea;
+    color: white;
+    transform: translateY(-1px);
+  }
+
+  /* Compact Links and Sections */
+  .forgot-password {
+    text-align: center;
+    margin-top: 0.8rem; /* Reduced spacing */
+  }
+
+  .forgot-password a {
+    color: #667eea;
+    text-decoration: none;
+    font-size: 0.8rem; /* Smaller font */
+  }
+
+  .register-section {
+    text-align: center;
+    margin-top: 1rem; /* Reduced spacing */
+    padding-top: 1rem; /* Reduced spacing */
+    border-top: 1px solid #e9ecef;
+  }
+
+  .register-section p {
+    margin-bottom: 0.5rem;
+    font-size: 0.8rem; /* Smaller font */
+    color: #6c757d;
+  }
+
+  /* Cross-login link */
+  .cross-login {
+    text-align: center;
+    margin-top: 0.6rem;
+  }
+
+  .cross-login small {
+    font-size: 0.75rem; /* Smaller text */
+  }
+
+  /* Compact Error Popup */
+  .error-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border-radius: 20px;
+    padding: 1.5rem; /* Reduced padding */
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+    z-index: 1050;
+    text-align: center;
+    min-width: 280px; /* Smaller popup */
+  }
+
+  .popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 1049;
+  }
+
+  /* Animations */
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+  }
+
+  /* Mobile Responsive */
+  @media (max-width: 576px) {
+    .auth-container {
+      margin: 0.2rem;
+      padding: 1.2rem;
+      max-width: 95%;
+    }
+    
+    .main-content {
+      min-height: 75vh; /* Slightly more height on mobile */
+    }
+  }
+
+  /* Very compact for short screens */
+  @media (max-height: 600px) {
+    .main-content {
+      min-height: 65vh;
+    }
+    
+    .auth-container {
+      padding: 1rem;
+    }
+    
+    .form-group {
+      margin-bottom: 0.6rem;
+    }
+  }
+
+  /* Hide Django messages */
+  .alert { display: none; }
 </style>
 
-<div class="auth-container">
-  <div class="welcome-back">
-    <i class="fas fa-building"></i>
-    <h3 style="color: #2c3e50; margin: 0;">Welcome Back!</h3>
-  </div>
-
-  <h2 class="auth-title">Company Login</h2>
-  <p class="auth-subtitle">Access your recruiter dashboard</p>
-  
-  <form method="post" id="loginForm">
-    {% csrf_token %}
+<div class="main-content">
+  <div class="auth-container">
+    <!-- Title -->
+    <h2 class="auth-title">Company Login</h2>
+    <p class="auth-subtitle">Access your company dashboard and manage jobs</p>
     
-    <div class="form-group">
-      <label for="username" class="form-label">
-        <i class="fas fa-building me-2"></i>Company Username
-      </label>
-      <input type="text" class="form-control" id="username" name="username" 
-             placeholder="Enter company username" required>
+    <!-- Django Messages (Hidden) -->
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert d-none" data-message="{{ message }}"></div>
+      {% endfor %}
+    {% endif %}
+    
+    <!-- Login Form -->
+    <form method="post" id="loginForm">
+      {% csrf_token %}
+      
+      <!-- Username Field -->
+      <div class="form-group">
+        <label for="username" class="form-label">
+          <i class="fas fa-building me-2"></i>Username
+        </label>
+        <input type="text" class="form-control" id="username" name="username" 
+               placeholder="Enter your company username" required>
+      </div>
+      
+      <!-- Password Field -->
+      <div class="form-group">
+        <label for="password" class="form-label">
+          <i class="fas fa-lock me-2"></i>Password
+        </label>
+        <div class="password-wrapper">
+          <input type="password" class="form-control" id="password" name="password" 
+                 placeholder="Enter your password" required>
+          <i class="fas fa-eye toggle-password" id="togglePassword"></i>
+        </div>
+      </div>
+      
+      <!-- Login Button -->
+      <button type="submit" class="btn btn-auth" id="loginBtn">
+        <i class="fas fa-sign-in-alt me-2"></i>Access Company Dashboard
+      </button>
+    </form>
+    
+    <!-- Forgot Password Link -->
+    <div class="forgot-password">
+      <a href="#" onclick="alert('Feature coming soon!')">
+        <i class="fas fa-key me-1"></i>Forgot your password?
+      </a>
     </div>
     
-    <div class="form-group">
-      <label for="password" class="form-label">
-        <i class="fas fa-lock me-2"></i>Password
-      </label>
-      <input type="password" class="form-control" id="password" name="password" 
-             placeholder="Enter your password" required>
+    <!-- Register Section -->
+    <div class="register-section">
+      <p><i class="fas fa-question-circle me-2"></i>Need a company account?</p>
+      <a href="{% url 'companies:company_register' %}" class="btn-register">
+        <i class="fas fa-building me-2"></i>Register Your Company
+      </a>
     </div>
     
-    <button type="submit" class="btn btn-auth">
-      <i class="fas fa-sign-in-alt me-2"></i>Access Dashboard
-    </button>
-  </form>
-  
-  <div class="register-link">
-    <p><i class="fas fa-question-circle me-2"></i>Don't have an account yet?</p>
-    <a href="{% url 'companies:company_register' %}" class="btn-register">
-      <i class="fas fa-building me-2"></i>Create Company Account
-    </a>
+    <!-- Cross-Login Link -->
+    <div class="cross-login">
+      <small class="text-muted">
+        Looking for student login? <a href="{% url 'students:student_login' %}" style="color: #667eea;">Click here</a>
+      </small>
+    </div>
   </div>
 </div>
+
+<!-- Error Popup -->
+<div id="errorPopup" style="display: none;">
+  <div class="popup-overlay" onclick="closeErrorPopup()"></div>
+  <div class="error-popup">
+    <div style="font-size: 2.5rem; color: #dc3545; margin-bottom: 0.6rem;">
+      <i class="fas fa-exclamation-triangle"></i>
+    </div>
+    <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;">Login Failed!</h3>
+    <p style="font-size: 0.85rem; margin-bottom: 1rem;">Invalid company credentials. Please check your username and password.</p>
+    <button onclick="closeErrorPopup()" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 0.6rem 1.5rem; border-radius: 25px; cursor: pointer; font-size: 0.85rem;">
+      Try Again
+    </button>
+  </div>
+</div>
+
+<script>
+// Show error popup
+function showErrorPopup() {
+    document.getElementById('errorPopup').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+// Close error popup
+function closeErrorPopup() {
+    document.getElementById('errorPopup').style.display = 'none';
+    document.body.style.overflow = '';
+    document.getElementById('password').value = '';
+    document.getElementById('password').focus();
+}
+
+// When page loads
+document.addEventListener('DOMContentLoaded', function() {
+    const username = document.getElementById('username');
+    const password = document.getElementById('password');
+    const togglePassword = document.getElementById('togglePassword');
+    const loginForm = document.getElementById('loginForm');
+    const loginBtn = document.getElementById('loginBtn');
+
+    // Check for login errors
+    const hasError = {{ login_error|yesno:"true,false" }};
+    const hasMessages = {% if messages %}true{% else %}false{% endif %};
+    
+    // Show popup if there's an error and fields have values
+    if ((hasError || hasMessages) && username.value && password.value) {
+        showErrorPopup();
+        username.classList.add('error');
+        password.classList.add('error');
+        
+        // Remove error styling after 3 seconds
+        setTimeout(() => {
+            username.classList.remove('error');
+            password.classList.remove('error');
+        }, 3000);
+    }
+
+    // Password toggle functionality
+    togglePassword.addEventListener('click', function() {
+        const type = password.type === 'password' ? 'text' : 'password';
+        password.type = type;
+        this.classList.toggle('fa-eye');
+        this.classList.toggle('fa-eye-slash');
+    });
+
+    // Form validation
+    loginForm.addEventListener('submit', function(e) {
+        if (!username.value.trim() || !password.value.trim()) {
+            e.preventDefault();
+            
+            if (!username.value.trim()) {
+                username.classList.add('error');
+                username.focus();
+            }
+            if (!password.value.trim()) {
+                password.classList.add('error');
+            }
+            
+            setTimeout(() => {
+                username.classList.remove('error');
+                password.classList.remove('error');
+            }, 3000);
+            
+            return false;
+        }
+        
+        // Show loading state
+        loginBtn.disabled = true;
+        loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Logging in...';
+    });
+
+    // Remove error styling when typing
+    username.addEventListener('input', () => username.classList.remove('error'));
+    password.addEventListener('input', () => password.classList.remove('error'));
+
+    // Close popup with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && document.getElementById('errorPopup').style.display === 'block') {
+            closeErrorPopup();
+        }
+    });
+
+    // Focus on username field
+    if (!username.value) username.focus();
+});
+</script>
 
 {% endblock %}

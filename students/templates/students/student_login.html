@@ -4,15 +4,23 @@
 
 {% block content %}
 <style>
+  /* Main Container Styling */
+  .main-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 1rem 0;
+  }
+
   .auth-container {
-    max-width: 450px;
-    margin: 3rem auto;
+    max-width: 520px;
+    width: 90%;
     background: white;
     border-radius: 20px;
-    padding: 3rem;
+    padding: 2.5rem;
     box-shadow: 0 15px 50px rgba(102, 126, 234, 0.15);
     position: relative;
-    overflow: hidden;
   }
 
   .auth-container::before {
@@ -24,46 +32,47 @@
     height: 5px;
     background: linear-gradient(135deg, #667eea, #764ba2);
   }
-  
+
+  /* Text Styling */
   .auth-title {
     text-align: center;
-    font-size: 2.2rem;
+    font-size: 2rem;
     font-weight: 700;
     background: linear-gradient(135deg, #667eea, #764ba2);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    background-clip: text;
     margin-bottom: 0.5rem;
   }
 
   .auth-subtitle {
     text-align: center;
     color: #6c757d;
-    margin-bottom: 3rem;
-    font-size: 1rem;
+    margin-bottom: 2rem;
+    font-size: 0.95rem;
   }
-  
+
+  /* Form Styling */
   .form-group {
-    margin-bottom: 1.5rem;
-    position: relative;
+    margin-bottom: 1.2rem;
   }
 
   .form-label {
     font-weight: 600;
     color: #2c3e50;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.4rem;
+    font-size: 0.95rem;
   }
 
   .form-control {
     border: 2px solid #e9ecef;
     border-radius: 10px;
-    padding: 0.75rem 3rem 0.75rem 1rem; /* Fixed padding syntax */
-    font-size: 1rem;
-    transition: all 0.3s ease;
+    padding: 0.65rem 3rem 0.65rem 1rem;
+    font-size: 0.95rem;
     background: #f8f9fa;
     width: 100%;
+    transition: all 0.3s ease;
   }
-  
+
   .form-control:focus {
     border-color: #667eea;
     box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
@@ -73,98 +82,56 @@
 
   .form-control.error {
     border-color: #dc3545;
-    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.15);
     animation: shake 0.5s ease-in-out;
   }
 
-  .password-input-wrapper {
+  /* Password Toggle */
+  .password-wrapper {
     position: relative;
   }
 
-  .input-icon {
+  .toggle-password {
     position: absolute;
     right: 15px;
     top: 50%;
     transform: translateY(-50%);
     color: #6c757d;
     cursor: pointer;
-    font-size: 1.1rem;
-    transition: color 0.3s ease;
-    z-index: 10;
+    font-size: 1rem;
   }
 
-  .input-icon:hover {
+  .toggle-password:hover {
     color: #667eea;
   }
-  
+
+  /* Buttons */
   .btn-auth {
     background: linear-gradient(135deg, #667eea, #764ba2);
     border: none;
     color: white;
-    padding: 0.9rem 2rem;
+    padding: 0.8rem 2rem;
     border-radius: 25px;
     font-weight: 600;
-    font-size: 1.1rem;
+    font-size: 1rem;
     width: 100%;
+    margin-top: 0.8rem;
     transition: all 0.3s ease;
-    margin-top: 1rem;
   }
-  
+
   .btn-auth:hover {
     transform: translateY(-3px);
     box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
-    color: white;
-  }
-
-  .btn-auth:active {
-    transform: translateY(-1px);
-  }
-
-  .btn-auth:disabled {
-    background: #6c757d;
-    transform: none;
-    box-shadow: none;
-    cursor: not-allowed;
-  }
-  
-  .forgot-password {
-    text-align: center;
-    margin-top: 1.5rem;
-  }
-
-  .forgot-password a {
-    color: #667eea;
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.3s ease;
-  }
-
-  .forgot-password a:hover {
-    color: #764ba2;
-    text-decoration: underline;
-  }
-  
-  .register-link {
-    text-align: center;
-    margin-top: 2rem;
-    padding-top: 2rem;
-    border-top: 1px solid #e9ecef;
-  }
-
-  .register-link p {
-    margin-bottom: 1rem;
-    color: #6c757d;
   }
 
   .btn-register {
     background: transparent;
     border: 2px solid #667eea;
     color: #667eea;
-    padding: 0.75rem 2rem;
+    padding: 0.65rem 1.8rem;
     border-radius: 25px;
     font-weight: 600;
+    font-size: 0.95rem;
     text-decoration: none;
-    display: inline-block;
     transition: all 0.3s ease;
   }
 
@@ -172,27 +139,28 @@
     background: #667eea;
     color: white;
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
   }
 
-  .welcome-back {
-    background: linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%);
-    border-radius: 15px;
-    padding: 1.5rem;
+  /* Links and Sections */
+  .forgot-password {
     text-align: center;
-    margin-bottom: 2rem;
+    margin-top: 1.2rem;
   }
 
-  .welcome-back i {
-    font-size: 3rem;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin-bottom: 1rem;
+  .forgot-password a {
+    color: #667eea;
+    text-decoration: none;
+    font-size: 0.9rem;
   }
 
-  /* Custom Error Popup Styles */
+  .register-section {
+    text-align: center;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e9ecef;
+  }
+
+  /* Error Popup */
   .error-popup {
     position: fixed;
     top: 50%;
@@ -200,12 +168,11 @@
     transform: translate(-50%, -50%);
     background: white;
     border-radius: 20px;
-    padding: 2.5rem;
+    padding: 2rem;
     box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
     z-index: 1050;
-    min-width: 350px;
     text-align: center;
-    max-width: 90vw;
+    min-width: 320px;
   }
 
   .popup-overlay {
@@ -216,393 +183,192 @@
     height: 100%;
     background: rgba(0, 0, 0, 0.6);
     z-index: 1049;
-    backdrop-filter: blur(3px);
-  }
-
-  .popup-icon {
-    font-size: 4rem;
-    color: #dc3545;
-    margin-bottom: 1.5rem;
-    animation: bounce 0.6s ease-in-out;
-  }
-
-  .popup-title {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: #2c3e50;
-    margin-bottom: 1rem;
-  }
-
-  .popup-message {
-    color: #6c757d;
-    margin-bottom: 2rem;
-    line-height: 1.6;
-    font-size: 1.1rem;
-  }
-
-  .popup-button {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-    border: none;
-    padding: 0.9rem 2.5rem;
-    border-radius: 25px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 1.1rem;
-  }
-
-  .popup-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
   }
 
   /* Animations */
-  .fade-in {
-    animation: fadeIn 0.4s ease-out;
-  }
-
-  .fade-out {
-    animation: fadeOut 0.3s ease-in;
-  }
-
-  @keyframes fadeIn {
-    from { 
-      opacity: 0; 
-      transform: translate(-50%, -60%) scale(0.9); 
-    }
-    to { 
-      opacity: 1; 
-      transform: translate(-50%, -50%) scale(1); 
-    }
-  }
-
-  @keyframes fadeOut {
-    from { 
-      opacity: 1; 
-      transform: translate(-50%, -50%) scale(1); 
-    }
-    to { 
-      opacity: 0; 
-      transform: translate(-50%, -60%) scale(0.9); 
-    }
-  }
-
   @keyframes shake {
     0%, 100% { transform: translateX(0); }
     25% { transform: translateX(-8px); }
     75% { transform: translateX(8px); }
   }
 
-  @keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-  }
-
-  /* Hide default Django messages */
-  .alert {
-    display: none;
-  }
-
-  /* Responsive Design */
+  /* Mobile Responsive */
   @media (max-width: 576px) {
     .auth-container {
-      margin: 1rem;
+      margin: 0.5rem;
       padding: 2rem 1.5rem;
-    }
-    
-    .auth-title {
-      font-size: 1.8rem;
-    }
-
-    .error-popup {
-      padding: 2rem;
-      min-width: 300px;
-    }
-
-    .popup-title {
-      font-size: 1.5rem;
+      max-width: 95%;
     }
   }
+
+  /* Hide Django messages */
+  .alert { display: none; }
 </style>
 
-<div class="auth-container">
-  <!-- Welcome Section -->
-
-
-  <h2 class="auth-title">Student Login</h2>
-  <p class="auth-subtitle">Sign in to access your dashboard</p>
-  
-  <!-- Debug info (remove after testing) -->
-  {% comment %} <div style="display: none;">
-    Login Error: {{ login_error|default:"False" }}
-  </div> 
-<!-- Enhanced test button -->
- <button type="button" onclick="testPopup()" style="margin: 10px; padding: 10px; background: red; color: white; border: none; border-radius: 5px;">
-  Test Popup
-</button> {% endcomment %}
-
-<script>
-function testPopup() {
-    console.log('Test button clicked');
-    const popup = document.querySelector('#errorPopup');
-    if (popup) {
-        console.log('Popup element found, showing...');
-        showErrorPopup();
-    } else {
-        console.log('ERROR: Popup element not found!');
-        alert('Popup element not found in DOM');
-    }
-}
-</script>
-
-  <!-- Hidden Django Messages -->
-  {% if messages %}
-    {% for message in messages %}
-      <div class="alert alert-{{ message.tags }} d-none" data-message="{{ message }}"></div>
-    {% endfor %}
-  {% endif %}
-  
-  <!-- Login Form -->
-  <form method="post" id="loginForm">
-    {% csrf_token %}
+<div class="main-content">
+  <div class="auth-container">
+    <!-- Title -->
+    <h2 class="auth-title">Student Login</h2>
+    <p class="auth-subtitle">Sign in to access your dashboard</p>
     
-    <div class="form-group">
-      <label for="username" class="form-label">
-        <i class="fas fa-user me-2"></i>Username
-      </label>
-      <input type="text" class="form-control" id="username" name="username" 
-             placeholder="Enter your username" 
-             value="{{ username|default:'' }}" required>
-    </div>
+    <!-- Django Messages (Hidden) -->
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert d-none" data-message="{{ message }}"></div>
+      {% endfor %}
+    {% endif %}
     
-    <div class="form-group">
-      <label for="password" class="form-label">
-        <i class="fas fa-lock me-2"></i>Password
-      </label>
-      <div class="password-input-wrapper">
-        <input type="password" class="form-control" id="password" name="password" 
-               placeholder="Enter your password" required>
-        <i class="fas fa-eye input-icon" id="togglePassword" title="Show/Hide Password"></i>
+    <!-- Login Form -->
+    <form method="post" id="loginForm">
+      {% csrf_token %}
+      
+      <!-- Username Field -->
+      <div class="form-group">
+        <label for="username" class="form-label">
+          <i class="fas fa-user me-2"></i>Username
+        </label>
+        <input type="text" class="form-control" id="username" name="username" 
+               placeholder="Enter your username" required>
       </div>
+      
+      <!-- Password Field -->
+      <div class="form-group">
+        <label for="password" class="form-label">
+          <i class="fas fa-lock me-2"></i>Password
+        </label>
+        <div class="password-wrapper">
+          <input type="password" class="form-control" id="password" name="password" 
+                 placeholder="Enter your password" required>
+          <i class="fas fa-eye toggle-password" id="togglePassword"></i>
+        </div>
+      </div>
+      
+      <!-- Login Button -->
+      <button type="submit" class="btn btn-auth" id="loginBtn">
+        <i class="fas fa-sign-in-alt me-2"></i>Login to Dashboard
+      </button>
+    </form>
+    
+    <!-- Forgot Password Link -->
+    <div class="forgot-password">
+      <a href="#" onclick="alert('Feature coming soon!')">
+        <i class="fas fa-key me-1"></i>Forgot your password?
+      </a>
     </div>
     
-    <button type="submit" class="btn btn-auth" id="loginBtn">
-      <i class="fas fa-sign-in-alt me-2"></i>Login to Dashboard
-    </button>
-  </form>
-  
-  <!-- Forgot Password -->
-  <div class="forgot-password">
-    <a href="#" onclick="alert('Feature coming soon!')">
-      <i class="fas fa-key me-1"></i>Forgot your password?
-    </a>
-  </div>
-  
-  <!-- Register Link -->
-  <div class="register-link">
-    <p><i class="fas fa-question-circle me-2"></i>Don't have an account yet?</p>
-    <a href="{% url 'students:student_register' %}" class="btn-register">
-      <i class="fas fa-user-plus me-2"></i>Create Student Account
-    </a>
+    <!-- Register Section -->
+    <div class="register-section">
+      <p><i class="fas fa-question-circle me-2"></i>Don't have an account yet?</p>
+      <a href="{% url 'students:student_register' %}" class="btn-register">
+        <i class="fas fa-user-plus me-2"></i>Create Student Account
+      </a>
+    </div>
   </div>
 </div>
 
-<!-- Custom Error Popup -->
+<!-- Error Popup -->
 <div id="errorPopup" style="display: none;">
   <div class="popup-overlay" onclick="closeErrorPopup()"></div>
-  <div class="error-popup fade-in">
-    <div class="popup-icon">
+  <div class="error-popup">
+    <div style="font-size: 3.5rem; color: #dc3545; margin-bottom: 1rem;">
       <i class="fas fa-exclamation-triangle"></i>
     </div>
-    <div class="popup-title">Login Failed!</div>
-    <div class="popup-message">
-      Invalid username or password. Please check your credentials and try again.
-    </div>
-    <button class="popup-button" onclick="closeErrorPopup()">
-      <i class="fas fa-check me-2"></i>Try Again
+    <h3>Login Failed!</h3>
+    <p>Invalid username or password. Please try again.</p>
+    <button onclick="closeErrorPopup()" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 0.8rem 2rem; border-radius: 25px; cursor: pointer;">
+      Try Again
     </button>
   </div>
 </div>
 
 <script>
-// Define functions globally first
-window.showErrorPopup = function() {
-    const errorPopup = document.querySelector('#errorPopup');
-    if (errorPopup) {
-        console.log('Showing popup');
-        errorPopup.style.display = 'block';
-        document.body.style.overflow = 'hidden';
-    } else {
-        console.log('Error: popup element not found');
-    }
+// Show error popup
+function showErrorPopup() {
+    document.getElementById('errorPopup').style.display = 'block';
+    document.body.style.overflow = 'hidden';
 }
 
-window.closeErrorPopup = function() {
-    const errorPopup = document.querySelector('#errorPopup');
-    if (errorPopup) {
-        const popup = errorPopup.querySelector('.error-popup');
-        if (popup) {
-            popup.classList.add('fade-out');
-            
-            setTimeout(() => {
-                errorPopup.style.display = 'none';
-                document.body.style.overflow = '';
-                popup.classList.remove('fade-out');
-                
-                // Clear password and focus
-                const password = document.querySelector('#password');
-                if (password) {
-                    password.value = '';
-                    password.focus();
-                }
-            }, 300);
-        }
-    }
+// Close error popup
+function closeErrorPopup() {
+    document.getElementById('errorPopup').style.display = 'none';
+    document.body.style.overflow = '';
+    document.getElementById('password').value = '';
+    document.getElementById('password').focus();
 }
 
+// When page loads
 document.addEventListener('DOMContentLoaded', function() {
-    const togglePassword = document.querySelector('#togglePassword');
-    const password = document.querySelector('#password');
-    const username = document.querySelector('#username');
-    const loginForm = document.querySelector('#loginForm');
-    const loginBtn = document.querySelector('#loginBtn');
+    const username = document.getElementById('username');
+    const password = document.getElementById('password');
+    const togglePassword = document.getElementById('togglePassword');
+    const loginForm = document.getElementById('loginForm');
+    const loginBtn = document.getElementById('loginBtn');
 
-    // Check for login errors from Django
-    const hasLoginError = {{ login_error|yesno:"true,false" }};
-    const messageCount = {% if messages %}{{ messages|length }}{% else %}0{% endif %};
+    // Check for login errors
+    const hasError = {{ login_error|yesno:"true,false" }};
+    const hasMessages = {% if messages %}true{% else %}false{% endif %};
     
-    console.log('Login error:', hasLoginError);
-    console.log('Messages:', messageCount);
-
-    // ENHANCED: Only show popup if there's an error AND fields are not empty
-    function shouldShowPopup() {
-        const usernameValue = username ? username.value.trim() : '';
-        const passwordValue = password ? password.value.trim() : '';
-        
-        // Don't show popup if either field is empty
-        if (!usernameValue || !passwordValue) {
-            console.log('Fields are empty, not showing popup');
-            return false;
-        }
-        
-        // Show popup only if there's a login error and both fields have values
-        return hasLoginError || messageCount > 0;
-    }
-
-    // Show popup only if fields are filled and there's an error
-    if (shouldShowPopup()) {
+    // Show popup if there's an error and fields have values
+    if ((hasError || hasMessages) && username.value && password.value) {
         showErrorPopup();
+        username.classList.add('error');
+        password.classList.add('error');
         
-        // Add error styling
-        if (username) username.classList.add('error');
-        if (password) password.classList.add('error');
-        
-        // Remove styling after 3 seconds
+        // Remove error styling after 3 seconds
         setTimeout(() => {
-            if (username) username.classList.remove('error');
-            if (password) password.classList.remove('error');
+            username.classList.remove('error');
+            password.classList.remove('error');
         }, 3000);
     }
 
     // Password toggle functionality
-    if (togglePassword && password) {
-        togglePassword.addEventListener('click', function (e) {
+    togglePassword.addEventListener('click', function() {
+        const type = password.type === 'password' ? 'text' : 'password';
+        password.type = type;
+        this.classList.toggle('fa-eye');
+        this.classList.toggle('fa-eye-slash');
+    });
+
+    // Form validation
+    loginForm.addEventListener('submit', function(e) {
+        if (!username.value.trim() || !password.value.trim()) {
             e.preventDefault();
             
-            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
-            password.setAttribute('type', type);
-            
-            this.classList.toggle('fa-eye');
-            this.classList.toggle('fa-eye-slash');
-            
-            // Update title attribute for accessibility
-            this.setAttribute('title', type === 'password' ? 'Show Password' : 'Hide Password');
-        });
-    }
-
-    // Enhanced form submission with validation
-    if (loginForm && loginBtn) {
-        loginForm.addEventListener('submit', function(e) {
-            const usernameValue = username.value.trim();
-            const passwordValue = password.value.trim();
-            
-            // Client-side validation - don't submit if fields are empty
-            if (!usernameValue || !passwordValue) {
-                e.preventDefault();
-                
-                // Add error styling to empty fields
-                if (!usernameValue) {
-                    username.classList.add('error');
-                    if (!username.placeholder) username.placeholder = 'Username is required';
-                }
-                if (!passwordValue) {
-                    password.classList.add('error');
-                    if (!password.placeholder) password.placeholder = 'Password is required';
-                }
-                
-                // Focus on first empty field
-                if (!usernameValue) {
-                    username.focus();
-                } else if (!passwordValue) {
-                    password.focus();
-                }
-                
-                // Remove error styling after 3 seconds
-                setTimeout(() => {
-                    username.classList.remove('error');
-                    password.classList.remove('error');
-                }, 3000);
-                
-                return false;
+            if (!username.value.trim()) {
+                username.classList.add('error');
+                username.focus();
+            }
+            if (!password.value.trim()) {
+                password.classList.add('error');
             }
             
-            // If validation passes, show loading state
-            loginBtn.disabled = true;
-            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Logging in...';
-        });
-    }
+            setTimeout(() => {
+                username.classList.remove('error');
+                password.classList.remove('error');
+            }, 3000);
+            
+            return false;
+        }
+        
+        // Show loading state
+        loginBtn.disabled = true;
+        loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Logging in...';
+    });
 
-    // Remove error styling when user starts typing
-    if (username) {
-        username.addEventListener('input', function() {
-            this.classList.remove('error');
-            if (this.placeholder === 'Username is required') {
-                this.placeholder = 'Enter your username';
-            }
-        });
-    }
-
-    if (password) {
-        password.addEventListener('input', function() {
-            this.classList.remove('error');
-            if (this.placeholder === 'Password is required') {
-                this.placeholder = 'Enter your password';
-            }
-        });
-    }
+    // Remove error styling when typing
+    username.addEventListener('input', () => username.classList.remove('error'));
+    password.addEventListener('input', () => password.classList.remove('error'));
 
     // Close popup with Escape key
     document.addEventListener('keydown', function(e) {
-        const errorPopup = document.querySelector('#errorPopup');
-        if (e.key === 'Escape' && errorPopup && errorPopup.style.display === 'block') {
+        if (e.key === 'Escape' && document.getElementById('errorPopup').style.display === 'block') {
             closeErrorPopup();
         }
     });
 
-    // Auto-focus on username field if empty
-    if (username && !username.value) {
-        username.focus();
-    }
+    // Focus on username field
+    if (!username.value) username.focus();
 });
 </script>
-
-
-
-<!-- Debug test (add after your script tag) -->
-{% comment %} <script>
-console.log('showErrorPopup function exists:', typeof showErrorPopup);
-console.log('errorPopup element exists:', document.querySelector('#errorPopup'));
-</script> {% endcomment %}
 
 {% endblock %}
