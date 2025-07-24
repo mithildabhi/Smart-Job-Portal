@@ -24,13 +24,13 @@ from django.contrib.auth import views as auth_views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('jobs.urls')),
-    path('accounts/login/', auth_views.LoginView.as_view(template_name='jobs/login.html'), name='login'),
-    path('accounts/logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
+    # Remove or redirect generic login since you have specific ones
+    # path('accounts/login/', auth_views.LoginView.as_view(template_name='jobs/login.html'), name='login'),
+    # path('accounts/logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
     path('students/', include('students.urls')),
     path('companies/', include('companies.urls')),
-    
-    
-
 ]
+
+
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,6 +1,62 @@
 {% extends 'base.html' %}
-{% block title %}About Us{% endblock %}
+
+{% block title %}Company Login - Smart Job Portal{% endblock %}
+
 {% block content %}
-  <h2>About Smart Job Portal</h2>
-  <p>This platform connects students and companies for job opportunities.</p>
+<style>
+  .auth-container {
+    max-width: 450px;
+    margin: 3rem auto;
+    background: white;
+    border-radius: 20px;
+    padding: 3rem;
+    box-shadow: 0 15px 50px rgba(102, 126, 234, 0.15);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  /* Add your existing CSS styles here */
+</style>
+
+<div class="auth-container">
+  <div class="welcome-back">
+    <i class="fas fa-building"></i>
+    <h3 style="color: #2c3e50; margin: 0;">Welcome Back!</h3>
+  </div>
+
+  <h2 class="auth-title">Company Login</h2>
+  <p class="auth-subtitle">Access your recruiter dashboard</p>
+  
+  <form method="post" id="loginForm">
+    {% csrf_token %}
+    
+    <div class="form-group">
+      <label for="username" class="form-label">
+        <i class="fas fa-building me-2"></i>Company Username
+      </label>
+      <input type="text" class="form-control" id="username" name="username" 
+             placeholder="Enter company username" required>
+    </div>
+    
+    <div class="form-group">
+      <label for="password" class="form-label">
+        <i class="fas fa-lock me-2"></i>Password
+      </label>
+      <input type="password" class="form-control" id="password" name="password" 
+             placeholder="Enter your password" required>
+    </div>
+    
+    <button type="submit" class="btn btn-auth">
+      <i class="fas fa-sign-in-alt me-2"></i>Access Dashboard
+    </button>
+  </form>
+  
+  <div class="register-link">
+    <p>Don't have a company account?</p>
+    <a href="{% url 'companies:company_register' %}" class="btn-register">
+      Register Company
+    </a>
+  </div>
+</div>
+
 {% endblock %}
