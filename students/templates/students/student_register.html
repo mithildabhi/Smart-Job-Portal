@@ -29,6 +29,16 @@
     box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
   }
   
+  .form-control.error {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+  }
+  
+  .form-control.success {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+  }
+  
   .btn-auth {
     background: linear-gradient(135deg, #667eea, #764ba2);
     border: none;
@@ -45,6 +55,105 @@
     box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
     color: white;
   }
+
+  .btn-auth:disabled {
+    background: #6c757d;
+    transform: none;
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+
+  .password-match-indicator {
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    font-weight: 500;
+  }
+
+  .password-match-indicator.match {
+    color: #28a745;
+  }
+
+  .password-match-indicator.no-match {
+    color: #dc3545;
+  }
+
+  /* Custom popup styles */
+  .custom-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    z-index: 1050;
+    min-width: 300px;
+    text-align: center;
+  }
+
+  .popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1049;
+  }
+
+  .popup-icon {
+    font-size: 3rem;
+    color: #dc3545;
+    margin-bottom: 1rem;
+  }
+
+  .popup-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 1rem;
+  }
+
+  .popup-message {
+    color: #6c757d;
+    margin-bottom: 2rem;
+    line-height: 1.5;
+  }
+
+  .popup-button {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .popup-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+  }
+
+  .fade-in {
+    animation: fadeIn 0.3s ease-in;
+  }
+
+  .fade-out {
+    animation: fadeOut 0.3s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translate(-50%, -60%); }
+    to { opacity: 1; transform: translate(-50%, -50%); }
+  }
+
+  @keyframes fadeOut {
+    from { opacity: 1; transform: translate(-50%, -50%); }
+    to { opacity: 0; transform: translate(-50%, -60%); }
+  }
 </style>
 
 <div class="auth-container">
@@ -59,31 +168,35 @@
     {% endfor %}
   {% endif %}
   
-  <form method="post">
+  <form method="post" id="registrationForm">
     {% csrf_token %}
     <div class="row">
       <div class="col-md-6">
         <div class="mb-3">
           <label for="first_name" class="form-label">First Name</label>
-          <input type="text" class="form-control" id="first_name" name="first_name" required>
+          <input type="text" class="form-control" id="first_name" name="first_name" 
+                 value="{{ request.POST.first_name|default:'' }}" required>
         </div>
       </div>
       <div class="col-md-6">
         <div class="mb-3">
           <label for="last_name" class="form-label">Last Name</label>
-          <input type="text" class="form-control" id="last_name" name="last_name" required>
+          <input type="text" class="form-control" id="last_name" name="last_name" 
+                 value="{{ request.POST.last_name|default:'' }}" required>
         </div>
       </div>
     </div>
     
     <div class="mb-3">
       <label for="username" class="form-label">Username</label>
-      <input type="text" class="form-control" id="username" name="username" required>
+      <input type="text" class="form-control" id="username" name="username" 
+             value="{{ request.POST.username|default:'' }}" required>
     </div>
     
     <div class="mb-3">
       <label for="email" class="form-label">Email Address</label>
-      <input type="email" class="form-control" id="email" name="email" required>
+      <input type="email" class="form-control" id="email" name="email" 
+             value="{{ request.POST.email|default:'' }}" required>
     </div>
     
     <div class="mb-3">
@@ -94,9 +207,10 @@
     <div class="mb-3">
       <label for="password2" class="form-label">Confirm Password</label>
       <input type="password" class="form-control" id="password2" name="password2" required>
+      <div id="passwordMatchIndicator" class="password-match-indicator" style="display: none;"></div>
     </div>
     
-    <button type="submit" class="btn btn-auth">
+    <button type="submit" class="btn btn-auth" id="submitBtn">
       <i class="fas fa-user-plus me-2"></i>Register
     </button>
   </form>
@@ -105,4 +219,157 @@
     <p>Already have an account? <a href="{% url 'students:student_login' %}">Login here</a></p>
   </div>
 </div>
+
+<!-- Custom Popup HTML -->
+<div id="passwordMismatchPopup" style="display: none;">
+  <div class="popup-overlay" onclick="closePopup()"></div>
+  <div class="custom-popup fade-in">
+    <div class="popup-icon">
+      <i class="fas fa-exclamation-triangle"></i>
+    </div>
+    <div class="popup-title">Password Mismatch!</div>
+    <div class="popup-message">
+      The passwords you entered do not match. Please make sure both password fields contain exactly the same password.
+    </div>
+    <button class="popup-button" onclick="closePopup()">
+      <i class="fas fa-check me-2"></i>Got it!
+    </button>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('registrationForm');
+    const password1 = document.getElementById('password1');
+    const password2 = document.getElementById('password2');
+    const submitBtn = document.getElementById('submitBtn');
+    const indicator = document.getElementById('passwordMatchIndicator');
+    const popup = document.getElementById('passwordMismatchPopup');
+
+    let passwordsMatch = false;
+
+    // Function to check password match
+    function checkPasswordMatch() {
+        const pass1 = password1.value;
+        const pass2 = password2.value;
+
+        if (pass2.length === 0) {
+            // Hide indicator when confirm password is empty
+            indicator.style.display = 'none';
+            password2.classList.remove('error', 'success');
+            passwordsMatch = false;
+            return;
+        }
+
+        if (pass1 === pass2) {
+            // Passwords match
+            password2.classList.remove('error');
+            password2.classList.add('success');
+            indicator.textContent = '✓ Passwords match';
+            indicator.className = 'password-match-indicator match';
+            indicator.style.display = 'block';
+            passwordsMatch = true;
+        } else {
+            // Passwords don't match
+            password2.classList.remove('success');
+            password2.classList.add('error');
+            indicator.textContent = '✗ Passwords do not match';
+            indicator.className = 'password-match-indicator no-match';
+            indicator.style.display = 'block';
+            passwordsMatch = false;
+        }
+
+        // Enable/disable submit button
+        if (passwordsMatch && password1.value.length >= 6) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-user-plus me-2"></i>Register';
+        } else {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-lock me-2"></i>Complete Form';
+        }
+    }
+
+    // Real-time password matching
+    password1.addEventListener('input', checkPasswordMatch);
+    password2.addEventListener('input', checkPasswordMatch);
+
+    // Form submission validation
+    form.addEventListener('submit', function(e) {
+        if (!passwordsMatch) {
+            e.preventDefault();
+            showPopup();
+            
+            // Clear password fields
+            password1.value = '';
+            password2.value = '';
+            password1.focus();
+            
+            // Reset styling
+            password2.classList.remove('error', 'success');
+            indicator.style.display = 'none';
+            
+            return false;
+        }
+
+        // Show loading state
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating Account...';
+    });
+
+    // Popup functions
+    function showPopup() {
+        popup.style.display = 'block';
+        // Add shake animation to password fields
+        password1.style.animation = 'shake 0.5s ease-in-out';
+        password2.style.animation = 'shake 0.5s ease-in-out';
+        
+        setTimeout(() => {
+            password1.style.animation = '';
+            password2.style.animation = '';
+        }, 500);
+    }
+
+    window.closePopup = function() {
+        const popupElement = popup.querySelector('.custom-popup');
+        popupElement.classList.remove('fade-in');
+        popupElement.classList.add('fade-out');
+        
+        setTimeout(() => {
+            popup.style.display = 'none';
+            popupElement.classList.remove('fade-out');
+            popupElement.classList.add('fade-in');
+        }, 300);
+    }
+
+    // Password strength indicator (optional)
+    password1.addEventListener('input', function() {
+        const password = this.value;
+        let strength = 0;
+        
+        if (password.length >= 8) strength++;
+        if (/[A-Z]/.test(password)) strength++;
+        if (/[0-9]/.test(password)) strength++;
+        if (/[^A-Za-z0-9]/.test(password)) strength++;
+        
+        // You can add password strength indicator here if needed
+    });
+
+    // Initial check on page load (for form errors)
+    if (password1.value || password2.value) {
+        checkPasswordMatch();
+    }
+});
+
+// Add shake animation CSS
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+`;
+document.head.appendChild(style);
+</script>
+
 {% endblock %}

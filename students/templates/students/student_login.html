@@ -57,10 +57,11 @@
   .form-control {
     border: 2px solid #e9ecef;
     border-radius: 10px;
-    padding: 0.75rem 1rem;
+    padding: 0.75rem 3rem 0.75rem 1rem; /* Fixed padding syntax */
     font-size: 1rem;
     transition: all 0.3s ease;
     background: #f8f9fa;
+    width: 100%;
   }
   
   .form-control:focus {
@@ -70,12 +71,30 @@
     outline: none;
   }
 
+  .form-control.error {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.15);
+    animation: shake 0.5s ease-in-out;
+  }
+
+  .password-input-wrapper {
+    position: relative;
+  }
+
   .input-icon {
     position: absolute;
     right: 15px;
     top: 50%;
     transform: translateY(-50%);
     color: #6c757d;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: color 0.3s ease;
+    z-index: 10;
+  }
+
+  .input-icon:hover {
+    color: #667eea;
   }
   
   .btn-auth {
@@ -99,6 +118,13 @@
 
   .btn-auth:active {
     transform: translateY(-1px);
+  }
+
+  .btn-auth:disabled {
+    background: #6c757d;
+    transform: none;
+    box-shadow: none;
+    cursor: not-allowed;
   }
   
   .forgot-password {
@@ -166,20 +192,116 @@
     margin-bottom: 1rem;
   }
 
-  .alert {
-    border-radius: 10px;
-    border: none;
+  /* Custom Error Popup Styles */
+  .error-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border-radius: 20px;
+    padding: 2.5rem;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+    z-index: 1050;
+    min-width: 350px;
+    text-align: center;
+    max-width: 90vw;
+  }
+
+  .popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 1049;
+    backdrop-filter: blur(3px);
+  }
+
+  .popup-icon {
+    font-size: 4rem;
+    color: #dc3545;
+    margin-bottom: 1.5rem;
+    animation: bounce 0.6s ease-in-out;
+  }
+
+  .popup-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 1rem;
+  }
+
+  .popup-message {
+    color: #6c757d;
     margin-bottom: 2rem;
+    line-height: 1.6;
+    font-size: 1.1rem;
   }
 
-  .alert-danger {
-    background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%);
+  .popup-button {
+    background: linear-gradient(135deg, #667eea, #764ba2);
     color: white;
+    border: none;
+    padding: 0.9rem 2.5rem;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1.1rem;
   }
 
-  .alert-success {
-    background: linear-gradient(135deg, #48c6ef 0%, #6f86d6 100%);
-    color: white;
+  .popup-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+  }
+
+  /* Animations */
+  .fade-in {
+    animation: fadeIn 0.4s ease-out;
+  }
+
+  .fade-out {
+    animation: fadeOut 0.3s ease-in;
+  }
+
+  @keyframes fadeIn {
+    from { 
+      opacity: 0; 
+      transform: translate(-50%, -60%) scale(0.9); 
+    }
+    to { 
+      opacity: 1; 
+      transform: translate(-50%, -50%) scale(1); 
+    }
+  }
+
+  @keyframes fadeOut {
+    from { 
+      opacity: 1; 
+      transform: translate(-50%, -50%) scale(1); 
+    }
+    to { 
+      opacity: 0; 
+      transform: translate(-50%, -60%) scale(0.9); 
+    }
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  /* Hide default Django messages */
+  .alert {
+    display: none;
   }
 
   /* Responsive Design */
@@ -191,6 +313,15 @@
     
     .auth-title {
       font-size: 1.8rem;
+    }
+
+    .error-popup {
+      padding: 2rem;
+      min-width: 300px;
+    }
+
+    .popup-title {
+      font-size: 1.5rem;
     }
   }
 </style>
@@ -205,18 +336,38 @@
   <h2 class="auth-title">Student Login</h2>
   <p class="auth-subtitle">Sign in to access your dashboard</p>
   
-  <!-- Display Messages -->
+  <!-- Debug info (remove after testing) -->
+  {% comment %} <div style="display: none;">
+    Login Error: {{ login_error|default:"False" }}
+  </div> 
+<!-- Enhanced test button -->
+ <button type="button" onclick="testPopup()" style="margin: 10px; padding: 10px; background: red; color: white; border: none; border-radius: 5px;">
+  Test Popup
+</button> {% endcomment %}
+
+<script>
+function testPopup() {
+    console.log('Test button clicked');
+    const popup = document.querySelector('#errorPopup');
+    if (popup) {
+        console.log('Popup element found, showing...');
+        showErrorPopup();
+    } else {
+        console.log('ERROR: Popup element not found!');
+        alert('Popup element not found in DOM');
+    }
+}
+</script>
+
+  <!-- Hidden Django Messages -->
   {% if messages %}
     {% for message in messages %}
-      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-        <i class="fas fa-info-circle me-2"></i>{{ message }}
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
-      </div>
+      <div class="alert alert-{{ message.tags }} d-none" data-message="{{ message }}"></div>
     {% endfor %}
   {% endif %}
   
   <!-- Login Form -->
-  <form method="post">
+  <form method="post" id="loginForm">
     {% csrf_token %}
     
     <div class="form-group">
@@ -224,19 +375,22 @@
         <i class="fas fa-user me-2"></i>Username
       </label>
       <input type="text" class="form-control" id="username" name="username" 
-             placeholder="Enter your username" required>
+             placeholder="Enter your username" 
+             value="{{ username|default:'' }}" required>
     </div>
     
     <div class="form-group">
       <label for="password" class="form-label">
         <i class="fas fa-lock me-2"></i>Password
       </label>
-      <input type="password" class="form-control" id="password" name="password" 
-             placeholder="Enter your password" required>
-      <i class="fas fa-eye input-icon" id="togglePassword" style="cursor: pointer;"></i>
+      <div class="password-input-wrapper">
+        <input type="password" class="form-control" id="password" name="password" 
+               placeholder="Enter your password" required>
+        <i class="fas fa-eye input-icon" id="togglePassword" title="Show/Hide Password"></i>
+      </div>
     </div>
     
-    <button type="submit" class="btn btn-auth">
+    <button type="submit" class="btn btn-auth" id="loginBtn">
       <i class="fas fa-sign-in-alt me-2"></i>Login to Dashboard
     </button>
   </form>
@@ -257,32 +411,124 @@
   </div>
 </div>
 
-<!-- JavaScript for Password Toggle -->
+<!-- Custom Error Popup -->
+<div id="errorPopup" style="display: none;">
+  <div class="popup-overlay" onclick="closeErrorPopup()"></div>
+  <div class="error-popup fade-in">
+    <div class="popup-icon">
+      <i class="fas fa-exclamation-triangle"></i>
+    </div>
+    <div class="popup-title">Login Failed!</div>
+    <div class="popup-message">
+      Invalid username or password. Please check your credentials and try again.
+    </div>
+    <button class="popup-button" onclick="closeErrorPopup()">
+      <i class="fas fa-check me-2"></i>Try Again
+    </button>
+  </div>
+</div>
+
 <script>
+// Define functions globally first
+window.showErrorPopup = function() {
+    const errorPopup = document.querySelector('#errorPopup');
+    if (errorPopup) {
+        console.log('Showing popup');
+        errorPopup.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    } else {
+        console.log('Error: popup element not found');
+    }
+}
+
+window.closeErrorPopup = function() {
+    const errorPopup = document.querySelector('#errorPopup');
+    if (errorPopup) {
+        const popup = errorPopup.querySelector('.error-popup');
+        if (popup) {
+            popup.classList.add('fade-out');
+            
+            setTimeout(() => {
+                errorPopup.style.display = 'none';
+                document.body.style.overflow = '';
+                popup.classList.remove('fade-out');
+                
+                // Clear password and focus
+                const password = document.querySelector('#password');
+                if (password) {
+                    password.value = '';
+                    password.focus();
+                }
+            }, 300);
+        }
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const togglePassword = document.querySelector('#togglePassword');
     const password = document.querySelector('#password');
+    const username = document.querySelector('#username');
+    const loginForm = document.querySelector('#loginForm');
+    const loginBtn = document.querySelector('#loginBtn');
 
-    if (togglePassword) {
+    // Check for login errors from Django
+    const hasLoginError = {{ login_error|yesno:"true,false" }};
+    const messageCount = {% if messages %}{{ messages|length }}{% else %}0{% endif %};
+    
+    console.log('Login error:', hasLoginError);
+    console.log('Messages:', messageCount);
+
+    // Show popup if there's an error
+    if (hasLoginError || messageCount > 0) {
+        showErrorPopup();
+        
+        // Add error styling
+        if (username) username.classList.add('error');
+        if (password) password.classList.add('error');
+        
+        // Remove styling after 3 seconds
+        setTimeout(() => {
+            if (username) username.classList.remove('error');
+            if (password) password.classList.remove('error');
+        }, 3000);
+    }
+
+    // Password toggle functionality
+    if (togglePassword && password) {
         togglePassword.addEventListener('click', function (e) {
-            // Toggle the type attribute
+            e.preventDefault();
+            
             const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
             password.setAttribute('type', type);
             
-            // Toggle the eye / eye slash icon
             this.classList.toggle('fa-eye');
             this.classList.toggle('fa-eye-slash');
         });
     }
 
-    // Form validation feedback
-    const form = document.querySelector('form');
-    form.addEventListener('submit', function() {
-        const submitBtn = document.querySelector('.btn-auth');
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Logging in...';
-        submitBtn.disabled = true;
+    // Form submission
+    if (loginForm && loginBtn) {
+        loginForm.addEventListener('submit', function(e) {
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Logging in...';
+        });
+    }
+
+    // Close with Escape key
+    document.addEventListener('keydown', function(e) {
+        const errorPopup = document.querySelector('#errorPopup');
+        if (e.key === 'Escape' && errorPopup && errorPopup.style.display === 'block') {
+            closeErrorPopup();
+        }
     });
 });
 </script>
+
+
+<!-- Debug test (add after your script tag) -->
+{% comment %} <script>
+console.log('showErrorPopup function exists:', typeof showErrorPopup);
+console.log('errorPopup element exists:', document.querySelector('#errorPopup'));
+</script> {% endcomment %}
 
 {% endblock %}
