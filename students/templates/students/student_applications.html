@@ -1,0 +1,580 @@
+{% extends 'base.html' %}
+
+{% block title %}My Applications - Smart Job Portal{% endblock %}
+
+{% block content %}
+<style>
+  .applications-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 20px;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+  }
+
+  .student-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .student-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 1.5rem;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+  }
+
+  .stats-card {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+    border-left: 4px solid #667eea;
+  }
+
+  .stats-card:hover {
+    transform: translateY(-5px);
+  }
+
+  .stats-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #667eea;
+    margin-bottom: 0.5rem;
+  }
+
+  .stats-label {
+    color: #6c757d;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+  }
+
+  .application-card {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    border-left: 4px solid #667eea;
+  }
+
+  .application-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  }
+
+  .job-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 1rem;
+  }
+
+  .job-title {
+    color: #2c3e50;
+    font-weight: 700;
+    font-size: 1.3rem;
+    margin: 0;
+  }
+
+  .company-name {
+    color: #667eea;
+    font-weight: 600;
+    font-size: 1rem;
+    margin-top: 0.3rem;
+  }
+
+  .status-badge {
+    padding: 0.5rem 1.2rem;
+    border-radius: 25px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .status-pending {
+    background: linear-gradient(135deg, #ffc107, #ff8f00);
+    color: white;
+  }
+
+  .status-shortlisted {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+  }
+
+  .status-rejected {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    color: white;
+  }
+
+  .status-interviewed {
+    background: linear-gradient(135deg, #17a2b8, #138496);
+    color: white;
+  }
+
+  .job-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 10px;
+  }
+
+  .detail-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #6c757d;
+    font-size: 0.9rem;
+  }
+
+  .detail-item i {
+    color: #667eea;
+    width: 20px;
+  }
+
+  .application-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e9ecef;
+  }
+
+  .btn-action {
+    padding: 0.6rem 1.5rem;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .btn-view-job {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+  }
+
+  .btn-view-job:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    color: white;
+  }
+
+  .btn-withdraw {
+    background: #dc3545;
+    color: white;
+  }
+
+  .btn-withdraw:hover {
+    background: #c82333;
+    transform: translateY(-2px);
+    color: white;
+  }
+
+  .btn-contact {
+    background: #28a745;
+    color: white;
+  }
+
+  .btn-contact:hover {
+    background: #218838;
+    transform: translateY(-2px);
+    color: white;
+  }
+
+  .filter-section {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+  }
+
+  .filter-form {
+    display: flex;
+    gap: 1rem;
+    align-items: end;
+  }
+
+  .filter-group {
+    flex: 1;
+  }
+
+  .filter-label {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+
+  .filter-select {
+    width: 100%;
+    padding: 0.6rem;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    background: white;
+    font-size: 0.9rem;
+  }
+
+  .filter-select:focus {
+    border-color: #667eea;
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+  }
+
+  .btn-filter {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 0.6rem 2rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .btn-filter:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #6c757d;
+  }
+
+  .empty-state i {
+    font-size: 5rem;
+    margin-bottom: 1.5rem;
+    color: #dee2e6;
+  }
+
+  .empty-state h4 {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+  }
+
+  /* Mobile Responsive */
+  @media (max-width: 768px) {
+    .applications-header {
+      padding: 1.5rem;
+    }
+
+    .student-info {
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .job-header {
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .job-details {
+      grid-template-columns: 1fr;
+    }
+
+    .filter-form {
+      flex-direction: column;
+    }
+
+    .application-actions {
+      flex-direction: column;
+    }
+
+    .stats-number {
+      font-size: 2rem;
+    }
+  }
+</style>
+
+<div class="container-fluid">
+  <!-- Header Section -->
+  <div class="applications-header">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <div class="student-info">
+          <div class="student-avatar">
+            {% if user.first_name %}
+              {{ user.first_name.0 }}{{ user.last_name.0 }}
+            {% else %}
+              {{ user.username.0 }}
+            {% endif %}
+          </div>
+          <div>
+            <h2>My Job Applications</h2>
+            <p class="mb-0">Track and manage your job applications</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 text-end">
+        <div class="d-flex align-items-center justify-content-end">
+          <i class="fas fa-user-graduate me-2"></i>
+          <span>
+            {% if user.first_name %}
+              {{ user.first_name }} {{ user.last_name }}
+            {% else %}
+              {{ user.username }}
+            {% endif %}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+      <div class="stats-card">
+        <div class="stats-number">{{ total_applications }}</div>
+        <div class="stats-label">Total Applications</div>
+      </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+      <div class="stats-card">
+        <div class="stats-number">{{ pending_applications }}</div>
+        <div class="stats-label">Pending Review</div>
+      </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+      <div class="stats-card">
+        <div class="stats-number">{{ shortlisted_applications }}</div>
+        <div class="stats-label">Shortlisted</div>
+      </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+      <div class="stats-card">
+        <div class="stats-number">{{ interview_applications }}</div>
+        <div class="stats-label">Interviews</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter Section -->
+  <div class="filter-section">
+    <form method="GET" class="filter-form">
+      <div class="filter-group">
+        <label class="filter-label">Filter by Status</label>
+        <select name="status" class="filter-select">
+          <option value="all">All Applications</option>
+          <option value="Pending" {% if request.GET.status == "Pending" %}selected{% endif %}>Pending</option>
+          <option value="Shortlisted" {% if request.GET.status == "Shortlisted" %}selected{% endif %}>Shortlisted</option>
+          <option value="Rejected" {% if request.GET.status == "Rejected" %}selected{% endif %}>Rejected</option>
+          <option value="Interviewed" {% if request.GET.status == "Interviewed" %}selected{% endif %}>Interviewed</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Sort by</label>
+        <select name="sort" class="filter-select">
+          <option value="recent" {% if request.GET.sort == "recent" %}selected{% endif %}>Most Recent</option>
+          <option value="oldest" {% if request.GET.sort == "oldest" %}selected{% endif %}>Oldest First</option>
+          <option value="company" {% if request.GET.sort == "company" %}selected{% endif %}>Company Name</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <button type="submit" class="btn-filter">
+          <i class="fas fa-filter me-2"></i>Apply Filters
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Applications List -->
+  {% if applications %}
+    {% for application in applications %}
+      <div class="application-card">
+        <div class="job-header">
+          <div>
+            <h3 class="job-title">{{ application.job.title }}</h3>
+            <div class="company-name">
+              <i class="fas fa-building me-1"></i>{{ application.job.company.company_name }}
+            </div>
+          </div>
+          <div>
+            {% if application.status == 'Pending' %}
+              <span class="status-badge status-pending">
+                <i class="fas fa-clock me-1"></i>{{ application.status }}
+              </span>
+            {% elif application.status == 'Shortlisted' %}
+              <span class="status-badge status-shortlisted">
+                <i class="fas fa-check-circle me-1"></i>{{ application.status }}
+              </span>
+            {% elif application.status == 'Rejected' %}
+              <span class="status-badge status-rejected">
+                <i class="fas fa-times-circle me-1"></i>{{ application.status }}
+              </span>
+            {% elif application.status == 'Interviewed' %}
+              <span class="status-badge status-interviewed">
+                <i class="fas fa-calendar-check me-1"></i>{{ application.status }}
+              </span>
+            {% else %}
+              <span class="status-badge status-pending">
+                <i class="fas fa-clock me-1"></i>Pending
+              </span>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="job-details">
+          <div class="detail-item">
+            <i class="fas fa-map-marker-alt"></i>
+            <span>{{ application.job.location }}</span>
+          </div>
+          <div class="detail-item">
+            <i class="fas fa-calendar"></i>
+            <span>Applied: {{ application.applied_on|date:"M d, Y" }}</span>
+          </div>
+          <div class="detail-item">
+            <i class="fas fa-briefcase"></i>
+            <span>{{ application.job.job_type|title }}</span>
+          </div>
+          {% if application.job.salary %}
+            <div class="detail-item">
+              <i class="fas fa-dollar-sign"></i>
+              <span>{{ application.job.salary }}</span>
+            </div>
+          {% endif %}
+        </div>
+
+        {% if application.cover_letter %}
+          <div class="mt-3">
+            <h6><i class="fas fa-file-alt me-2"></i>Your Cover Letter:</h6>
+            <p class="text-muted">{{ application.cover_letter|truncatewords:25 }}</p>
+          </div>
+        {% endif %}
+
+        <!-- Action Buttons -->
+        <div class="application-actions">
+          <a href="{% url 'jobs:job_detail' application.job.id %}" class="btn-action btn-view-job">
+            <i class="fas fa-eye"></i>View Job Details
+          </a>
+          
+          {% if application.status == 'Shortlisted' or application.status == 'Interviewed' %}
+            <a href="mailto:{{ application.job.company.user.email }}" class="btn-action btn-contact">
+              <i class="fas fa-envelope"></i>Contact Company
+            </a>
+          {% endif %}
+          
+          {% if application.status == 'Pending' %}
+            <button class="btn-action btn-withdraw" onclick="withdrawApplication({{ application.id }})">
+              <i class="fas fa-trash"></i>Withdraw Application
+            </button>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <!-- Empty State -->
+    <div class="application-card">
+      <div class="empty-state">
+        <i class="fas fa-search"></i>
+        <h4>No Applications Found</h4>
+        <p>You haven't applied for any jobs yet. Start exploring opportunities and apply to jobs that match your skills.</p>
+        <a href="{% url 'jobs:job_list' %}" class="btn-action btn-view-job">
+          <i class="fas fa-search me-2"></i>Browse Jobs
+        </a>
+      </div>
+    </div>
+  {% endif %}
+</div>
+
+<!-- Withdraw Application Modal -->
+<div class="modal fade" id="withdrawModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title text-danger">
+          <i class="fas fa-exclamation-triangle me-2"></i>Withdraw Application
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to withdraw this application?</p>
+        <div class="alert alert-warning">
+          <i class="fas fa-info-circle me-2"></i>
+          <strong>Note:</strong> This action cannot be undone. You will need to reapply if you change your mind.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger" id="confirmWithdraw">
+          <i class="fas fa-trash me-1"></i>Withdraw Application
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentApplicationId = null;
+
+function withdrawApplication(applicationId) {
+  currentApplicationId = applicationId;
+  const modal = new bootstrap.Modal(document.getElementById('withdrawModal'));
+  modal.show();
+}
+
+document.getElementById('confirmWithdraw').addEventListener('click', function() {
+  if (!currentApplicationId) return;
+  
+  // Show loading state
+  this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Withdrawing...';
+  this.disabled = true;
+  
+  // Make request to withdraw application
+  fetch(`{% url 'students:withdraw_application' 0 %}`.replace('0', currentApplicationId), {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': '{{ csrf_token }}',
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      bootstrap.Modal.getInstance(document.getElementById('withdrawModal')).hide();
+      location.reload();
+    } else {
+      alert('Error withdrawing application: ' + data.error);
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('Error withdrawing application. Please try again.');
+  })
+  .finally(() => {
+    this.innerHTML = '<i class="fas fa-trash me-1"></i>Withdraw Application';
+    this.disabled = false;
+  });
+});
+
+// Auto-refresh for live updates every 60 seconds
+setInterval(function() {
+  if (!document.querySelector('.modal.show')) {
+    location.reload();
+  }
+}, 60000);
+</script>
+
+{% endblock %}
