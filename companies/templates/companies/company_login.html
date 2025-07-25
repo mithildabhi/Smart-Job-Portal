@@ -9,60 +9,57 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 70vh; /* Reduced by 30% from 100vh */
+    min-height: 70vh;
     padding: 0;
     margin: 0;
-    
   }
 
   .auth-container {
     top: 30px;
-    
     max-width: 520px;
     width: 90%;
     background: white;
     border-radius: 20px;
-    padding: 1.5rem; /* Reduced from 2.5rem */
+    padding: 1.5rem;
     box-shadow: 0 15px 50px rgba(102, 126, 234, 0.15);
     position: relative;
-    /* Removed the ::before pseudo-element for top colored line */
   }
 
   /* Text Styling - Compact */
   .auth-title {
     text-align: center;
-    font-size: 1.6rem; /* Reduced from 2rem */
+    font-size: 1.6rem;
     font-weight: 700;
     background: linear-gradient(135deg, #667eea, #764ba2);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    margin-bottom: 0.2rem; /* Reduced spacing */
+    margin-bottom: 0.2rem;
   }
 
   .auth-subtitle {
     text-align: center;
     color: #6c757d;
-    margin-bottom: 1.2rem; /* Reduced from 2rem */
-    font-size: 0.85rem; /* Smaller font */
+    margin-bottom: 1.2rem;
+    font-size: 0.85rem;
   }
 
   /* Compact Form Styling */
   .form-group {
-    margin-bottom: 0.8rem; /* Reduced from 1.2rem */
+    margin-bottom: 0.8rem;
   }
 
   .form-label {
     font-weight: 600;
     color: #2c3e50;
-    margin-bottom: 0.2rem; /* Reduced spacing */
-    font-size: 0.85rem; /* Smaller font */
+    margin-bottom: 0.2rem;
+    font-size: 0.85rem;
   }
 
   .form-control {
     border: 2px solid #e9ecef;
     border-radius: 10px;
-    padding: 0.5rem 3rem 0.5rem 1rem; /* Reduced padding */
-    font-size: 0.85rem; /* Smaller font */
+    padding: 0.5rem 3rem 0.5rem 1rem;
+    font-size: 0.85rem;
     background: #f8f9fa;
     width: 100%;
     transition: all 0.3s ease;
@@ -77,6 +74,7 @@
 
   .form-control.error {
     border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.15);
     animation: shake 0.5s ease-in-out;
   }
 
@@ -104,12 +102,12 @@
     background: linear-gradient(135deg, #667eea, #764ba2);
     border: none;
     color: white;
-    padding: 0.6rem 2rem; /* Reduced padding */
+    padding: 0.6rem 2rem;
     border-radius: 25px;
     font-weight: 600;
-    font-size: 0.9rem; /* Smaller font */
+    font-size: 0.9rem;
     width: 100%;
-    margin-top: 0.4rem; /* Reduced margin */
+    margin-top: 0.4rem;
     transition: all 0.3s ease;
   }
 
@@ -118,14 +116,20 @@
     box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
   }
 
+  .btn-auth:disabled {
+    background: #6c757d;
+    transform: none;
+    cursor: not-allowed;
+  }
+
   .btn-register {
     background: transparent;
     border: 2px solid #667eea;
     color: #667eea;
-    padding: 0.5rem 1.4rem; /* Reduced padding */
+    padding: 0.5rem 1.4rem;
     border-radius: 25px;
     font-weight: 600;
-    font-size: 0.85rem; /* Smaller font */
+    font-size: 0.85rem;
     text-decoration: none;
     transition: all 0.3s ease;
   }
@@ -139,25 +143,25 @@
   /* Compact Links and Sections */
   .forgot-password {
     text-align: center;
-    margin-top: 0.8rem; /* Reduced spacing */
+    margin-top: 0.8rem;
   }
 
   .forgot-password a {
     color: #667eea;
     text-decoration: none;
-    font-size: 0.8rem; /* Smaller font */
+    font-size: 0.8rem;
   }
 
   .register-section {
     text-align: center;
-    margin-top: 1rem; /* Reduced spacing */
-    padding-top: 1rem; /* Reduced spacing */
+    margin-top: 1rem;
+    padding-top: 1rem;
     border-top: 1px solid #e9ecef;
   }
 
   .register-section p {
     margin-bottom: 0.5rem;
-    font-size: 0.8rem; /* Smaller font */
+    font-size: 0.8rem;
     color: #6c757d;
   }
 
@@ -168,35 +172,127 @@
   }
 
   .cross-login small {
-    font-size: 0.75rem; /* Smaller text */
+    font-size: 0.75rem;
   }
 
-  /* Compact Error Popup */
-  .error-popup {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: white;
-    border-radius: 20px;
-    padding: 1.5rem; /* Reduced padding */
-    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
-    z-index: 1050;
-    text-align: center;
-    min-width: 280px; /* Smaller popup */
-  }
-
-  .popup-overlay {
+  /* Enhanced Alert Box */
+  .alert-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.6);
-    z-index: 1049;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1050;
+    display: none;
+    backdrop-filter: blur(3px);
+  }
+
+  .alert-box {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    z-index: 1051;
+    text-align: center;
+    min-width: 320px;
+    max-width: 90vw;
+    animation: alertSlideIn 0.3s ease-out;
+  }
+
+  .alert-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    animation: alertBounce 0.6s ease-in-out;
+  }
+
+  .alert-icon.error {
+    color: #dc3545;
+  }
+
+  .alert-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 0.8rem;
+    color: #2c3e50;
+  }
+
+  .alert-message {
+    font-size: 0.95rem;
+    color: #6c757d;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+  }
+
+  .alert-actions {
+    display: flex;
+    gap: 0.8rem;
+    justify-content: center;
+  }
+
+  .btn-alert {
+    padding: 0.6rem 1.5rem;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .btn-alert.primary {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+  }
+
+  .btn-alert.primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 15px rgba(102, 126, 234, 0.4);
+  }
+
+  .btn-alert.secondary {
+    background: transparent;
+    color: #6c757d;
+    border: 2px solid #e9ecef;
+  }
+
+  .btn-alert.secondary:hover {
+    background: #f8f9fa;
+    border-color: #dee2e6;
   }
 
   /* Animations */
+  @keyframes alertSlideIn {
+    from {
+      opacity: 0;
+      transform: translate(-50%, -60%) scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+  }
+
+  @keyframes alertSlideOut {
+    from {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: translate(-50%, -60%) scale(0.9);
+    }
+  }
+
+  @keyframes alertBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
   @keyframes shake {
     0%, 100% { transform: translateX(0); }
     25% { transform: translateX(-5px); }
@@ -212,11 +308,19 @@
     }
     
     .main-content {
-      min-height: 75vh; /* Slightly more height on mobile */
+      min-height: 75vh;
+    }
+
+    .alert-box {
+      padding: 1.5rem;
+      min-width: 280px;
+    }
+
+    .alert-actions {
+      flex-direction: column;
     }
   }
 
-  /* Very compact for short screens */
   @media (max-height: 600px) {
     .main-content {
       min-height: 65vh;
@@ -258,7 +362,8 @@
           <i class="fas fa-building me-2"></i>Username
         </label>
         <input type="text" class="form-control" id="username" name="username" 
-               placeholder="Enter your company username" required>
+               placeholder="Enter your company username" 
+               value="{{ username|default:'' }}" required>
       </div>
       
       <!-- Password Field -->
@@ -281,7 +386,7 @@
     
     <!-- Forgot Password Link -->
     <div class="forgot-password">
-      <a href="#" onclick="alert('Feature coming soon!')">
+      <a href="#" onclick="showCustomAlert('Coming Soon', 'Password recovery feature will be available soon!', 'info')">
         <i class="fas fa-key me-1"></i>Forgot your password?
       </a>
     </div>
@@ -303,34 +408,97 @@
   </div>
 </div>
 
-<!-- Error Popup -->
-<div id="errorPopup" style="display: none;">
-  <div class="popup-overlay" onclick="closeErrorPopup()"></div>
-  <div class="error-popup">
-    <div style="font-size: 2.5rem; color: #dc3545; margin-bottom: 0.6rem;">
+<!-- Enhanced Alert Box -->
+<div class="alert-overlay" id="alertOverlay">
+  <div class="alert-box" id="alertBox">
+    <div class="alert-icon error" id="alertIcon">
       <i class="fas fa-exclamation-triangle"></i>
     </div>
-    <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;">Login Failed!</h3>
-    <p style="font-size: 0.85rem; margin-bottom: 1rem;">Invalid company credentials. Please check your username and password.</p>
-    <button onclick="closeErrorPopup()" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 0.6rem 1.5rem; border-radius: 25px; cursor: pointer; font-size: 0.85rem;">
-      Try Again
-    </button>
+    <div class="alert-title" id="alertTitle">Company Login Failed!</div>
+    <div class="alert-message" id="alertMessage">
+      The company username or password you entered is incorrect. Please check your credentials and try again.
+    </div>
+    <div class="alert-actions">
+      <button class="btn-alert primary" onclick="closeAlert()" id="alertPrimaryBtn">
+        <i class="fas fa-redo me-1"></i>Try Again
+      </button>
+      <button class="btn-alert secondary" onclick="clearForm()" id="alertSecondaryBtn">
+        <i class="fas fa-eraser me-1"></i>Clear Form
+      </button>
+    </div>
   </div>
 </div>
 
 <script>
-// Show error popup
-function showErrorPopup() {
-    document.getElementById('errorPopup').style.display = 'block';
+// Enhanced Alert Functions for Company Login
+function showCustomAlert(title, message, type = 'error') {
+    const overlay = document.getElementById('alertOverlay');
+    const alertBox = document.getElementById('alertBox');
+    const alertIcon = document.getElementById('alertIcon');
+    const alertTitle = document.getElementById('alertTitle');
+    const alertMessage = document.getElementById('alertMessage');
+    
+    // Set content
+    alertTitle.textContent = title;
+    alertMessage.textContent = message;
+    
+    // Set icon based on type
+    if (type === 'error') {
+        alertIcon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
+        alertIcon.className = 'alert-icon error';
+    } else if (type === 'info') {
+        alertIcon.innerHTML = '<i class="fas fa-info-circle"></i>';
+        alertIcon.className = 'alert-icon error'; // Using same styling
+    }
+    
+    // Show alert with animation
+    overlay.style.display = 'block';
     document.body.style.overflow = 'hidden';
+    
+    // Auto-focus on password field after showing alert
+    setTimeout(() => {
+        const passwordField = document.getElementById('password');
+        passwordField.focus();
+        passwordField.select();
+    }, 400);
 }
 
-// Close error popup
-function closeErrorPopup() {
-    document.getElementById('errorPopup').style.display = 'none';
-    document.body.style.overflow = '';
-    document.getElementById('password').value = '';
-    document.getElementById('password').focus();
+function closeAlert() {
+    const overlay = document.getElementById('alertOverlay');
+    const alertBox = document.getElementById('alertBox');
+    
+    // Add fade out animation
+    alertBox.style.animation = 'alertSlideOut 0.3s ease-in';
+    
+    setTimeout(() => {
+        overlay.style.display = 'none';
+        document.body.style.overflow = '';
+        alertBox.style.animation = 'alertSlideIn 0.3s ease-out';
+        
+        // Clear only password field and focus on it
+        const passwordField = document.getElementById('password');
+        passwordField.value = '';
+        passwordField.focus();
+    }, 300);
+}
+
+function clearForm() {
+    const overlay = document.getElementById('alertOverlay');
+    const alertBox = document.getElementById('alertBox');
+    
+    // Add fade out animation
+    alertBox.style.animation = 'alertSlideOut 0.3s ease-in';
+    
+    setTimeout(() => {
+        overlay.style.display = 'none';
+        document.body.style.overflow = '';
+        alertBox.style.animation = 'alertSlideIn 0.3s ease-out';
+        
+        // Clear both fields
+        document.getElementById('username').value = '';
+        document.getElementById('password').value = '';
+        document.getElementById('username').focus();
+    }, 300);
 }
 
 // When page loads
@@ -341,21 +509,33 @@ document.addEventListener('DOMContentLoaded', function() {
     const loginForm = document.getElementById('loginForm');
     const loginBtn = document.getElementById('loginBtn');
 
-    // Check for login errors
+    // Check for login errors from Django
     const hasError = {{ login_error|yesno:"true,false" }};
     const hasMessages = {% if messages %}true{% else %}false{% endif %};
     
-    // Show popup if there's an error and fields have values
-    if ((hasError || hasMessages) && username.value && password.value) {
-        showErrorPopup();
-        username.classList.add('error');
-        password.classList.add('error');
+    // Show CUSTOM alert if there's an error
+    if (hasError || hasMessages) {
+        const usernameValue = username.value.trim();
+        const passwordValue = password.value.trim();
         
-        // Remove error styling after 3 seconds
-        setTimeout(() => {
-            username.classList.remove('error');
-            password.classList.remove('error');
-        }, 3000);
+        // Show custom alert for wrong credentials
+        if (usernameValue || passwordValue) {
+            showCustomAlert(
+                'Company Login Failed!', 
+                'The company username or password you entered is incorrect. Your username has been preserved - just correct your password.',
+                'error'
+            );
+            
+            // Add visual feedback
+            username.classList.add('error');
+            password.classList.add('error');
+            
+            // Remove error styling after 3 seconds
+            setTimeout(() => {
+                username.classList.remove('error');
+                password.classList.remove('error');
+            }, 3000);
+        }
     }
 
     // Password toggle functionality
@@ -366,16 +546,31 @@ document.addEventListener('DOMContentLoaded', function() {
         this.classList.toggle('fa-eye-slash');
     });
 
-    // Form validation
+    // Enhanced form validation
     loginForm.addEventListener('submit', function(e) {
-        if (!username.value.trim() || !password.value.trim()) {
+        const usernameValue = username.value.trim();
+        const passwordValue = password.value.trim();
+        
+        if (!usernameValue || !passwordValue) {
             e.preventDefault();
             
-            if (!username.value.trim()) {
-                username.classList.add('error');
-                username.focus();
+            let message = '';
+            if (!usernameValue && !passwordValue) {
+                message = 'Please enter both company username and password to login.';
+            } else if (!usernameValue) {
+                message = 'Please enter your company username.';
+            } else {
+                message = 'Please enter your company password.';
             }
-            if (!password.value.trim()) {
+            
+            // Show CUSTOM alert instead of browser alert
+            showCustomAlert('Missing Information', message, 'error');
+            
+            // Visual feedback
+            if (!usernameValue) {
+                username.classList.add('error');
+            }
+            if (!passwordValue) {
                 password.classList.add('error');
             }
             
@@ -393,18 +588,35 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Remove error styling when typing
-    username.addEventListener('input', () => username.classList.remove('error'));
-    password.addEventListener('input', () => password.classList.remove('error'));
+    username.addEventListener('input', () => {
+        username.classList.remove('error');
+    });
+    
+    password.addEventListener('input', () => {
+        password.classList.remove('error');
+    });
 
-    // Close popup with Escape key
+    // Close alert with Escape key
     document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && document.getElementById('errorPopup').style.display === 'block') {
-            closeErrorPopup();
+        if (e.key === 'Escape') {
+            const overlay = document.getElementById('alertOverlay');
+            if (overlay.style.display === 'block') {
+                closeAlert();
+            }
         }
     });
 
-    // Focus on username field
-    if (!username.value) username.focus();
+    // Close alert when clicking outside
+    document.getElementById('alertOverlay').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeAlert();
+        }
+    });
+
+    // Auto-focus on username field if empty
+    if (!username.value) {
+        username.focus();
+    }
 });
 </script>
 
