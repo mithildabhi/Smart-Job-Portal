@@ -326,14 +326,9 @@
 <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
   <div class="container-fluid">
     <!-- Left: Company Name -->
-    <a class="navbar-brand" href="{% url 'companies:company_dashboard' %}">
-      <i class="fas fa-briefcase me-2"></i>
-      {% if user.company %}
-        {{ user.company.company_name }}
-      {% else %}
-        Smart Job Portal
-      {% endif %}
-    </a>
+   <a class="navbar-brand" href="{% url 'companies:company_dashboard' %}">
+  <i class="fas fa-briefcase me-2"></i>Smart Job Portal
+</a>
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>

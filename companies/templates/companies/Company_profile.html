@@ -55,6 +55,127 @@
         padding: 2rem;
         box-shadow: 0 5px 20px rgba(0,0,0,0.1);
         margin-bottom: 2rem;
+        border-top: 4px solid #667eea;
+        transition: all 0.3s ease;
+    }
+    
+    .profile-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .section-icon {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 1.5rem;
+    }
+    
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .info-row:last-child {
+        border-bottom: none;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: #2c3e50;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .info-value {
+        color: #6c757d;
+        font-weight: 500;
+    }
+    
+    .btn-edit {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 25px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+        margin-top: 1rem;
+    }
+    
+    .btn-edit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        color: white;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1rem;
+    }
+    
+    .stat-item {
+        text-align: center;
+        padding: 1.5rem;
+        background: linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%);
+        border-radius: 15px;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #667eea;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        color: #6c757d;
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+    
+    .job-item {
+        padding: 1.5rem;
+        background: linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%);
+        border-radius: 15px;
+        margin-bottom: 1rem;
+        border-left: 4px solid #667eea;
+    }
+    
+    .job-title {
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+    
+    .job-details {
+        color: #667eea;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+    
+    .job-stats {
+        color: #6c757d;
+        font-size: 0.9rem;
     }
     
     @keyframes float {
@@ -62,10 +183,22 @@
         33% { transform: translate(30px, -30px) rotate(120deg); }
         66% { transform: translate(-20px, 20px) rotate(240deg); }
     }
+    
+    @media (max-width: 768px) {
+        .profile-card {
+            padding: 1.5rem;
+        }
+        
+        .info-row {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+    }
 </style>
 
 <div class="container mt-4">
-    <!-- Profile Header -->
+    <!-- Profile Header (First Header Style) -->
     <div class="profile-header">
         <div class="header-content">
             <div class="company-logo-large">
@@ -80,421 +213,166 @@
             <p><i class="fas fa-envelope me-2"></i>{{ user.email }}</p>
         </div>
     </div>
-    
-    <!-- Profile Information -->
+
+    <!-- Company Information (Updated with real user data) -->
     <div class="profile-card">
-        <h3><i class="fas fa-building me-2"></i>Company Information</h3>
+        <h2 class="section-title">
+            <i class="fas fa-building section-icon"></i>
+            Company Information
+        </h2>
         
-        <div class="row">
-            <div class="col-md-6">
-                <p><strong>Company Name:</strong> {{ company.company_name }}</p>
-                <p><strong>Industry:</strong> {{ company.industry|title }}</p>
-                <p><strong>Email:</strong> {{ user.email }}</p>
-            </div>
-            <div class="col-md-6">
-                <p><strong>Phone:</strong> {{ company.phone|default:"Not provided" }}</p>
-                <p><strong>Website:</strong> 
-                    {% if company.website %}
-                        <a href="{{ company.website }}" target="_blank">{{ company.website }}</a>
-                    {% else %}
-                        Not provided
-                    {% endif %}
-                </p>
-                <p><strong>Location:</strong> {{ company.location|default:"Not provided" }}</p>
-            </div>
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-building"></i>
+                Company Name
+            </span>
+            <span class="info-value">{{ company.company_name|default:"Not provided" }}</span>
         </div>
         
-        {% if company.description %}
-            <div class="mt-3">
-                <strong>Description:</strong>
-                <p>{{ company.description }}</p>
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-envelope"></i>
+                Email
+            </span>
+            <span class="info-value">{{ user.email }}</span>
+        </div>
+        
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-phone"></i>
+                Phone
+            </span>
+            <span class="info-value">{{ company.phone|default:"Not provided" }}</span>
+        </div>
+        
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-map-marker-alt"></i>
+                Location
+            </span>
+            <span class="info-value">{{ company.location|default:"Not provided" }}</span>
+        </div>
+        
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-industry"></i>
+                Industry
+            </span>
+            <span class="info-value">{{ company.industry|default:"Not specified" }}</span>
+        </div>
+        
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-globe"></i>
+                Website
+            </span>
+            <span class="info-value">
+                {% if company.website %}
+                    <a href="{{ company.website }}" target="_blank">{{ company.website }}</a>
+                {% else %}
+                    Not provided
+                {% endif %}
+            </span>
+        </div>
+        
+        <div class="info-row">
+            <span class="info-label">
+                <i class="fas fa-calendar"></i>
+                Member Since
+            </span>
+            <span class="info-value">{{ user.date_joined|date:"F Y" }}</span>
+        </div>
+        
+        <a href="#" class="btn-edit">
+            <i class="fas fa-edit me-2"></i>Edit Information
+        </a>
+    </div>
+
+    <!-- Company Description -->
+    <div class="profile-card">
+        <h2 class="section-title">
+            <i class="fas fa-info-circle section-icon"></i>
+            About Company
+        </h2>
+        
+        <p style="color: #6c757d; line-height: 1.6;">
+            {% if company.description %}
+                {{ company.description }}
+            {% else %}
+                We are a leading technology company focused on innovation and excellence. Our mission is to provide cutting-edge solutions and create opportunities for talented professionals to grow and succeed in their careers.
+            {% endif %}
+        </p>
+        
+        <a href="#" class="btn-edit">
+            <i class="fas fa-edit me-2"></i>Update Description
+        </a>
+    </div>
+
+    <!-- Active Job Postings -->
+    <div class="profile-card">
+        <h2 class="section-title">
+            <i class="fas fa-briefcase section-icon"></i>
+            Active Job Postings
+        </h2>
+        
+        {% if recent_jobs %}
+            {% for job in recent_jobs %}
+            <div class="job-item">
+                <div class="job-title">{{ job.title }}</div>
+                <div class="job-details">{{ job.job_type|title }} • {{ job.location }} • {{ job.salary|default:"Salary not specified" }}</div>
+                <div class="job-stats">
+                    {{ job.applications_count|default:0 }} applications • 
+                    Posted {{ job.posted_on|timesince }} ago
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="job-item">
+                <div class="job-title">No active job postings</div>
+                <div class="job-details">Start posting jobs to attract talented candidates</div>
             </div>
         {% endif %}
         
-        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-            <a href="{% url 'companies:company_dashboard' %}" class="btn btn-secondary me-md-2">
-                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
-            </a>
+        <a href="{% url 'companies:manage_jobs' %}" class="btn-edit">
+            <i class="fas fa-briefcase me-2"></i>Manage All Jobs
+        </a>
+    </div>
+
+    
+
+    <!-- Recruitment Statistics -->
+    <div class="profile-card">
+        <h2 class="section-title">
+            <i class="fas fa-chart-bar section-icon"></i>
+            Recruitment Statistics
+        </h2>
+        
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-number">{{ total_jobs|default:0 }}</div>
+                <div class="stat-label">Total Jobs Posted</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">{{ total_applications|default:0 }}</div>
+                <div class="stat-label">Applications Received</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">{{ active_jobs|default:0 }}</div>
+                <div class="stat-label">Active Jobs</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">{{ inactive_jobs|default:0 }}</div>
+                <div class="stat-label">Completed Jobs</div>
+            </div>
         </div>
     </div>
-</div>
 
-
-<style>
-  .profile-header {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-    border-radius: 20px;
-    padding: 2.5rem;
-    margin-bottom: 3rem;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .profile-header::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-    animation: float 6s ease-in-out infinite;
-  }
-
-  @keyframes float {
-    0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
-    33% { transform: translate(30px, -30px) rotate(120deg); }
-    66% { transform: translate(-20px, 20px) rotate(240deg); }
-  }
-
-  .profile-content {
-    position: relative;
-    z-index: 2;
-  }
-
-  .profile-avatar {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    border: 4px solid rgba(255, 255, 255, 0.3);
-    margin: 0 auto 1rem;
-    background: rgba(255, 255, 255, 0.1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 3rem;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .profile-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 50%;
-  }
-
-  .profile-name {
-    font-size: 2rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-  }
-
-  .profile-subtitle {
-    font-size: 1.1rem;
-    opacity: 0.9;
-  }
-
-  .profile-sections {
-    display: grid;
-    gap: 2rem;
-  }
-
-  .profile-card {
-    background: white;
-    border-radius: 20px;
-    padding: 2.5rem;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-    border-top: 4px solid #667eea;
-  }
-
-  .profile-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
-  }
-
-  .section-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #2c3e50;
-    margin-bottom: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .section-icon {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    font-size: 1.5rem;
-  }
-
-  .info-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 0;
-    border-bottom: 1px solid #f0f0f0;
-  }
-
-  .info-row:last-child {
-    border-bottom: none;
-  }
-
-  .info-label {
-    font-weight: 600;
-    color: #2c3e50;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .info-value {
-    color: #6c757d;
-    font-weight: 500;
-  }
-
-  .btn-edit {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-    border: none;
-    padding: 0.75rem 2rem;
-    border-radius: 25px;
-    font-weight: 600;
-    text-decoration: none;
-    display: inline-block;
-    transition: all 0.3s ease;
-    margin-top: 1rem;
-  }
-
-  .btn-edit:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-    color: white;
-  }
-
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 1.5rem;
-    margin-top: 1rem;
-  }
-
-  .stat-item {
-    text-align: center;
-    padding: 1.5rem;
-    background: linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%);
-    border-radius: 15px;
-  }
-
-  .stat-number {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #667eea;
-    margin-bottom: 0.5rem;
-  }
-
-  .stat-label {
-    color: #6c757d;
-    font-weight: 500;
-    font-size: 0.9rem;
-  }
-
-  .job-item {
-    padding: 1.5rem;
-    background: linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%);
-    border-radius: 15px;
-    margin-bottom: 1rem;
-    border-left: 4px solid #667eea;
-  }
-
-  .job-title {
-    font-weight: 700;
-    color: #2c3e50;
-    margin-bottom: 0.5rem;
-  }
-
-  .job-details {
-    color: #667eea;
-    font-weight: 500;
-    margin-bottom: 0.5rem;
-  }
-
-  .job-stats {
-    color: #6c757d;
-    font-size: 0.9rem;
-  }
-
-  @media (max-width: 768px) {
-    .profile-sections {
-      gap: 1.5rem;
-    }
-    
-    .profile-card {
-      padding: 1.5rem;
-    }
-    
-    .info-row {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.5rem;
-    }
-  }
-</style>
-
-<!-- Profile Header -->
-<div class="profile-header">
-  <div class="profile-content">
-    <div class="profile-avatar">
-      {% if company.logo %}
-        <img src="{{ company.logo.url }}" alt="Company Logo">
-      {% else %}
-        <i class="fas fa-building"></i>
-      {% endif %}
+    <!-- Back to Dashboard -->
+    <div class="text-center mt-4 mb-5">
+        <a href="{% url 'companies:company_dashboard' %}" class="btn-edit">
+            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
     </div>
-    <h1 class="profile-name">{{ company.name|default:"Your Company" }}</h1>
-    <p class="profile-subtitle">{{ company.industry|default:"Technology" }} • {{ company.location|default:"Mumbai, India" }}</p>
-  </div>
-</div>
-
-<!-- Profile Sections -->
-<div class="profile-sections">
-  
-  <!-- Company Information -->
-  <div class="profile-card">
-    <h2 class="section-title">
-      <i class="fas fa-building section-icon"></i>
-      Company Information
-    </h2>
-    
-    <div class="info-row">
-      <span class="info-label">
-        <i class="fas fa-building"></i>
-        Company Name
-      </span>
-      <span class="info-value">{{ company.name|default:"Your Company Name" }}</span>
-    </div>
-    
-    <div class="info-row">
-      <span class="info-label">
-        <i class="fas fa-envelope"></i>
-        Email
-      </span>
-      <span class="info-value">{{ user.email }}</span>
-    </div>
-    
-    <div class="info-row">
-      <span class="info-label">
-        <i class="fas fa-phone"></i>
-        Phone
-      </span>
-      <span class="info-value">{{ company.phone|default:"+91 9876543210" }}</span>
-    </div>
-    
-    <div class="info-row">
-      <span class="info-label">
-        <i class="fas fa-map-marker-alt"></i>
-        Location
-      </span>
-      <span class="info-value">{{ company.location|default:"Mumbai, Maharashtra" }}</span>
-    </div>
-    
-    <div class="info-row">
-      <span class="info-label">
-        <i class="fas fa-industry"></i>
-        Industry
-      </span>
-      <span class="info-value">{{ company.industry|default:"Technology" }}</span>
-    </div>
-    
-    <div class="info-row">
-      <span class="info-label">
-        <i class="fas fa-globe"></i>
-        Website
-      </span>
-      <span class="info-value">{{ company.website|default:"www.company.com" }}</span>
-    </div>
-    
-    <a href="#" class="btn-edit">
-      <i class="fas fa-edit me-2"></i>Edit Information
-    </a>
-  </div>
-
-  <!-- Company Description -->
-  <div class="profile-card">
-    <h2 class="section-title">
-      <i class="fas fa-info-circle section-icon"></i>
-      About Company
-    </h2>
-    
-    <p style="color: #6c757d; line-height: 1.6;">
-      {{ company.description|default:"We are a leading technology company focused on innovation and excellence. Our mission is to provide cutting-edge solutions and create opportunities for talented professionals to grow and succeed in their careers." }}
-    </p>
-    
-    <a href="#" class="btn-edit">
-      <i class="fas fa-edit me-2"></i>Update Description
-    </a>
-  </div>
-
-  <!-- Active Job Postings -->
-  <div class="profile-card">
-    <h2 class="section-title">
-      <i class="fas fa-briefcase section-icon"></i>
-      Active Job Postings
-    </h2>
-    
-    <div class="job-item">
-      <div class="job-title">Software Engineer</div>
-      <div class="job-details">Full-time • Mumbai • ₹8-12 LPA</div>
-      <div class="job-stats">15 applications • Posted 3 days ago</div>
-    </div>
-    
-    <div class="job-item">
-      <div class="job-title">Data Analyst</div>
-      <div class="job-details">Full-time • Bangalore • ₹6-9 LPA</div>
-      <div class="job-stats">8 applications • Posted 1 week ago</div>
-    </div>
-    
-    <div class="job-item">
-      <div class="job-title">Marketing Manager</div>
-      <div class="job-details">Full-time • Delhi • ₹10-15 LPA</div>
-      <div class="job-stats">12 applications • Posted 2 weeks ago</div>
-    </div>
-    
-    <a href="{% url 'companies:manage_jobs' %}" class="btn-edit">
-      <i class="fas fa-briefcase me-2"></i>Manage All Jobs
-    </a>
-  </div>
-
-  <!-- Recruitment Statistics -->
-  <div class="profile-card">
-    <h2 class="section-title">
-      <i class="fas fa-chart-bar section-icon"></i>
-      Recruitment Statistics
-    </h2>
-    
-    <div class="stats-grid">
-      <div class="stat-item">
-        <div class="stat-number">25</div>
-        <div class="stat-label">Total Jobs Posted</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-number">184</div>
-        <div class="stat-label">Applications Received</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-number">32</div>
-        <div class="stat-label">Interviews Conducted</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-number">12</div>
-        <div class="stat-label">Positions Filled</div>
-      </div>
-    </div>
-  </div>
-
-</div>
-
-<!-- Back to Dashboard -->
-<div class="text-center mt-4 mb-5">
-  <a href="{% url 'companies:company_dashboard' %}" class="btn-edit">
-    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
-  </a>
 </div>
 
 {% endblock %}
