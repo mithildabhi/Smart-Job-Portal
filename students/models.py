@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+import os
 
 class StudentProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -14,7 +15,26 @@ class StudentProfile(models.Model):
     year_of_study = models.IntegerField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    def has_profile_picture(self):
+        """Check if user has a profile picture"""
+        return bool(self.profile_picture and self.profile_picture.name)
 
+    def delete_profile_picture(self):
+        """Delete the profile picture file from storage"""
+        if self.profile_picture:
+            # Delete the physical file from storage
+            try:
+                if os.path.isfile(self.profile_picture.path):
+                    os.remove(self.profile_picture.path)
+            except (ValueError, OSError):
+                # Handle cases where file doesn't exist or path is invalid
+                pass
+            
+            # Clear the field in the database
+            self.profile_picture = None
+            self.save()
+            
     def __str__(self):
         return f"{self.user.username}'s Profile"
 
@@ -26,3 +46,5 @@ class Student(models.Model):
 
     def __str__(self):
         return self.name
+
+

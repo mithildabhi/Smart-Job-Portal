@@ -12,8 +12,10 @@ urlpatterns = [
     path('register/', views.student_register, name='student_register'),
     path('saved_jobs/', views.saved_jobs, name='saved_jobs'),
     path('student_applications/', views.student_applications, name='student_applications'),
+    path('withdraw-application/<int:application_id>/', views.withdraw_application, name='withdraw_application'),
 
-
+    path('profile/upload-picture/', views.upload_profile_picture, name='upload_profile_picture'),
+    path('profile/delete-picture/', views.delete_profile_picture, name='delete_profile_picture'),
 ]
 
 # urlpatterns = [
