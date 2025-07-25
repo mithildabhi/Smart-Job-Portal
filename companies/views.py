@@ -14,6 +14,7 @@ from .models import Company                # Company model from local companies 
 
 
 
+
 def company_register(request):
     """Company registration with proper user type separation"""
     if request.method == 'POST':
@@ -128,33 +129,37 @@ def company_login(request):
 # companies/views.py
 @login_required
 def post_job(request):
-    """Post job with company validation"""
-    try:
-        company = Company.objects.get(user=request.user)
-    except Company.DoesNotExist:
-        messages.error(request, 'Access denied. Company profile required.')
-        return redirect('companies:company_login')
-    
+    """Post a new job using company field"""
     if request.method == 'POST':
         try:
+            company = Company.objects.get(user=request.user)
+            
+            # ✅ FIXED: Create job with company, not recruiter
             job = Job.objects.create(
                 title=request.POST['title'],
                 description=request.POST['description'],
-                recruiter=request.user,  # Using recruiter field as per your model
+                company=company,  # ← Use company instead of recruiter
                 location=request.POST['location'],
                 salary=request.POST.get('salary', ''),
                 requirements=request.POST.get('requirements', ''),
                 job_type=request.POST.get('job_type', 'full_time'),
+                deadline=request.POST.get('deadline'),
+                is_active=True
             )
             
             messages.success(request, f'Job "{job.title}" posted successfully!')
             return redirect('companies:manage_jobs')
             
-        except Exception as e:
-            messages.error(request, f'Failed to post job: {str(e)}')
+        except Company.DoesNotExist:
+            messages.error(request, 'Company profile not found.')
+            return redirect('companies:company_register')
     
-    return render(request, 'companies/post_job.html', {'company': company})
-
+    try:
+        company = Company.objects.get(user=request.user)
+        return render(request, 'companies/post_job.html', {'company': company})
+    except Company.DoesNotExist:
+        messages.error(request, 'Company profile not found.')
+        return redirect('companies:company_register')
 # companies/views.py
 @login_required
 def job_list(request):
@@ -246,45 +251,41 @@ def manage_jobs(request):
 
 @login_required
 def view_applications(request):
-    """View applications with company validation"""
+    """View applications using company field"""
     try:
         company = Company.objects.get(user=request.user)
+        
+        # ✅ FIXED: Filter by company instead of recruiter
+        company_jobs = Job.objects.filter(company=company)
+        
+        # Get applications for those jobs
+        applications = Application.objects.filter(
+            job__in=company_jobs
+        ).order_by('-applied_on')
+        
+        # Group applications by job
+        jobs_with_applications = []
+        for job in company_jobs:
+            job_applications = applications.filter(job=job)
+            if job_applications.exists():
+                jobs_with_applications.append({
+                    'job': job,
+                    'applications': job_applications,
+                    'application_count': job_applications.count(),
+                })
+        
+        context = {
+            'company': company,
+            'applications': applications,
+            'jobs_with_applications': jobs_with_applications,
+            'company_jobs': company_jobs,
+            'total_applications': applications.count(),
+        }
+        return render(request, 'companies/view_applications.html', context)
+        
     except Company.DoesNotExist:
-        messages.error(request, 'Access denied. Company profile required.')
-        return redirect('companies:company_login')
-    
-    # Get jobs posted by this user (recruiter)
-    company_jobs = Job.objects.filter(recruiter=request.user)
-    
-    # Get applications for those jobs
-    applications = Application.objects.filter(
-        job__in=company_jobs
-    ).order_by('-applied_on')
-    
-    # Group applications by job
-    jobs_with_applications = []
-    for job in company_jobs:
-        job_applications = applications.filter(job=job)
-        if job_applications.exists():
-            jobs_with_applications.append({
-                'job': job,
-                'applications': job_applications,
-                'application_count': job_applications.count(),
-                'pending_count': job_applications.filter(status='Pending').count() if hasattr(Application, 'status') else 0,
-                'accepted_count': job_applications.filter(status='Shortlisted').count() if hasattr(Application, 'status') else 0,
-            })
-    
-    context = {
-        'company': company,
-        'applications': applications,
-        'jobs_with_applications': jobs_with_applications,
-        'company_jobs': company_jobs,
-        'total_applications': applications.count(),
-        'pending_applications': applications.filter(status='Pending').count() if hasattr(Application, 'status') else applications.count(),
-        'accepted_applications': applications.filter(status='Shortlisted').count() if hasattr(Application, 'status') else 0,
-        'rejected_applications': applications.filter(status='Rejected').count() if hasattr(Application, 'status') else 0,
-    }
-    return render(request, 'companies/view_applications.html', context)
+        messages.error(request, 'Company profile not found.')
+        return redirect('companies:company_register')
 
 
 
@@ -325,50 +326,82 @@ def company_dashboard(request):
 
 @login_required
 def company_profile(request):
-    """Company profile view with protection"""
+    """Display company profile"""
     try:
         company = Company.objects.get(user=request.user)
-        return render(request, 'companies/recruiter_profile.html', {'company': company})
+        context = {
+            'company': company,
+            'user': request.user,
+        }
+        return render(request, 'companies/company_profile.html', context)
+        
     except Company.DoesNotExist:
-        messages.error(request, 'Access denied. Company profile required.')
-        return redirect('companies:company_login')
+        messages.error(request, 'Company profile not found.')
+        return redirect('companies:company_register')
+
     
+# companies/views.py
+
 @login_required
 def manage_jobs(request):
-    """Enhanced job management with company validation"""
+    """Enhanced job management with activate/deactivate/delete functionality"""
     try:
         company = Company.objects.get(user=request.user)
-    except Company.DoesNotExist:
-        messages.error(request, 'Access denied. Company profile required.')
-        return redirect('companies:company_login')
+        # ✅ FIXED: Use company instead of recruiter
+        jobs = Job.objects.filter(company=company).order_by('-posted_on')
         
-    # Filter jobs by recruiter (which is the company user)
-    jobs = Job.objects.filter(recruiter=request.user).order_by('-posted_on')
-    
-    if request.method == 'POST':
-        action = request.POST.get('action')
-        job_id = request.POST.get('job_id')
-        
-        try:
-            job = get_object_or_404(Job, id=job_id, recruiter=request.user)
+        # Handle job actions (activate/deactivate/delete)
+        if request.method == 'POST':
+            action = request.POST.get('action')
+            job_id = request.POST.get('job_id')
             
-            if action == 'activate' and hasattr(job, 'is_active'):
-                job.is_active = True
-                job.save()
-                messages.success(request, f'Job "{job.title}" activated successfully!')
-            elif action == 'deactivate' and hasattr(job, 'is_active'):
-                job.is_active = False
-                job.save()
-                messages.success(request, f'Job "{job.title}" deactivated successfully!')
-            elif action == 'delete':
-                job_title = job.title
-                job.delete()
-                messages.success(request, f'Job "{job_title}" deleted successfully!')
+            try:
+                # ✅ FIXED: Filter by company instead of recruiter
+                job = get_object_or_404(Job, id=job_id, company=company)
                 
-        except Job.DoesNotExist:
-            messages.error(request, 'Job not found.')
-            
-        return redirect('companies:manage_jobs')
+                if action == 'activate':
+                    job.is_active = True
+                    job.save()
+                    messages.success(request, f'Job "{job.title}" activated successfully!')
+                elif action == 'deactivate':
+                    job.is_active = False
+                    job.save()
+                    messages.success(request, f'Job "{job.title}" deactivated successfully!')
+                elif action == 'delete':
+                    job_title = job.title
+                    job.delete()
+                    messages.success(request, f'Job "{job_title}" deleted successfully!')
+                    
+            except Job.DoesNotExist:
+                messages.error(request, 'Job not found.')
+                
+            return redirect('companies:manage_jobs')
+        
+        # Get statistics for each job
+        job_stats = []
+        for job in jobs:
+            applications_count = Application.objects.filter(job=job).count()
+            recent_applications = Application.objects.filter(job=job).order_by('-applied_on')[:3]
+            job_stats.append({
+                'job': job,
+                'applications_count': applications_count,
+                'recent_applications': recent_applications,
+            })
+        
+        context = {
+            'company': company,
+            'job_stats': job_stats,
+            'total_jobs': jobs.count(),
+            'active_jobs': jobs.filter(is_active=True).count(),
+            'inactive_jobs': jobs.filter(is_active=False).count(),
+            'total_applications': sum([stat['applications_count'] for stat in job_stats])
+        }
+        return render(request, 'companies/manage_jobs.html', context)
+        
+    except Company.DoesNotExist:
+        messages.error(request, 'Company profile not found.')
+        return redirect('companies:company_register')
+
     
     # Get statistics for each job
     job_stats = []
@@ -511,3 +544,43 @@ def company_logout(request):
         messages.success(request, f'Goodbye {company_name}! You have been logged out successfully.')
     
     return redirect('jobs:main')
+
+# companies/views.py
+
+@login_required
+def delete_company_account(request):
+    """Delete company account with confirmation"""
+    try:
+        company = Company.objects.get(user=request.user)
+        
+        if request.method == 'POST':
+            # Get confirmation from POST data
+            confirmation = request.POST.get('confirm_delete')
+            
+            if confirmation == 'confirmed':
+                # Store company name for farewell message
+                company_name = company.company_name
+                user = request.user
+                
+                # Delete the company (this will also delete related jobs due to CASCADE)
+                company.delete()
+                
+                # Delete the user account
+                user.delete()
+                
+                # Add success message
+                messages.success(request, f'Company account for {company_name} has been permanently deleted. Thank you for using Smart Job Portal.')
+                return redirect('jobs:main')  # Redirect to home page
+            else:
+                messages.error(request, 'Account deletion was cancelled.')
+                return redirect('companies:company_dashboard')
+        
+        # For GET request, show confirmation page
+        context = {
+            'company': company,
+        }
+        return render(request, 'companies/delete_account_confirm.html', context)
+        
+    except Company.DoesNotExist:
+        messages.error(request, 'Company profile not found.')
+        return redirect('companies:company_dashboard')

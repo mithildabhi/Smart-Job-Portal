@@ -1,8 +1,20 @@
-{% extends 'base.html' %}
+{% extends 'company_base.html' %}
 
-{% block title %}Company Dashboard - Smart Job Portal{% endblock %}
+{% block title %}Company Dashboard - {{ company.company_name }}{% endblock %}
 
 {% block content %}
+<!-- Your existing dashboard content here -->
+<div class="container mt-4">
+    <!-- Keep all your existing dashboard content -->
+    <div class="row">
+        <div class="col-12">
+            <h1>Welcome, {{ company.company_name }}!</h1>
+            <!-- Rest of your existing dashboard content goes here -->
+        </div>
+    </div>
+</div>
+
+
 <style>
   .dashboard-header {
     background: linear-gradient(135deg, #667eea, #764ba2);

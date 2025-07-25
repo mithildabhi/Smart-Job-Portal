@@ -15,4 +15,6 @@ urlpatterns = [
     path('view-applications/', views.view_applications, name='view_applications'),
     path('update-application-status/', views.update_application_status, name='update_application_status'),
     path('logout/', views.company_logout, name='company_logout'),
+     path('delete-account/', views.delete_company_account, name='delete_account'), 
 ]
+
