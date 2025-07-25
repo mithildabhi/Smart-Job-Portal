@@ -365,21 +365,25 @@
               
               <li><hr class="dropdown-divider-custom"></li>
               
-              <!-- Delete Account Option -->
-              <li>
-                <button class="dropdown-item-custom dropdown-item-danger" onclick="showDeleteModal(event)">
-                  <i class="fas fa-trash-alt"></i>Delete Account
-                </button>
-              </li>
-              
-              <li><hr class="dropdown-divider-custom"></li>
-              
               <!-- Logout Option -->
               <li>
                 <a class="dropdown-item-custom" href="{% url 'companies:company_logout' %}" onclick="event.stopPropagation()">
                   <i class="fas fa-sign-out-alt"></i>Logout
                 </a>
               </li>
+
+             
+              
+              <li><hr class="dropdown-divider-custom"></li>
+
+               <!-- Delete Account Option -->
+              <li>
+                <button class="dropdown-item-custom dropdown-item-danger" onclick="showDeleteModal(event)">
+                  <i class="fas fa-trash-alt"></i>Delete Account
+                </button>
+              </li>
+              
+             
             </ul>
           </div>
         {% endif %}
