@@ -16,6 +16,9 @@ urlpatterns = [
 
     path('profile/upload-picture/', views.upload_profile_picture, name='upload_profile_picture'),
     path('profile/delete-picture/', views.delete_profile_picture, name='delete_profile_picture'),
+    path('profile/', views.student_profile, name='student_profile'),
+    path('delete-account/', views.delete_student_account, name='delete_account'),
+
 ]
 
 # urlpatterns = [

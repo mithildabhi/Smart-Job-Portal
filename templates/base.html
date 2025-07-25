@@ -165,5 +165,37 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Check for account deletion success
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('account_deleted') === 'true') {
+        const studentName = urlParams.get('name') || 'Student';
+        
+        // Show success message
+        const alertHtml = `
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i>
+                <strong>Account Deleted Successfully!</strong><br>
+                Student account for <strong>${studentName}</strong> has been permanently deleted. 
+                Thank you for using Smart Job Portal.
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+        
+        // Insert at top of page
+        const container = document.querySelector('.container, .container-fluid, main, body');
+        if (container) {
+            container.insertAdjacentHTML('afterbegin', alertHtml);
+        }
+        
+        // Clean URL after 5 seconds
+        setTimeout(() => {
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }, 5000);
+    }
+});
+</script>
+
 </body>
 </html>

@@ -9,6 +9,7 @@ from jobs.models import Application
 from .forms import ProfilePictureForm
 from django.views.decorators.http import require_POST
 
+
 def student_register(request):
     if request.method == 'POST':
         username = request.POST['username']
@@ -112,6 +113,26 @@ def student_logout(request):
     messages.success(request, 'You have been logged out successfully')
     return redirect('jobs:main')
 
+
+
+@login_required
+@require_POST
+def delete_student_account(request):
+    """Ultra-simple delete for debugging"""
+    
+    try:
+        student_name = request.user.username
+        
+        # Delete user (applications will cascade delete)
+        request.user.delete()
+        
+        # Simple redirect
+        return redirect('/')
+        
+    except Exception as e:
+        print(f"Delete error: {e}")
+        return redirect('students:student_dashboard')
+
 @login_required
 def student_dashboard(request):
     # Ensure only students can access student dashboard
@@ -190,7 +211,7 @@ def delete_profile_picture(request):
         else:
             messages.info(request, 'No profile picture to delete.')
     
-    return redirect('students:student_profile')
+    return redirect('students:profile')
 @login_required
 def saved_jobs(request):
     try:
