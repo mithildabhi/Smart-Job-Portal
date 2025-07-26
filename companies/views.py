@@ -11,6 +11,10 @@ import json
 # Import models from correct apps
 from jobs.models import Job, Application  # Job models from jobs app
 from .models import Company                # Company model from local companies app
+from django.core.paginator import Paginator
+from django.db.models import Count
+
+
 
 
 
@@ -125,6 +129,123 @@ def company_login(request):
             context['login_error'] = True
     
     return render(request, 'companies/company_login.html', context)
+
+@login_required
+def post_job(request):
+    """Post a new job and redirect to manage jobs"""
+    try:
+        company = Company.objects.get(user=request.user)
+        
+        if request.method == 'POST':
+            # Get form data
+            title = request.POST.get('title')
+            description = request.POST.get('description')
+            location = request.POST.get('location')
+            job_type = request.POST.get('job_type', 'full_time')
+            salary = request.POST.get('salary')
+            requirements = request.POST.get('requirements')
+            deadline = request.POST.get('deadline')
+            
+            # Validate required fields
+            if not all([title, description, location, deadline]):
+                messages.error(request, 'Please fill in all required fields.')
+                return render(request, 'companies/post_job.html', {'company': company})
+            
+            # Create new job
+            job = Job.objects.create(
+                company=company,
+                title=title,
+                description=description,
+                location=location,
+                job_type=job_type,
+                salary=salary,
+                requirements=requirements,
+                deadline=deadline,
+                is_active=True
+            )
+            
+            messages.success(request, f'Job "{title}" posted successfully!')
+            return redirect('companies:manage_jobs')  # Redirect to manage jobs
+            
+        context = {'company': company}
+        return render(request, 'companies/post_job.html', context)
+        
+    except Company.DoesNotExist:
+        messages.error(request, 'Company profile not found.')
+        return redirect('companies:company_dashboard')
+    
+@login_required
+def manage_jobs(request):
+    """Display all jobs posted by the company"""
+    try:
+        company = Company.objects.get(user=request.user)
+        
+        # Get all jobs with application counts
+        jobs_queryset = Job.objects.filter(company=company).annotate(
+            applications_count=Count('application')
+        ).order_by('-posted_on')
+        
+        # Add pagination
+        paginator = Paginator(jobs_queryset, 10)
+        page_number = request.GET.get('page', 1)
+        jobs = paginator.get_page(page_number)
+        
+        # Calculate statistics
+        total_jobs = jobs_queryset.count()
+        active_jobs = jobs_queryset.filter(is_active=True).count()
+        inactive_jobs = jobs_queryset.filter(is_active=False).count()
+        total_applications = Application.objects.filter(job__company=company).count()
+        
+        context = {
+            'company': company,
+            'jobs': jobs,
+            'total_jobs': total_jobs,
+            'active_jobs': active_jobs,
+            'inactive_jobs': inactive_jobs,
+            'total_applications': total_applications,
+        }
+        
+        return render(request, 'companies/manage_jobs.html', context)
+        
+    except Company.DoesNotExist:
+        messages.error(request, 'Company profile not found.')
+        return redirect('companies:company_dashboard')
+
+
+@login_required
+def toggle_job_status(request, job_id):
+    """Toggle job active/inactive status"""
+    try:
+        company = Company.objects.get(user=request.user)
+        job = get_object_or_404(Job, id=job_id, company=company)
+        
+        job.is_active = not job.is_active
+        job.save()
+        
+        status = "activated" if job.is_active else "deactivated"
+        messages.success(request, f'Job "{job.title}" has been {status}.')
+        
+    except Company.DoesNotExist:
+        messages.error(request, 'Company profile not found.')
+    
+    return redirect('companies:manage_jobs')
+
+@login_required
+def delete_job(request, job_id):
+    """Delete a job posting"""
+    try:
+        company = Company.objects.get(user=request.user)
+        job = get_object_or_404(Job, id=job_id, company=company)
+        
+        if request.method == 'POST':
+            job_title = job.title
+            job.delete()
+            messages.success(request, f'Job "{job_title}" has been deleted.')
+        
+    except Company.DoesNotExist:
+        messages.error(request, 'Company profile not found.')
+    
+    return redirect('companies:manage_jobs')
 
 # companies/views.py
 @login_required
