@@ -2,19 +2,19 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.contrib import messages
 from django.contrib.auth.models import User
+from django.contrib import messages
 from django.http import JsonResponse
-from django.db.models import Q
+from django.utils import timezone
+
+from django.core.paginator import Paginator
+from django.db.models import Q, Count
+
+from datetime import timedelta
 import json
 
-# Import models from correct apps
-from jobs.models import Job, Application  # Job models from jobs app
-from .models import Company                # Company model from local companies app
-from django.core.paginator import Paginator
-from django.db.models import Count
-
-
+from jobs.models import Job, Application  # From jobs app
+from .models import Company               # Local companies app
 
 
 
@@ -413,38 +413,120 @@ def view_applications(request):
 
 @login_required
 def company_dashboard(request):
-    """Company dashboard with user type protection"""
+    """Enhanced company dashboard with recruitment statistics and recent activities"""
     try:
         company = Company.objects.get(user=request.user)
         
-        # ✅ FIX: Use 'company' field instead of 'recruiter'
+        # Get current date for calculations
+        now = timezone.now()
+        last_30_days = now - timedelta(days=30)
+        last_7_days = now - timedelta(days=7)
+        
+        # === RECRUITMENT STATISTICS ===
+        # Total jobs posted by the company
         total_jobs = Job.objects.filter(company=company).count()
-        active_jobs = Job.objects.filter(company=company, is_active=True).count()
-        inactive_jobs = Job.objects.filter(company=company, is_active=False).count()
         
-        # Get recent applications for company jobs
-        recent_applications = Application.objects.filter(
-            job__company=company
-        ).order_by('-applied_on')[:5]
-        
-        # Get total applications count
+        # Total applications received
         total_applications = Application.objects.filter(job__company=company).count()
+        
+        # Recent interviews (applications with status 'interview' or 'shortlisted')
+        interviews_scheduled = Application.objects.filter(
+            job__company=company,
+            status__in=['interview', 'shortlisted']
+        ).count()
+        
+        # Positions filled (applications with status 'accepted' or 'hired')
+        positions_filled = Application.objects.filter(
+            job__company=company,
+            status__in=['accepted', 'hired']
+        ).count()
+        
+        # Active jobs
+        active_jobs = Job.objects.filter(company=company, is_active=True).count()
+        
+        # Applications in last 30 days
+        recent_applications = Application.objects.filter(
+            job__company=company,
+            applied_on__gte=last_30_days
+        ).count()
+        
+        # === RECENT ACTIVITIES ===
+        recent_activities = []
+        
+        # Recent applications
+        new_applications = Application.objects.filter(
+            job__company=company,
+            applied_on__gte=last_7_days
+        ).select_related('student', 'job').order_by('-applied_on')[:5]
+        
+        for app in new_applications:
+            recent_activities.append({
+                'type': 'application',
+                'title': 'New application received',
+                'description': f'{app.student.get_full_name() or app.student.username} applied for {app.job.title}',
+                'time': app.applied_on,
+                'icon': 'fas fa-user-plus',
+                'color': 'primary'
+            })
+        
+        # Recent job postings
+        recent_jobs = Job.objects.filter(
+            company=company,
+            posted_on__gte=last_7_days
+        ).order_by('-posted_on')[:3]
+        
+        for job in recent_jobs:
+            recent_activities.append({
+                'type': 'job_posted',
+                'title': 'Job posting published',
+                'description': f'Job "{job.title}" was posted for {job.location}',
+                'time': job.posted_on,
+                'icon': 'fas fa-briefcase',
+                'color': 'success'
+            })
+        
+        # Sort all activities by time (most recent first)
+        recent_activities.sort(key=lambda x: x['time'], reverse=True)
+        recent_activities = recent_activities[:8]  # Limit to 8 most recent
+        
+        # === ADDITIONAL METRICS ===
+        # Application response rate
+        total_apps = Application.objects.filter(job__company=company).count()
+        responded_apps = Application.objects.filter(
+            job__company=company
+        ).exclude(status='pending').count()
+        
+        response_rate = round((responded_apps / total_apps * 100) if total_apps > 0 else 0, 1)
+        
+        # ✅ FIXED: Jobs with applications (using correct field name 'applications')
+        jobs_with_applications = Job.objects.filter(
+            company=company,
+            applications__isnull=False  # Changed from 'application' to 'applications'
+        ).distinct().count()
         
         context = {
             'company': company,
             'user': request.user,
+            
+            # Recruitment Statistics
             'total_jobs': total_jobs,
-            'active_jobs': active_jobs,
-            'inactive_jobs': inactive_jobs,
-            'recent_applications': recent_applications,
             'total_applications': total_applications,
+            'interviews_scheduled': interviews_scheduled,
+            'positions_filled': positions_filled,
+            'active_jobs': active_jobs,
+            'recent_applications': recent_applications,
+            'response_rate': response_rate,
+            'jobs_with_applications': jobs_with_applications,
+            
+            # Recent Activities
+            'recent_activities': recent_activities,
         }
+        
         return render(request, 'companies/company_dashboard.html', context)
         
     except Company.DoesNotExist:
-        messages.error(request, 'Access denied. Company profile required.')
-        return redirect('companies:company_login')
-
+        messages.error(request, 'Company profile not found.')
+        return redirect('companies:company_register')
 @login_required
 def company_profile(request):
     """Display company profile"""

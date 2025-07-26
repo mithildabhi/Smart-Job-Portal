@@ -3,326 +3,407 @@
 {% block title %}Company Dashboard - {{ company.company_name }}{% endblock %}
 
 {% block content %}
-<!-- Your existing dashboard content here -->
-{% comment %} <div class="container mt-4">
-    <!-- Keep all your existing dashboard content -->
-    <div class="row">
-        <div class="col-12">
-            <h1>Welcome, {{ company.company_name }}!</h1>
-            <!-- Rest of your existing dashboard content goes here -->
-        </div>
-    </div>
-</div> {% endcomment %}
-
-
 <style>
-  .dashboard-header {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-    border-radius: 20px;
-    padding: 2.5rem;
-    margin-bottom: 3rem;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .dashboard-header::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-    animation: float 6s ease-in-out infinite;
-  }
-
-  @keyframes float {
-    0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
-    33% { transform: translate(30px, -30px) rotate(120deg); }
-    66% { transform: translate(-20px, 20px) rotate(240deg); }
-  }
-
-  .dashboard-content {
-    position: relative;
-    z-index: 2;
-  }
-
-  .welcome-title {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-  }
-
-  .welcome-subtitle {
-    font-size: 1.1rem;
-    opacity: 0.9;
-  }
-
-  .dashboard-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
-    margin-bottom: 3rem;
-  }
-
-  .dashboard-card {
-    background: white;
-    border-radius: 20px;
-    padding: 2rem;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-    border-top: 4px solid transparent;
-  }
-
-  .dashboard-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
-  }
-
-  .dashboard-card:nth-child(1) { border-top-color: #667eea; }
-  .dashboard-card:nth-child(2) { border-top-color: #f093fb; }
-  .dashboard-card:nth-child(3) { border-top-color: #4facfe; }
-  .dashboard-card:nth-child(4) { border-top-color: #43e97b; }
-
-  .card-icon {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .card-title {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: #2c3e50;
-    margin-bottom: 0.5rem;
-  }
-
-  .card-description {
-    color: #6c757d;
-    margin-bottom: 1.5rem;
-  }
-
-  .card-button {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 25px;
-    font-weight: 600;
-    text-decoration: none;
-    display: inline-block;
-    transition: all 0.3s ease;
-  }
-
-  .card-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-    color: white;
-  }
-
-  .stats-section {
-    background: white;
-    border-radius: 20px;
-    padding: 2.5rem;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    margin-bottom: 3rem;
-  }
-
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 2rem;
-    text-align: center;
-  }
-
-  .stat-item {
-    padding: 1rem;
-    border-radius: 15px;
-    background: linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%);
-  }
-
-  .stat-number {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #667eea;
-    margin-bottom: 0.5rem;
-  }
-
-  .stat-label {
-    color: #6c757d;
-    font-weight: 500;
-  }
-
-  .recent-activities {
-    background: white;
-    border-radius: 20px;
-    padding: 2.5rem;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  }
-
-  .activity-item {
-    display: flex;
-    align-items: center;
-    padding: 1rem;
-    border-bottom: 1px solid #f0f0f0;
-    transition: background 0.3s ease;
-  }
-
-  .activity-item:hover {
-    background: #f8f9ff;
-    border-radius: 10px;
-  }
-
-  .activity-icon {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 1rem;
-  }
-
-  .activity-content h6 {
-    margin: 0 0 0.25rem 0;
-    color: #2c3e50;
-    font-weight: 600;
-  }
-
-  .activity-content p {
-    margin: 0;
-    color: #6c757d;
-    font-size: 0.9rem;
-  }
+    /* Full width page styling */
+    .container-fluid {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+    
+    .dashboard-content {
+        padding: 0 1rem; /* Add minimal internal padding */
+        width: 100%;
+    }
+    
+    .dashboard-card {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+        border-top: 4px solid #667eea;
+        transition: all 0.3s ease;
+    }
+    
+    .dashboard-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        border-top: 4px solid #667eea;
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #667eea;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+    
+    .stat-label {
+        color: #6c757d;
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .section-icon {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 1.5rem;
+    }
+    
+    .activity-item {
+        display: flex;
+        align-items: start;
+        gap: 1rem;
+        padding: 1rem 0;
+        border-bottom: 1px solid #f0f0f0;
+        transition: all 0.3s ease;
+    }
+    
+    .activity-item:hover {
+        background: #f8f9ff;
+        margin: 0 -1rem;
+        padding: 1rem;
+        border-radius: 10px;
+    }
+    
+    .activity-item:last-child {
+        border-bottom: none;
+    }
+    
+    .activity-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+    
+    .activity-content {
+        flex-grow: 1;
+    }
+    
+    .activity-title {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.25rem;
+    }
+    
+    .activity-description {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .activity-time {
+        color: #8e8e8e;
+        font-size: 0.8rem;
+    }
+    
+    .quick-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+    
+    .action-card {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        text-align: center;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        border: 1px solid #e9ecef;
+    }
+    
+    .action-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        border-color: #667eea;
+    }
+    
+    .action-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .action-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+    
+    .action-description {
+        color: #6c757d;
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+    }
+    
+    .btn-action {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 25px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-action:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        color: white;
+    }
+    
+    .welcome-header {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 3rem;
+        text-align: center;
+    }
+    
+    .empty-activities {
+        text-align: center;
+        padding: 3rem;
+        color: #6c757d;
+    }
+    
+    .empty-activities i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.3;
+    }
+    
+    /* Remove default Bootstrap container margins */
+    @media (min-width: 1200px) {
+        .container-fluid {
+            max-width: 100% !important;
+        }
+    }
 </style>
 
-<div class="dashboard-header">
-  <div class="dashboard-content">
-    <h1 class="welcome-title">Welcome, {{ company.name|default:user.username }}!</h1>
-    <p class="welcome-subtitle">Manage your recruitment and find the best talent</p>
-  </div>
+<!-- Use container-fluid for full width -->
+<div class="container-fluid">
+    <div class="dashboard-content">
+        <!-- Welcome Header -->
+        <div class="welcome-header">
+            <h1>Welcome back, {{ company.company_name }}!</h1>
+            <p class="lead mb-0">Here's what's happening with your recruitment activities</p>
+        </div>
+        
+        <!-- Statistics Overview -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-number">{{ total_jobs|default:0 }}</span>
+                <div class="stat-label">Total Jobs</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number">{{ total_applications|default:0 }}</span>
+                <div class="stat-label">Total Applications</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number">{{ interviews_scheduled|default:0 }}</span>
+                <div class="stat-label">Interviews Scheduled</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number">{{ positions_filled|default:0 }}</span>
+                <div class="stat-label">Positions Filled</div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <div class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-plus-circle"></i>
+                </div>
+                <div class="action-title">Post New Job</div>
+                <div class="action-description">Create and publish new job openings to attract qualified candidates</div>
+                <a href="{% url 'companies:post_job' %}" class="btn-action">
+                    <i class="fas fa-plus me-2"></i>Post Job
+                </a>
+            </div>
+            
+            <div class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-briefcase"></i>
+                </div>
+                <div class="action-title">Manage Jobs</div>
+                <div class="action-description">View, edit, and manage all your active job postings and their performance</div>
+                <a href="{% url 'companies:manage_jobs' %}" class="btn-action">
+                    <i class="fas fa-cog me-2"></i>Manage Jobs
+                </a>
+            </div>
+            
+            <div class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="action-title">View Applications</div>
+                <div class="action-description">Review applications from potential candidates and manage hiring process</div>
+                <a href="{% url 'companies:view_applications' %}" class="btn-action">
+                    <i class="fas fa-eye me-2"></i>View Applications
+                </a>
+            </div>
+        </div>
+        
+        <div class="row">
+            <!-- Recruitment Statistics -->
+            <div class="col-lg-6">
+                <div class="dashboard-card">
+                    <h3 class="section-title">
+                        <i class="fas fa-chart-bar section-icon"></i>
+                        Recruitment Statistics
+                    </h3>
+                    
+                    <div class="row text-center">
+                        <div class="col-6 mb-3">
+                            <div class="stat-number" style="font-size: 2rem;">{{ active_jobs|default:0 }}</div>
+                            <div class="stat-label">Active Jobs</div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="stat-number" style="font-size: 2rem;">{{ recent_applications|default:0 }}</div>
+                            <div class="stat-label">Applications (30 days)</div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="stat-number" style="font-size: 2rem;">{{ response_rate|default:0 }}%</div>
+                            <div class="stat-label">Response Rate</div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="stat-number" style="font-size: 2rem;">{{ jobs_with_applications|default:0 }}</div>
+                            <div class="stat-label">Jobs with Applications</div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-3">
+                        <a href="{% url 'companies:manage_jobs' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-chart-line me-2"></i>View Detailed Analytics
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Activities -->
+            <div class="col-lg-6">
+                <div class="dashboard-card">
+                    <h3 class="section-title">
+                        <i class="fas fa-clock section-icon"></i>
+                        Recent Activities
+                    </h3>
+                    
+                    {% if recent_activities %}
+                        {% for activity in recent_activities %}
+                        <div class="activity-item">
+                            <div class="activity-icon bg-{{ activity.color }}">
+                                <i class="{{ activity.icon }}"></i>
+                            </div>
+                            <div class="activity-content">
+                                <div class="activity-title">{{ activity.title }}</div>
+                                <div class="activity-description">{{ activity.description }}</div>
+                                <div class="activity-time">{{ activity.time|timesince }} ago</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        
+                        <div class="text-center mt-3">
+                            <a href="{% url 'companies:view_applications' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-history me-2"></i>View All Activities
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="empty-activities">
+                            <i class="fas fa-bell"></i>
+                            <h5>No Recent Activities</h5>
+                            <p>Start by posting jobs to see activities here</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
-<!-- Quick Actions -->
-<div class="dashboard-cards">
-  <div class="dashboard-card">
-    <div class="card-icon">
-      <i class="fas fa-plus-circle"></i>
-    </div>
-    <h3 class="card-title">Post New Job</h3>
-    <p class="card-description">Create and publish new job openings to attract qualified candidates.</p>
-    <a href="{% url 'companies:post_job' %}" class="card-button">
-      <i class="fas fa-plus me-2"></i>Post Job
-    </a>
-  </div>
+<script>
+// Animate numbers on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const statNumbers = document.querySelectorAll('.stat-number');
+    
+    const animateValue = (element, start, end, duration) => {
+        let startTimestamp = null;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            const currentValue = Math.floor(progress * (end - start) + start);
+            
+            if (element.textContent.includes('%')) {
+                element.textContent = currentValue + '%';
+            } else {
+                element.textContent = currentValue;
+            }
+            
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            }
+        };
+        window.requestAnimationFrame(step);
+    };
 
-  <div class="dashboard-card">
-    <div class="card-icon">
-      <i class="fas fa-briefcase"></i>
-    </div>
-    <h3 class="card-title">Manage Jobs</h3>
-    <p class="card-description">View, edit, and manage all your active job postings.</p>
-    <a href="{% url 'companies:manage_jobs' %}" class="card-button">
-      <i class="fas fa-edit me-2"></i>Manage Jobs
-    </a>
-  </div>
-
-  <div class="dashboard-card">
-    <div class="card-icon">
-      <i class="fas fa-users"></i>
-    </div>
-    <h3 class="card-title">View Applications</h3>
-    <p class="card-description">Review applications from potential candidates and manage hiring process.</p>
-    <a href="{% url 'companies:view_applications' %}" class="card-button">
-      <i class="fas fa-eye me-2"></i>View Applications
-    </a>
-  </div>
-
-  <div class="dashboard-card">
-    <div class="card-icon">
-      <i class="fas fa-user-tie"></i>
-    </div>
-    <h3 class="card-title">Company Profile</h3>
-    <p class="card-description">Update your company information and recruitment preferences.</p>
-    <a href="{% url 'companies:company_profile' %}" class="card-button">
-      <i class="fas fa-edit me-2"></i>Edit Profile
-    </a>
-  </div>
-</div>
-
-<!-- Statistics -->
-<div class="stats-section">
-  <h3 class="text-center mb-4" style="color: #2c3e50; font-weight: 700;">Recruitment Statistics</h3>
-  <div class="stats-grid">
-    <div class="stat-item">
-      <div class="stat-number">12</div>
-      <div class="stat-label">Active Jobs</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-number">48</div>
-      <div class="stat-label">Total Applications</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-number">8</div>
-      <div class="stat-label">Interviews Scheduled</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-number">3</div>
-      <div class="stat-label">Positions Filled</div>
-    </div>
-  </div>
-</div>
-
-<!-- Recent Activities -->
-<div class="recent-activities">
-  <h3 class="mb-4" style="color: #2c3e50; font-weight: 700;">Recent Activities</h3>
-  
-  <div class="activity-item">
-    <div class="activity-icon">
-      <i class="fas fa-user-plus"></i>
-    </div>
-    <div class="activity-content">
-      <h6>New application received</h6>
-      <p>John Doe applied for Software Engineer position • 2 hours ago</p>
-    </div>
-  </div>
-
-  <div class="activity-item">
-    <div class="activity-icon">
-      <i class="fas fa-briefcase"></i>
-    </div>
-    <div class="activity-content">
-      <h6>Job posting published</h6>
-      <p>Data Analyst position is now live • 1 day ago</p>
-    </div>
-  </div>
-
-  <div class="activity-item">
-    <div class="activity-icon">
-      <i class="fas fa-calendar-check"></i>
-    </div>
-    <div class="activity-content">
-      <h6>Interview scheduled</h6>
-      <p>Interview with Sarah Smith for Marketing Manager • 2 days ago</p>
-    </div>
-  </div>
-
-  <div class="activity-item">
-    <div class="activity-icon">
-      <i class="fas fa-check-circle"></i>
-    </div>
-    <div class="activity-content">
-      <h6>Position filled</h6>
-      <p>Frontend Developer position successfully filled • 3 days ago</p>
-    </div>
-  </div>
-</div>
+    statNumbers.forEach(stat => {
+        const text = stat.textContent;
+        const number = parseInt(text.replace(/\D/g, ''));
+        if (number > 0) {
+            animateValue(stat, 0, number, 1500);
+        }
+    });
+});
+</script>
 
 {% endblock %}
