@@ -1,293 +1,18 @@
 {% extends 'student_base.html' %}
+{% load static %}
 
 {% block title %}My Profile - Smart Job Portal{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/student_profile.css' %}">
+{% endblock %}
+
 {% block content %}
-<style>
-  .profile-header {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-    border-radius: 20px;
-    padding: 2.5rem;
-    margin-bottom: 3rem;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .profile-header::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-    animation: float 6s ease-in-out infinite;
-  }
-
-  @keyframes float {
-    0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
-    33% { transform: translate(30px, -30px) rotate(120deg); }
-    66% { transform: translate(-20px, 20px) rotate(240deg); }
-  }
-
-  .profile-content {
-    position: relative;
-    z-index: 2;
-  }
-
-  .profile-avatar {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    border: 4px solid rgba(255, 255, 255, 0.3);
-    margin: 0 auto 1rem;
-    background: rgba(255, 255, 255, 0.1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 3rem;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .profile-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 50%;
-  }
-
-  .profile-name {
-    font-size: 2rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-  }
-
-  .profile-subtitle {
-    font-size: 1.1rem;
-    opacity: 0.9;
-  }
-
-  .profile-sections {
-    display: grid;
-    gap: 2rem;
-  }
-
-  .profile-card {
-    background: white;
-    border-radius: 20px;
-    padding: 2.5rem;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-    border-top: 4px solid #667eea;
-  }
-
-  .profile-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
-  }
-
-  .section-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #2c3e50;
-    margin-bottom: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .section-icon {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    font-size: 1.5rem;
-  }
-
-  .info-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 0;
-    border-bottom: 1px solid #f0f0f0;
-  }
-
-  .info-row:last-child {
-    border-bottom: none;
-  }
-
-  .info-label {
-    font-weight: 600;
-    color: #2c3e50;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .info-value {
-    color: #6c757d;
-    font-weight: 500;
-  }
-
-  .btn-edit {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-    border: none;
-    padding: 0.75rem 2rem;
-    border-radius: 25px;
-    font-weight: 600;
-    text-decoration: none;
-    display: inline-block;
-    transition: all 0.3s ease;
-    margin-top: 1rem;
-  }
-
-  .btn-edit:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-    color: white;
-  }
-
-  .skill-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-top: 1rem;
-  }
-
-  .skill-tag {
-    background: linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%);
-    color: #667eea;
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    border: 1px solid rgba(102, 126, 234, 0.2);
-  }
-
-  .progress-bar-container {
-    margin: 1rem 0;
-  }
-
-  .progress-label {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 0.5rem;
-    font-size: 0.9rem;
-  }
-
-  .progress-bar {
-    width: 100%;
-    height: 8px;
-    background: #e9ecef;
-    border-radius: 4px;
-    overflow: hidden;
-  }
-
-  .progress-fill {
-    height: 100%;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    border-radius: 4px;
-    transition: width 0.5s ease;
-  }
-
-  .education-item, .experience-item {
-    padding: 1.5rem;
-    background: linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%);
-    border-radius: 15px;
-    margin-bottom: 1rem;
-    border-left: 4px solid #667eea;
-  }
-
-  .item-title {
-    font-weight: 700;
-    color: #2c3e50;
-    margin-bottom: 0.5rem;
-  }
-
-  .item-subtitle {
-    color: #667eea;
-    font-weight: 500;
-    margin-bottom: 0.5rem;
-  }
-
-  .item-duration {
-    color: #6c757d;
-    font-size: 0.9rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .item-description {
-    color: #6c757d;
-    line-height: 1.6;
-  }
-
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 1.5rem;
-    margin-top: 1rem;
-  }
-
-  .stat-item {
-    text-align: center;
-    padding: 1.5rem;
-    background: linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%);
-    border-radius: 15px;
-  }
-
-  .stat-number {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #667eea;
-    margin-bottom: 0.5rem;
-  }
-
-  .stat-label {
-    color: #6c757d;
-    font-weight: 500;
-    font-size: 0.9rem;
-  }
-
-  .empty-state {
-    text-align: center;
-    padding: 3rem;
-    color: #6c757d;
-  }
-
-  .empty-state i {
-    font-size: 4rem;
-    margin-bottom: 1rem;
-    opacity: 0.3;
-  }
-
-  /* Responsive Design */
-  @media (max-width: 768px) {
-    .profile-sections {
-      gap: 1.5rem;
-    }
-    
-    .profile-card {
-      padding: 1.5rem;
-    }
-    
-    .info-row {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.5rem;
-    }
-  }
-</style>
-
 <!-- Profile Header -->
-<!-- Updated Profile Header -->
 <div class="profile-header">
   <div class="profile-content">
     <div class="profile-avatar" id="profile-avatar-container">
-      {% if profile.has_profile_picture %}
+      {% if profile.profile_picture %}
         <img src="{{ profile.profile_picture.url }}" alt="Profile Picture" id="profile-image">
         <div class="avatar-overlay">
           <div class="avatar-actions">
@@ -308,7 +33,13 @@
         </div>
       {% endif %}
     </div>
-    <h1 class="profile-name">{{ user.first_name }} {{ user.last_name }}</h1>
+    <h1 class="profile-name">
+      {% if user.first_name %}
+        {{ user.first_name }} {{ user.last_name }}
+      {% else %}
+        {{ user.username }}
+      {% endif %}
+    </h1>
     <p class="profile-subtitle">Computer Science Student • Looking for Opportunities</p>
   </div>
 </div>
@@ -319,7 +50,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="imageUploadModalLabel">
-          {% if profile.has_profile_picture %}
+          {% if profile.profile_picture %}
             Update Profile Picture
           {% else %}
             Add Profile Picture
@@ -352,253 +83,6 @@
   </div>
 </div>
 
-
-
-<style>
-.profile-avatar {
-  position: relative;
-  cursor: pointer;
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  border: 4px solid rgba(255, 255, 255, 0.3);
-  margin: 0 auto 1rem;
-  background: rgba(255, 255, 255, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 3rem;
-  overflow: hidden;
-}
-
-.profile-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 50%;
-}
-
-.avatar-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.profile-avatar:hover .avatar-overlay {
-  opacity: 1;
-}
-
-.avatar-actions {
-  display: flex;
-  gap: 10px;
-}
-
-.btn-avatar-action {
-  background: rgba(255, 255, 255, 0.9);
-  border: none;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #333;
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
-
-.btn-avatar-action:hover {
-  background: white;
-  transform: scale(1.1);
-}
-
-.modal-content {
-  border-radius: 15px;
-  border: none;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-}
-
-.modal-header {
-  border-bottom: 1px solid #f0f0f0;
-  padding: 1.5rem;
-}
-
-.modal-body {
-  padding: 1.5rem;
-}
-
-.modal-footer {
-  border-top: 1px solid #f0f0f0;
-  padding: 1.5rem;
-}
-
-#image-preview {
-  border: 2px dashed #ddd;
-  padding: 10px;
-  border-radius: 10px;
-}
-</style>
-
-
-<script>
-function openImageModal() {
-    const modal = new bootstrap.Modal(document.getElementById('imageUploadModal'));
-    modal.show();
-}
-
-function deleteProfilePicture() {
-    if (confirm('Are you sure you want to delete your profile picture?')) {
-        fetch('{% url "students:delete_profile_picture" %}', {
-            method: 'POST',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-            },
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Update UI to show default avatar
-                const container = document.getElementById('profile-avatar-container');
-                container.innerHTML = `
-                    <i class="fas fa-user-graduate" id="default-avatar"></i>
-                    <div class="avatar-overlay">
-                        <button class="btn-avatar-action" onclick="openImageModal()" title="Add Picture">
-                            <i class="fas fa-camera"></i>
-                        </button>
-                    </div>
-                `;
-                showAlert('success', data.message);
-            } else {
-                showAlert('danger', data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showAlert('danger', 'An error occurred while deleting the picture.');
-        });
-    }
-}
-
-// Handle image preview
-document.getElementById('profile-picture-input').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            document.getElementById('image-preview').src = e.target.result;
-            document.getElementById('image-preview-container').style.display = 'block';
-        };
-        reader.readAsDataURL(file);
-    }
-});
-
-// Handle form submission
-document.getElementById('profile-picture-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    const uploadBtn = document.getElementById('upload-btn');
-    const uploadBtnText = document.getElementById('upload-btn-text');
-    const uploadSpinner = document.getElementById('upload-spinner');
-    
-    // Show loading state
-    uploadBtn.disabled = true;
-    uploadBtnText.textContent = 'Uploading...';
-    uploadSpinner.style.display = 'inline-block';
-    
-    fetch('{% url "students:upload_profile_picture" %}', {
-        method: 'POST',
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-        },
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Update UI with new image
-            const container = document.getElementById('profile-avatar-container');
-            container.innerHTML = `
-                <img src="${data.image_url}" alt="Profile Picture" id="profile-image">
-                <div class="avatar-overlay">
-                    <div class="avatar-actions">
-                        <button class="btn-avatar-action" onclick="openImageModal()" title="Change Picture">
-                            <i class="fas fa-camera"></i>
-                        </button>
-                        <button class="btn-avatar-action" onclick="deleteProfilePicture()" title="Delete Picture">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            // Close modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById('imageUploadModal'));
-            modal.hide();
-            
-            showAlert('success', data.message);
-        } else {
-            // Show errors
-            const errorDiv = document.getElementById('upload-errors');
-            errorDiv.innerHTML = Object.values(data.errors).flat().join('<br>');
-            errorDiv.style.display = 'block';
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showAlert('danger', 'An error occurred while uploading the picture.');
-    })
-    .finally(() => {
-        // Reset loading state
-        uploadBtn.disabled = false;
-        uploadBtnText.textContent = 'Upload Picture';
-        uploadSpinner.style.display = 'none';
-    });
-});
-
-function showAlert(type, message) {
-    const alertHtml = `
-        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    `;
-    
-    // Add alert to the top of the page
-    const alertContainer = document.createElement('div');
-    alertContainer.innerHTML = alertHtml;
-    document.body.insertBefore(alertContainer.firstElementChild, document.body.firstChild);
-    
-    // Auto-dismiss after 5 seconds
-    setTimeout(() => {
-        const alert = document.querySelector('.alert');
-        if (alert) {
-            const bsAlert = new bootstrap.Alert(alert);
-            bsAlert.close();
-        }
-    }, 5000);
-}
-
-// Reset modal when closed
-document.getElementById('imageUploadModal').addEventListener('hidden.bs.modal', function () {
-    document.getElementById('profile-picture-form').reset();
-    document.getElementById('image-preview-container').style.display = 'none';
-    document.getElementById('upload-errors').style.display = 'none';
-});
-</script>
-
-
-
 <!-- Profile Sections -->
 <div class="profile-sections">
   
@@ -622,7 +106,9 @@ document.getElementById('imageUploadModal').addEventListener('hidden.bs.modal', 
         <i class="fas fa-phone"></i>
         Phone
       </span>
-      <span class="info-value">+91 9876543210</span>
+      <span class="info-value">
+        {% if profile.phone %}{{ profile.phone }}{% else %}Not provided{% endif %}
+      </span>
     </div>
     
     <div class="info-row">
@@ -630,7 +116,9 @@ document.getElementById('imageUploadModal').addEventListener('hidden.bs.modal', 
         <i class="fas fa-map-marker-alt"></i>
         Location
       </span>
-      <span class="info-value">Mumbai, Maharashtra</span>
+      <span class="info-value">
+        {% if profile.location %}{{ profile.location }}{% else %}Not provided{% endif %}
+      </span>
     </div>
     
     <div class="info-row">
@@ -638,7 +126,9 @@ document.getElementById('imageUploadModal').addEventListener('hidden.bs.modal', 
         <i class="fas fa-birthday-cake"></i>
         Date of Birth
       </span>
-      <span class="info-value">January 15, 2001</span>
+      <span class="info-value">
+        {% if profile.date_of_birth %}{{ profile.date_of_birth }}{% else %}Not provided{% endif %}
+      </span>
     </div>
     
     <div class="info-row">
@@ -646,7 +136,9 @@ document.getElementById('imageUploadModal').addEventListener('hidden.bs.modal', 
         <i class="fas fa-linkedin"></i>
         LinkedIn
       </span>
-      <span class="info-value">linkedin.com/in/johndoe</span>
+      <span class="info-value">
+        {% if profile.linkedin_url %}{{ profile.linkedin_url }}{% else %}Not provided{% endif %}
+      </span>
     </div>
     
     <a href="#" class="btn-edit">
@@ -726,19 +218,12 @@ document.getElementById('imageUploadModal').addEventListener('hidden.bs.modal', 
     
     <div class="education-item">
       <div class="item-title">Bachelor of Engineering in Computer Science</div>
-      <div class="item-subtitle">Mumbai University</div>
+      <div class="item-subtitle">
+        {% if profile.college %}{{ profile.college }}{% else %}Mumbai University{% endif %}
+      </div>
       <div class="item-duration">2020 - 2024 • Expected</div>
       <div class="item-description">
         CGPA: 8.5/10 • Relevant coursework: Data Structures, Algorithms, Web Development, Database Management, Software Engineering
-      </div>
-    </div>
-    
-    <div class="education-item">
-      <div class="item-title">Higher Secondary Certificate (HSC)</div>
-      <div class="item-subtitle">St. Xavier's College</div>
-      <div class="item-duration">2018 - 2020</div>
-      <div class="item-description">
-        Percentage: 92% • Science Stream with Mathematics and Computer Science
       </div>
     </div>
     
@@ -759,16 +244,7 @@ document.getElementById('imageUploadModal').addEventListener('hidden.bs.modal', 
       <div class="item-subtitle">TechStart Solutions</div>
       <div class="item-duration">June 2023 - August 2023 • 3 months</div>
       <div class="item-description">
-        Developed responsive web applications using Django and React. Collaborated with senior developers to implement new features and optimize database queries. Reduced page load time by 30% through code optimization.
-      </div>
-    </div>
-    
-    <div class="experience-item">
-      <div class="item-title">Freelance Web Developer</div>
-      <div class="item-subtitle">Self-Employed</div>
-      <div class="item-duration">January 2023 - Present</div>
-      <div class="item-description">
-        Created custom websites for small businesses using modern web technologies. Managed 5+ client projects simultaneously, delivering quality solutions on time and within budget.
+        Developed responsive web applications using Django and React. Collaborated with senior developers to implement new features and optimize database queries.
       </div>
     </div>
     
@@ -789,16 +265,7 @@ document.getElementById('imageUploadModal').addEventListener('hidden.bs.modal', 
       <div class="item-subtitle">Django, React, PostgreSQL</div>
       <div class="item-duration">March 2024 - May 2024</div>
       <div class="item-description">
-        Built a full-stack e-commerce platform with user authentication, product catalog, shopping cart, and payment integration. Implemented REST APIs and responsive frontend design.
-      </div>
-    </div>
-    
-    <div class="experience-item">
-      <div class="item-title">Task Management App</div>
-      <div class="item-subtitle">React Native, Node.js, MongoDB</div>
-      <div class="item-duration">January 2024 - February 2024</div>
-      <div class="item-description">
-        Developed a mobile app for task management with real-time synchronization, push notifications, and collaborative features. Published on Google Play Store with 100+ downloads.
+        Built a full-stack e-commerce platform with user authentication, product catalog, shopping cart, and payment integration.
       </div>
     </div>
     
@@ -843,56 +310,15 @@ document.getElementById('imageUploadModal').addEventListener('hidden.bs.modal', 
   </a>
 </div>
 
+{% endblock %}
+
+{% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Animate progress bars on scroll
-    const progressBars = document.querySelectorAll('.progress-fill');
-    
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                const width = entry.target.style.width;
-                entry.target.style.width = '0%';
-                setTimeout(() => {
-                    entry.target.style.width = width;
-                }, 100);
-                observer.unobserve(entry.target);
-            }
-        });
-    });
-
-    progressBars.forEach(bar => observer.observe(bar));
-
-    // Animate stats on scroll
-    const statNumbers = document.querySelectorAll('.stat-number');
-    
-    const animateValue = (element, start, end, duration) => {
-        let startTimestamp = null;
-        const step = (timestamp) => {
-            if (!startTimestamp) startTimestamp = timestamp;
-            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-            const currentValue = Math.floor(progress * (end - start) + start);
-            element.textContent = currentValue + (element.textContent.includes('%') ? '%' : '');
-            if (progress < 1) {
-                window.requestAnimationFrame(step);
-            }
-        };
-        window.requestAnimationFrame(step);
-    };
-
-    const statsObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                const text = entry.target.textContent;
-                const number = parseInt(text.replace(/\D/g, ''));
-                animateValue(entry.target, 0, number, 1500);
-                statsObserver.unobserve(entry.target);
-            }
-        });
-    });
-
-    statNumbers.forEach(stat => statsObserver.observe(stat));
-});
+// Pass Django URLs to JavaScript
+window.profileUrls = {
+    deleteProfilePicture: "{% url 'students:delete_profile_picture' %}",
+    uploadProfilePicture: "{% url 'students:upload_profile_picture' %}"
+};
 </script>
-
+<script src="{% static 'js/student_profile.js' %}"></script>
 {% endblock %}
