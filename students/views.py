@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from .models import StudentProfile
-from jobs.models import Application
+from jobs.models import JobApplication
 from .forms import ProfilePictureForm
 from django.views.decorators.http import require_POST
 
@@ -236,7 +236,7 @@ def student_applications(request):
     sort_filter = request.GET.get('sort', 'recent')
     
     # ✅ FIX: Use student=profile (now it should work)
-    applications = Application.objects.filter(
+    applications = JobApplication.objects.filter(
         student=profile
     ).select_related('job__company').order_by('-applied_on')
     
@@ -253,10 +253,10 @@ def student_applications(request):
         applications = applications.order_by('-applied_on')
     
     # Calculate statistics
-    total_applications = Application.objects.filter(student=profile).count()
-    pending_applications = Application.objects.filter(student=profile, status='Pending').count()
-    shortlisted_applications = Application.objects.filter(student=profile, status='Shortlisted').count()
-    interview_applications = Application.objects.filter(student=profile, status='Interviewed').count()
+    total_applications = JobApplication.objects.filter(student=profile).count()
+    pending_applications = JobApplication.objects.filter(student=profile, status='Pending').count()
+    shortlisted_applications = JobApplication.objects.filter(student=profile, status='Shortlisted').count()
+    interview_applications = JobApplication.objects.filter(student=profile, status='Interviewed').count()
     
     context = {
         'profile': profile,
@@ -277,7 +277,7 @@ def withdraw_application(request, application_id):
     if request.method == 'POST':
         try:
             profile = StudentProfile.objects.get(user=request.user)
-            application = get_object_or_404(Application, 
+            application = get_object_or_404(JobApplication, 
                 id=application_id, 
                 student=profile,  # ✅ Now using student=profile correctly
                 status='Pending'

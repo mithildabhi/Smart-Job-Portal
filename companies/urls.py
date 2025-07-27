@@ -8,8 +8,7 @@ urlpatterns = [
     path('register/', views.company_register, name='company_register'),
     path('dashboard/', views.company_dashboard, name='company_dashboard'),
     path('profile/', views.company_profile, name='company_profile'),
-    path('post-job/', views.post_job, name='post_job'),
-    path('jobs/', views.job_list, name='job_list'),  # From first version
+    # path('jobs/', views.job_list, name='job_list'),  # From first version
     path('manage-jobs/', views.manage_jobs, name='manage_jobs'),
     
     # Additional job controls
