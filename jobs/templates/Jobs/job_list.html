@@ -1,0 +1,296 @@
+{% extends 'student_base.html' %}
+{% load static %}
+
+{% block title %}Browse Jobs - Smart Job Portal{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/job_list.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <!-- Page Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="page-header">
+        <h2 class="page-title">
+          <i class="fas fa-briefcase me-2"></i>
+          Browse Available Jobs
+        </h2>
+        <p class="page-subtitle">Discover opportunities that match your skills and interests</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search and Filter Section -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="search-filter-card">
+        <form method="GET" class="search-form">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <div class="search-input-group">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="form-control" name="search" 
+                       placeholder="Job title, skills, company..." 
+                       value="{{ request.GET.search }}">
+              </div>
+            </div>
+            <div class="col-md-3">
+              <select class="form-select" name="location">
+                <option value="">All Locations</option>
+                <option value="mumbai" {% if request.GET.location == 'mumbai' %}selected{% endif %}>Mumbai</option>
+                <option value="delhi" {% if request.GET.location == 'delhi' %}selected{% endif %}>Delhi</option>
+                <option value="bangalore" {% if request.GET.location == 'bangalore' %}selected{% endif %}>Bangalore</option>
+                <option value="pune" {% if request.GET.location == 'pune' %}selected{% endif %}>Pune</option>
+                <option value="remote" {% if request.GET.location == 'remote' %}selected{% endif %}>Remote</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <select class="form-select" name="job_type">
+                <option value="">All Types</option>
+                <option value="fulltime" {% if request.GET.job_type == 'fulltime' %}selected{% endif %}>Full Time</option>
+                <option value="parttime" {% if request.GET.job_type == 'parttime' %}selected{% endif %}>Part Time</option>
+                <option value="internship" {% if request.GET.job_type == 'internship' %}selected{% endif %}>Internship</option>
+                <option value="contract" {% if request.GET.job_type == 'contract' %}selected{% endif %}>Contract</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <button type="submit" class="btn btn-primary w-100">
+                <i class="fas fa-filter me-1"></i>Filter
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Jobs Count -->
+  <div class="row mb-3">
+    <div class="col-12">
+      <div class="jobs-count">
+        <span class="text-muted">{{ jobs.count }} job{{ jobs.count|pluralize }} found</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Jobs Grid -->
+  <div class="row">
+    {% if jobs %}
+      {% for job in jobs %}
+        <div class="col-lg-6 col-xl-4 mb-4">
+          <div class="job-card" data-job-id="{{ job.id }}">
+            <!-- Company Logo & Header -->
+            <div class="job-card-header">
+              <div class="company-logo">
+                {% if job.company.logo %}
+                  <img src="{{ job.company.logo.url }}" alt="{{ job.company.company_name }}">
+                {% else %}
+                  <div class="company-logo-placeholder">
+                    {{ job.company.company_name.0 }}
+                  </div>
+                {% endif %}
+              </div>
+              <div class="job-header-info">
+                <h5 class="job-title">{{ job.title }}</h5>
+                <p class="company-name">{{ job.company.company_name }}</p>
+              </div>
+              <div class="job-actions">
+                <button class="btn-bookmark" data-job-id="{{ job.id }}">
+                  <i class="far fa-bookmark"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Job Details -->
+            <div class="job-card-body">
+              <div class="job-meta">
+                <span class="job-meta-item">
+                  <i class="fas fa-map-marker-alt"></i>
+                  {{ job.location }}
+                </span>
+                <span class="job-meta-item">
+                  <i class="fas fa-clock"></i>
+                  {{ job.get_job_type_display }}
+                </span>
+                <span class="job-meta-item">
+                  <i class="fas fa-rupee-sign"></i>
+                  {% if job.salary_min and job.salary_max %}
+                    ₹{{ job.salary_min|floatformat:0 }} - ₹{{ job.salary_max|floatformat:0 }}
+                  {% elif job.salary_min %}
+                    ₹{{ job.salary_min|floatformat:0 }}+
+                  {% else %}
+                    Competitive
+                  {% endif %}
+                </span>
+              </div>
+
+              <div class="job-description">
+                <p>{{ job.description|truncatewords:20 }}</p>
+              </div>
+
+              <!-- Required Skills -->
+              {% if job.required_skills %}
+                <div class="job-skills">
+                  {% for skill in job.required_skills|slice:":3" %}
+                    <span class="skill-tag">{{ skill }}</span>
+                  {% endfor %}
+                  {% if job.required_skills|length > 3 %}
+                    <span class="skill-tag more">+{{ job.required_skills|length|add:"-3" }} more</span>
+                  {% endif %}
+                </div>
+              {% endif %}
+
+              <!-- Job Stats -->
+              <div class="job-stats">
+                <small class="text-muted">
+                  <i class="fas fa-calendar-plus"></i>
+                  Posted {{ job.created_at|timesince }} ago
+                </small>
+                <small class="text-muted">
+                  <i class="fas fa-users"></i>
+                  {{ job.applications_count }} applicant{{ job.applications_count|pluralize }}
+                </small>
+              </div>
+            </div>
+
+            <!-- Job Actions -->
+            <div class="job-card-footer">
+                <a href="{% url 'jobs:job_list' %}">View Jobs</a>
+                <a href="{% url 'jobs:job_list' %}">Job List</a>  <!-- if not using namespace -->
+              
+              {% if user.is_authenticated %}
+                {% if job.id in applied_jobs %}
+                  <button class="btn btn-success btn-sm" disabled>
+                    <i class="fas fa-check me-1"></i>Applied
+                  </button>
+                {% else %}
+                  <button class="btn btn-primary btn-sm apply-btn" 
+                          data-job-id="{{ job.id }}" 
+                          data-job-title="{{ job.title }}"
+                          data-company="{{ job.company.company_name }}">
+                    <i class="fas fa-paper-plane me-1"></i>Apply Now
+                  </button>
+                {% endif %}
+              {% else %}
+                <a href="{% url 'students:student_login' %}" class="btn btn-primary btn-sm">
+                  <i class="fas fa-sign-in-alt me-1"></i>Login to Apply
+                </a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <!-- Empty State -->
+      <div class="col-12">
+        <div class="empty-state">
+          <div class="empty-state-icon">
+            <i class="fas fa-search fa-4x"></i>
+          </div>
+          <h4>No Jobs Found</h4>
+          <p>Try adjusting your search criteria or check back later for new opportunities.</p>
+          <a href="{% url 'jobs:job_list' %}" class="btn btn-primary">
+            <i class="fas fa-refresh me-2"></i>View All Jobs
+          </a>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Pagination -->
+  {% if is_paginated %}
+    <div class="row mt-5">
+      <div class="col-12">
+        <nav aria-label="Job listings pagination">
+          <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+              <li class="page-item">
+                <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">First</a>
+              </li>
+              <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Previous</a>
+              </li>
+            {% endif %}
+
+            <li class="page-item active">
+              <span class="page-link">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            </li>
+
+            {% if page_obj.has_next %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Next</a>
+              </li>
+              <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Last</a>
+              </li>
+            {% endif %}
+          </ul>
+        </nav>
+      </div>
+    </div>
+  {% endif %}
+</div>
+
+<!-- Job Application Modal -->
+<div class="modal fade" id="applicationModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="fas fa-paper-plane me-2"></i>
+          Apply for Job
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="applicationForm" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="application-job-info mb-4">
+            <h6 class="fw-bold" id="modal-job-title"></h6>
+            <p class="text-muted mb-0" id="modal-company-name"></p>
+          </div>
+
+          <div class="mb-3">
+            <label for="cover_letter" class="form-label">Cover Letter <span class="text-danger">*</span></label>
+            <textarea class="form-control" id="cover_letter" name="cover_letter" rows="6" 
+                      placeholder="Write a compelling cover letter explaining why you're perfect for this role..." required></textarea>
+            <div class="form-text">Tell the employer why you're interested in this position and what makes you a great fit.</div>
+          </div>
+
+          <div class="mb-3">
+            <label for="resume" class="form-label">Resume/CV <span class="text-danger">*</span></label>
+            <input type="file" class="form-control" id="resume" name="resume" accept=".pdf,.doc,.docx" required>
+            <div class="form-text">Upload your latest resume in PDF or Word format (Max 5MB)</div>
+          </div>
+
+          <div class="mb-3">
+            <label for="portfolio_url" class="form-label">Portfolio/Website (Optional)</label>
+            <input type="url" class="form-control" id="portfolio_url" name="portfolio_url" 
+                   placeholder="https://your-portfolio.com">
+            <div class="form-text">Share your portfolio, GitHub, or personal website</div>
+          </div>
+
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="terms_agreement" required>
+            <label class="form-check-label" for="terms_agreement">
+              I confirm that the information provided is accurate and I agree to the terms of application.
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-paper-plane me-2"></i>Submit Application
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/job_list.js' %}"></script>
+{% endblock %}
