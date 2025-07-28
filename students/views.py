@@ -5,10 +5,12 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from .models import StudentProfile
-from jobs.models import JobApplication
+from jobs.models import Job, JobApplication
 from .forms import ProfilePictureForm
 from django.views.decorators.http import require_POST
-
+from django.core.paginator import Paginator
+from django.db.models import Q
+from django.views.decorators.http import require_http_methods  # ✅ Add this import
 
 def student_register(request):
     if request.method == 'POST':
@@ -113,6 +115,54 @@ def student_logout(request):
     messages.success(request, 'You have been logged out successfully')
     return redirect('jobs:main')
 
+@login_required
+@require_http_methods(["POST"])
+def apply_job(request):
+    """Handle AJAX job application submission"""
+    
+    try:
+        # Get job ID
+        job_id = request.POST.get('job_id')
+        if not job_id:
+            return JsonResponse({'success': False, 'message': 'Job ID missing'})
+        
+        # Get job
+        job = get_object_or_404(Job, id=job_id)
+        
+        # Check if already applied
+        existing = JobApplication.objects.filter(student=request.user, job=job).first()
+        if existing:
+            return JsonResponse({'success': False, 'message': 'Already applied for this job'})
+        
+        # Get form data
+        cover_letter = request.POST.get('cover_letter', '').strip()
+        resume = request.FILES.get('resume')
+        portfolio_url = request.POST.get('portfolio_url', '').strip()
+        
+        # Basic validation
+        if not cover_letter:
+            return JsonResponse({'success': False, 'message': 'Cover letter is required'})
+        
+        if not resume:
+            return JsonResponse({'success': False, 'message': 'Resume is required'})
+        
+        # Create application
+        application = JobApplication.objects.create(
+            student=request.user,
+            job=job,
+            cover_letter=cover_letter,
+            resume=resume,
+            portfolio_url=portfolio_url if portfolio_url else None
+        )
+        
+        return JsonResponse({
+            'success': True, 
+            'message': f'Successfully applied for {job.title}!'
+        })
+        
+    except Exception as e:
+        print(f"Apply job error: {e}")  # Debug print
+        return JsonResponse({'success': False, 'message': 'Application failed'})
 
 
 @login_required
@@ -224,52 +274,48 @@ def saved_jobs(request):
 
 @login_required
 def student_applications(request):
-    """Student view applications with filtering and live data"""
-    try:
-        profile = StudentProfile.objects.get(user=request.user)
-    except StudentProfile.DoesNotExist:
-        messages.error(request, 'Access denied. Student profile required.')
-        return redirect('students:student_login')
-    
-    # Get filter parameters
-    status_filter = request.GET.get('status', 'all')
-    sort_filter = request.GET.get('sort', 'recent')
-    
-    # ✅ FIX: Use student=profile (now it should work)
+    """View student's job applications"""
+    # Get all applications for the current student
     applications = JobApplication.objects.filter(
-        student=profile
-    ).select_related('job__company').order_by('-applied_on')
+        student=request.user
+    ).select_related('job', 'job__company').order_by('-applied_at')
     
-    # Apply status filter
-    if status_filter != 'all':
+    # Filter by status if requested
+    status_filter = request.GET.get('status')
+    if status_filter:
         applications = applications.filter(status=status_filter)
     
-    # Apply sorting
-    if sort_filter == 'oldest':
-        applications = applications.order_by('applied_on')
-    elif sort_filter == 'company':
-        applications = applications.order_by('job__company__company_name')
-    else:  # recent
-        applications = applications.order_by('-applied_on')
+    # Search functionality
+    search_query = request.GET.get('search')
+    if search_query:
+        applications = applications.filter(
+            Q(job__title__icontains=search_query) |
+            Q(job__company__company_name__icontains=search_query)
+        )
     
-    # Calculate statistics
-    total_applications = JobApplication.objects.filter(student=profile).count()
-    pending_applications = JobApplication.objects.filter(student=profile, status='Pending').count()
-    shortlisted_applications = JobApplication.objects.filter(student=profile, status='Shortlisted').count()
-    interview_applications = JobApplication.objects.filter(student=profile, status='Interviewed').count()
+    # Pagination
+    paginator = Paginator(applications, 10)  # 10 applications per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    # Get statistics
+    total_applications = applications.count()
+    pending_applications = applications.filter(status='pending').count()
+    shortlisted_applications = applications.filter(status='shortlisted').count()
+    hired_applications = applications.filter(status='hired').count()
+    rejected_applications = applications.filter(status='rejected').count()
     
     context = {
-        'profile': profile,
-        'applications': applications,
+        'applications': page_obj,
         'total_applications': total_applications,
         'pending_applications': pending_applications,
         'shortlisted_applications': shortlisted_applications,
-        'interview_applications': interview_applications,
-        'status_filter': status_filter,
-        'sort_filter': sort_filter,
+        'hired_applications': hired_applications,
+        'rejected_applications': rejected_applications,
+        'is_paginated': page_obj.has_other_pages(),
+        'page_obj': page_obj,
     }
-    
-    return render(request, 'students/student_applications.html', context)
+    return render(request, 'students/student_application.html', context)
 
 @login_required  
 def withdraw_application(request, application_id):

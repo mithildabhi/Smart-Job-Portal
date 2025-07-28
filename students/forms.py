@@ -5,6 +5,7 @@ from PIL import Image
 from io import BytesIO
 import sys
 from .models import StudentProfile
+from django.contrib.auth.models import User
 
 class ProfilePictureForm(forms.ModelForm):
     class Meta:
@@ -100,3 +101,102 @@ class QuickProfilePictureForm(forms.Form):
                 raise ValidationError("Unsupported image format. Please upload JPEG, PNG, or GIF.")
 
         return picture
+
+
+class StudentProfileForm(forms.ModelForm):
+    class Meta:
+        model = StudentProfile
+        fields = [
+            'profile_picture', 'bio', 'phone', 'location', 'date_of_birth',
+            'skills', 'experience', 'education', 'projects',
+            'linkedin_url', 'github_url', 'portfolio_url', 'resume',
+            'college_name', 'degree', 'graduation_year', 'gpa'
+        ]
+        
+        widgets = {
+            'bio': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 4,
+                'placeholder': 'Tell us about yourself...'
+            }),
+            'phone': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': '+1234567890'
+            }),
+            'location': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'City, Country'
+            }),
+            'date_of_birth': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            }),
+            'skills': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Python, JavaScript, React, Node.js, MySQL, Git...'
+            }),
+            'experience': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 5,
+                'placeholder': 'Describe your work experience, internships, or relevant projects...'
+            }),
+            'education': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 4,
+                'placeholder': 'Educational background, certifications, courses...'
+            }),
+            'projects': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 5,
+                'placeholder': 'Describe your personal or academic projects...'
+            }),
+            'linkedin_url': forms.URLInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'https://linkedin.com/in/yourprofile'
+            }),
+            'github_url': forms.URLInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'https://github.com/yourusername'
+            }),
+            'portfolio_url': forms.URLInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'https://yourportfolio.com'
+            }),
+            'resume': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': '.pdf,.doc,.docx'
+            }),
+            'college_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'University/College Name'
+            }),
+            'degree': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Bachelor of Computer Science'
+            }),
+            'graduation_year': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': '2025'
+            }),
+            'gpa': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': '3.8',
+                'step': '0.01'
+            }),
+        }
+
+class BasicInfoForm(forms.ModelForm):
+    first_name = forms.CharField(max_length=30, required=True)
+    last_name = forms.CharField(max_length=30, required=True)
+    email = forms.EmailField(required=True)
+    
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email']
+        
+        widgets = {
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+        }

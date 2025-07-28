@@ -10,11 +10,26 @@ class StudentProfile(models.Model):
     linkedin_url = models.URLField(blank=True, null=True)
     profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
     bio = models.TextField(max_length=500, blank=True, null=True)
-    college = models.CharField(max_length=200, blank=True, null=True)
-    course = models.CharField(max_length=100, blank=True, null=True)
-    year_of_study = models.IntegerField(blank=True, null=True)
+    
+    # ✅ UPDATED: Academic fields (renamed to match form expectations)
+    college_name = models.CharField(max_length=200, blank=True, null=True)  # Changed from 'college'
+    degree = models.CharField(max_length=100, blank=True, null=True)  # Changed from 'course'
+    graduation_year = models.IntegerField(blank=True, null=True)  # Changed from 'year_of_study'
+    
+    # ✅ ADDED: Missing fields that the form expects
+    gpa = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True)
+    github_url = models.URLField(blank=True, null=True, help_text="GitHub profile URL")
+    portfolio_url = models.URLField(blank=True, null=True, help_text="Portfolio website URL")
+    resume = models.FileField(upload_to='resumes/', blank=True, null=True, help_text="Upload your resume (PDF)")
+    
+    # Existing fields
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    skills = models.TextField(blank=True, null=True, help_text="Comma-separated skills (e.g., Python, JavaScript, React)")
+    experience = models.TextField(blank=True, null=True, help_text="Work experience details")
+    education = models.TextField(blank=True, null=True, help_text="Educational background")
+    projects = models.TextField(blank=True, null=True, help_text="Personal/academic projects")
     
     def has_profile_picture(self):
         """Check if user has a profile picture"""
@@ -34,6 +49,16 @@ class StudentProfile(models.Model):
             # Clear the field in the database
             self.profile_picture = None
             self.save()
+    
+    def get_skills_list(self):
+        """Return skills as a list"""
+        if self.skills:
+            return [skill.strip() for skill in self.skills.split(',') if skill.strip()]
+        return []
+    
+    def get_full_name(self):
+        """Return user's full name"""
+        return self.user.get_full_name() or self.user.username
             
     def __str__(self):
         return f"{self.user.username}'s Profile"
@@ -46,5 +71,3 @@ class Student(models.Model):
 
     def __str__(self):
         return self.name
-
-

@@ -1,0 +1,249 @@
+{% extends 'student_base.html' %}
+{% load static %}
+
+{% block title %}My Applications - Smart Job Portal{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/applied_jobs.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <!-- Page Header -->
+  <div class="applications-header">
+    <div class="row mb-4">
+      <div class="col-12">
+        <h2 class="page-title">
+          <i class="fas fa-file-alt me-2"></i>
+          My Job Applications
+        </h2>
+        <p class="page-subtitle">Track the status of your job applications</p>
+      </div>
+    </div>
+
+    <!-- Application Statistics -->
+    <div class="row mb-4">
+      <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+        <div class="stat-card stat-total">
+          <div class="stat-content">
+            <div class="stat-number">{{ total_applications }}</div>
+            <div class="stat-label">Total Applied</div>
+          </div>
+          <div class="stat-icon">
+            <i class="fas fa-file-alt"></i>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+        <div class="stat-card stat-pending">
+          <div class="stat-content">
+            <div class="stat-number">{{ pending_applications }}</div>
+            <div class="stat-label">Pending</div>
+          </div>
+          <div class="stat-icon">
+            <i class="fas fa-clock"></i>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+        <div class="stat-card stat-shortlisted">
+          <div class="stat-content">
+            <div class="stat-number">{{ shortlisted_applications }}</div>
+            <div class="stat-label">Shortlisted</div>
+          </div>
+          <div class="stat-icon">
+            <i class="fas fa-check-circle"></i>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+        <div class="stat-card stat-hired">
+          <div class="stat-content">
+            <div class="stat-number">{{ hired_applications }}</div>
+            <div class="stat-label">Hired</div>
+          </div>
+          <div class="stat-icon">
+            <i class="fas fa-handshake"></i>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+        <div class="stat-card stat-rejected">
+          <div class="stat-content">
+            <div class="stat-number">{{ rejected_applications }}</div>
+            <div class="stat-label">Rejected</div>
+          </div>
+          <div class="stat-icon">
+            <i class="fas fa-times-circle"></i>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+        <div class="action-card">
+          <a href="{% url 'jobs:job_list' %}" class="btn btn-primary w-100">
+            <i class="fas fa-search me-2"></i>
+            Browse More Jobs
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter Section -->
+  <div class="filter-section mb-4">
+    <div class="card">
+      <div class="card-body">
+        <form method="GET" class="filter-form">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label for="status_filter" class="form-label">Filter by Status</label>
+              <select name="status" id="status_filter" class="form-select">
+                <option value="">All Applications</option>
+                <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>Pending</option>
+                <option value="shortlisted" {% if request.GET.status == 'shortlisted' %}selected{% endif %}>Shortlisted</option>
+                <option value="interviewed" {% if request.GET.status == 'interviewed' %}selected{% endif %}>Interviewed</option>
+                <option value="hired" {% if request.GET.status == 'hired' %}selected{% endif %}>Hired</option>
+                <option value="rejected" {% if request.GET.status == 'rejected' %}selected{% endif %}>Rejected</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="search_filter" class="form-label">Search Applications</label>
+              <input type="text" name="search" id="search_filter" class="form-control" 
+                     placeholder="Search by job title or company..." value="{{ request.GET.search }}">
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">&nbsp;</label>
+              <button type="submit" class="btn btn-primary w-100">
+                <i class="fas fa-search me-2"></i>Filter
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Applications List -->
+  <div class="applications-list">
+    {% if applications %}
+      {% for application in applications %}
+        <div class="application-card">
+          <div class="application-header">
+            <div class="company-logo">
+              {% if application.job.company.logo %}
+                <img src="{{ application.job.company.logo.url }}" alt="{{ application.job.company.company_name }}">
+              {% else %}
+                <div class="company-logo-placeholder">
+                  {{ application.job.company.company_name.0 }}
+                </div>
+              {% endif %}
+            </div>
+            <div class="application-info">
+              <h5 class="job-title">{{ application.job.title }}</h5>
+              <p class="company-name">{{ application.job.company.company_name }}</p>
+              <div class="application-meta">
+                <span class="location">
+                  <i class="fas fa-map-marker-alt me-1"></i>
+                  {{ application.job.location }}
+                </span>
+                <span class="application-date">
+                  <i class="fas fa-calendar me-1"></i>
+                  Applied {{ application.applied_at|timesince }} ago
+                </span>
+              </div>
+            </div>
+            <div class="application-status">
+              <div class="status-badge status-{{ application.status }}">
+                <i class="fas fa-{% if application.status == 'pending' %}clock{% elif application.status == 'shortlisted' %}check-circle{% elif application.status == 'interviewed' %}user-tie{% elif application.status == 'hired' %}handshake{% elif application.status == 'rejected' %}times-circle{% else %}info-circle{% endif %} me-1"></i>
+                {{ application.get_status_display }}
+              </div>
+            </div>
+          </div>
+          
+          <div class="application-body">
+            <div class="row">
+              <div class="col-md-8">
+                <div class="cover-letter-preview">
+                  <h6>Cover Letter:</h6>
+                  <p>{{ application.cover_letter|truncatewords:25 }}</p>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="application-actions">
+                  <a href="{% url 'jobs:job_detail' application.job.id %}" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-eye me-1"></i>View Job
+                  </a>
+                  {% if application.resume %}
+                    <a href="{{ application.resume.url }}" target="_blank" class="btn btn-outline-secondary btn-sm">
+                      <i class="fas fa-file-pdf me-1"></i>Resume
+                    </a>
+                  {% endif %}
+                  {% if application.portfolio_url %}
+                    <a href="{{ application.portfolio_url }}" target="_blank" class="btn btn-outline-info btn-sm">
+                      <i class="fas fa-link me-1"></i>Portfolio
+                    </a>
+                  {% endif %}
+                </div>
+                
+                <div class="timeline-info">
+                  <small class="text-muted">
+                    <strong>Applied:</strong> {{ application.applied_at|date:"M d, Y" }}<br>
+                    {% if application.reviewed_at %}
+                      <strong>Reviewed:</strong> {{ application.reviewed_at|date:"M d, Y" }}
+                    {% endif %}
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+
+      <!-- Pagination -->
+      {% if is_paginated %}
+        <div class="pagination-wrapper">
+          <nav aria-label="Applications pagination">
+            <ul class="pagination justify-content-center">
+              {% if page_obj.has_previous %}
+                <li class="page-item">
+                  <a class="page-link" href="?page=1{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">First</a>
+                </li>
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Previous</a>
+                </li>
+              {% endif %}
+
+              <li class="page-item active">
+                <span class="page-link">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+              </li>
+
+              {% if page_obj.has_next %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Next</a>
+                </li>
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Last</a>
+                </li>
+              {% endif %}
+            </ul>
+          </nav>
+        </div>
+      {% endif %}
+
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-state-icon">
+          <i class="fas fa-inbox fa-4x"></i>
+        </div>
+        <h4>No Applications Yet</h4>
+        <p>You haven't applied to any jobs yet. Start exploring opportunities!</p>
+        <a href="{% url 'jobs:job_list' %}" class="btn btn-primary btn-lg">
+          <i class="fas fa-search me-2"></i>Browse Jobs
+        </a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+

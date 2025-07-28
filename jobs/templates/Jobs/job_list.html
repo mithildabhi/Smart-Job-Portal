@@ -161,7 +161,7 @@
                 <a href="{% url 'jobs:job_list' %}">Job List</a>  <!-- if not using namespace -->
               
               {% if user.is_authenticated %}
-                {% if job.id in applied_jobs %}
+                {% if job.id in student_application %}
                   <button class="btn btn-success btn-sm" disabled>
                     <i class="fas fa-check me-1"></i>Applied
                   </button>

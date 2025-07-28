@@ -15,6 +15,7 @@ import json
 
 from jobs.models import Job, JobApplication  # From jobs app
 from .models import Company               # Local companies app
+from students.models import StudentProfile  # Import StudentProfile model
 
 
 
@@ -305,115 +306,47 @@ def post_job(request):
         messages.error(request, 'Company profile not found.')
         return redirect('companies:company_register')
     
-# @login_required
-# def job_list(request):
-#     """Display all jobs posted by the company"""
-#     try:
-#         company = Company.objects.get(user=request.user)
-#         jobs = Job.objects.filter(company=company).order_by('-posted_on')
-        
-#         # Get statistics for each job
-#         job_stats = []
-#         for job in jobs:
-#             applications_count = JobApplication.objects.filter(job=job).count()
-#             job_stats.append({
-#                 'job': job,
-#                 'applications_count': applications_count,
-#             })
-        
-#         context = {
-#             'company': company,
-#             'job_stats': job_stats,
-#             'total_jobs': jobs.count(),
-#             'active_jobs': jobs.filter(is_active=True).count(),
-#         }
-#         return render(request, 'companies/job_list.html', context)
-        
-#     except Company.DoesNotExist:
-#         messages.error(request, 'Company profile not found.')
-#         return redirect('companies:company_register')
-    
-# companies/views.py - Updated to work with your current models
-
-
 @login_required
-def view_applications(request):
-    """View applications using company field"""
+def company_profile(request):
+    """Display company profile"""
     try:
         company = Company.objects.get(user=request.user)
-        
-        # ✅ FIXED: Filter by company instead of recruiter
-        company_jobs = Job.objects.filter(company=company)
-        
-        # Get applications for those jobs
-        applications = JobApplication.objects.filter(
-            job__in=company_jobs
-        ).order_by('-applied_on')
-        
-        # Group applications by job
-        jobs_with_applications = []
-        for job in company_jobs:
-            job_applications = applications.filter(job=job)
-            if job_applications.exists():
-                jobs_with_applications.append({
-                    'job': job,
-                    'applications': job_applications,
-                    'application_count': job_applications.count(),
-                })
-        
         context = {
             'company': company,
-            'applications': applications,
-            'jobs_with_applications': jobs_with_applications,
-            'company_jobs': company_jobs,
-            'total_applications': applications.count(),
+            'user': request.user,
         }
-        return render(request, 'companies/view_applications.html', context)
-        
+        return render(request, 'companies/company_profile.html', context)
     except Company.DoesNotExist:
         messages.error(request, 'Company profile not found.')
         return redirect('companies:company_register')
-
-
-
-
+    
 @login_required
 def company_dashboard(request):
-    """Enhanced company dashboard with recruitment statistics and recent activities"""
+    """Enhanced company dashboard with recruitment statistics"""
     try:
         company = Company.objects.get(user=request.user)
         
         # Get current date for calculations
-        from django.utils import timezone
-        from datetime import timedelta
-        
         now = timezone.now()
         last_30_days = now - timedelta(days=30)
         last_7_days = now - timedelta(days=7)
         
         # === RECRUITMENT STATISTICS ===
-        # Total jobs posted by the company
         total_jobs = Job.objects.filter(company=company).count()
-        
-        # Total applications received
         total_applications = JobApplication.objects.filter(job__company=company).count()
         
-        # ✅ FIXED: Updated status choices to match model
         interviews_scheduled = JobApplication.objects.filter(
             job__company=company,
-            status__in=['interviewed', 'shortlisted']  # Updated status names
+            status__in=['interviewed', 'shortlisted']
         ).count()
         
-        # ✅ FIXED: Updated status choices to match model
         positions_filled = JobApplication.objects.filter(
             job__company=company,
-            status='hired'  # Use 'hired' status from model
+            status='hired'
         ).count()
         
-        # Active jobs
         active_jobs = Job.objects.filter(company=company, is_active=True).count()
         
-        # ✅ FIXED: Use applied_at instead of applied_on
         recent_applications = JobApplication.objects.filter(
             job__company=company,
             applied_at__gte=last_30_days
@@ -422,7 +355,7 @@ def company_dashboard(request):
         # === RECENT ACTIVITIES ===
         recent_activities = []
         
-        # ✅ FIXED: Use applied_at instead of applied_on
+        # Recent applications
         new_applications = JobApplication.objects.filter(
             job__company=company,
             applied_at__gte=last_7_days
@@ -433,56 +366,22 @@ def company_dashboard(request):
                 'type': 'application',
                 'title': 'New application received',
                 'description': f'{app.student.get_full_name() or app.student.username} applied for {app.job.title}',
-                'time': app.applied_at,  # ✅ FIXED: Use applied_at
+                'time': app.applied_at,
                 'icon': 'fas fa-user-plus',
                 'color': 'primary'
             })
         
-        # ✅ FIXED: Use created_at instead of posted_on
-        recent_jobs = Job.objects.filter(
-            company=company,
-            created_at__gte=last_7_days
-        ).order_by('-created_at')[:3]
-        
-        for job in recent_jobs:
-            recent_activities.append({
-                'type': 'job_posted',
-                'title': 'Job posting published',
-                'description': f'Job "{job.title}" was posted for {job.location}',
-                'time': job.created_at,  # ✅ FIXED: Use created_at
-                'icon': 'fas fa-briefcase',
-                'color': 'success'
-            })
-        
-        # Sort all activities by time (most recent first)
+        # Sort activities by time
         recent_activities.sort(key=lambda x: x['time'], reverse=True)
-        recent_activities = recent_activities[:8]  # Limit to 8 most recent
+        recent_activities = recent_activities[:8]
         
-        # === ADDITIONAL METRICS ===
-        # Application response rate
+        # Additional metrics
         total_apps = JobApplication.objects.filter(job__company=company).count()
         responded_apps = JobApplication.objects.filter(
             job__company=company
         ).exclude(status='pending').count()
         
         response_rate = round((responded_apps / total_apps * 100) if total_apps > 0 else 0, 1)
-        
-        # ✅ CONFIRMED: Jobs with applications (correct field name)
-        jobs_with_applications = Job.objects.filter(
-            company=company,
-            applications__isnull=False
-        ).distinct().count()
-        
-        # ✅ ADDED: Additional useful metrics
-        pending_applications = JobApplication.objects.filter(
-            job__company=company,
-            status='pending'
-        ).count()
-        
-        # Average applications per job
-        avg_applications_per_job = round(
-            (total_applications / total_jobs) if total_jobs > 0 else 0, 1
-        )
         
         context = {
             'company': company,
@@ -495,10 +394,7 @@ def company_dashboard(request):
             'positions_filled': positions_filled,
             'active_jobs': active_jobs,
             'recent_applications': recent_applications,
-            'pending_applications': pending_applications,  # ✅ ADDED
             'response_rate': response_rate,
-            'jobs_with_applications': jobs_with_applications,
-            'avg_applications_per_job': avg_applications_per_job,  # ✅ ADDED
             
             # Recent Activities
             'recent_activities': recent_activities,
@@ -511,128 +407,273 @@ def company_dashboard(request):
         return redirect('companies:company_register')
 
 @login_required
-def company_profile(request):
-    """Display company profile"""
-    try:
-        company = Company.objects.get(user=request.user)
-        context = {
-            'company': company,
-            'user': request.user,
-        }
-        return render(request, 'companies/company_profile.html', context)
-        
-    except Company.DoesNotExist:
-        messages.error(request, 'Company profile not found.')
-        return redirect('companies:company_register')
-    
-
-@login_required
 def view_applications(request):
-    """View all applications for company jobs with filtering and status management"""
-    try:
-        company = Company.objects.get(user=request.user)
-        
-        # Get filter parameters
-        job_filter = request.GET.get('job', 'all')
-        status_filter = request.GET.get('status', 'all')
-        
-        # Get all jobs posted by this company
-        company_jobs = Job.objects.filter(company=company)
-        
-        # Filter applications based on parameters
-        applications = JobApplication.objects.filter(job__in=company_jobs).order_by('-applied_on')
-        
-        if job_filter != 'all':
-            applications = applications.filter(job_id=job_filter)
-            
-        if status_filter != 'all' and hasattr(JobApplication, 'status'):
-            applications = applications.filter(status=status_filter)
-        
-        # Group applications by job for better organization
-        jobs_with_applications = []
-        for job in company_jobs:
-            job_applications = applications.filter(job=job)
-            if job_applications.exists():
-                jobs_with_applications.append({
-                    'job': job,
-                    'applications': job_applications,
-                    'application_count': job_applications.count(),
-                    'pending_count': job_applications.filter(status='pending').count() if hasattr(JobApplication, 'status') else 0,
-                    'accepted_count': job_applications.filter(status='accepted').count() if hasattr(JobApplication, 'status') else 0,
-                })
-        
-        # Get statistics
-        total_applications = applications.count()
-        pending_applications = applications.filter(status='pending').count() if hasattr(JobApplication, 'status') else total_applications
-        accepted_applications = applications.filter(status='accepted').count() if hasattr(JobApplication, 'status') else 0
-        rejected_applications = applications.filter(status='rejected').count() if hasattr(JobApplication, 'status') else 0
-        
-        context = {
-            'company': company,
-            'applications': applications,
-            'jobs_with_applications': jobs_with_applications,
-            'company_jobs': company_jobs,
-            'total_applications': total_applications,
-            'pending_applications': pending_applications,
-            'accepted_applications': accepted_applications,
-            'rejected_applications': rejected_applications,
-            'job_filter': job_filter,
-            'status_filter': status_filter,
-        }
-        return render(request, 'companies/view_applications.html', context)
-        
-    except Company.DoesNotExist:
-        messages.error(request, 'Company profile not found.')
-        return redirect('companies:company_register')
+    """
+    List + filter + paginate applications.  
+    Each application gets a .skills_list attribute so the template never
+    needs a custom filter.
+    """
+    company = get_object_or_404(Company, user=request.user)
+
+    qs = JobApplication.objects.filter(job__company=company) \
+                               .select_related("job", "student") \
+                               .prefetch_related("student__studentprofile") \
+                               .order_by("-applied_at")
+
+    # ── filters ───────────────────────────────────────────────────────────
+    job_filter    = request.GET.get("job_filter", "all")
+    status_filter = request.GET.get("status_filter", "all")
+    search        = request.GET.get("search", "").strip()
+
+    if job_filter != "all":
+        qs = qs.filter(job_id=job_filter)
+
+    if status_filter != "all":
+        qs = qs.filter(status=status_filter)
+
+    if search:
+        qs = qs.filter(
+            Q(student__first_name__icontains=search)  |
+            Q(student__last_name__icontains=search)   |
+            Q(student__email__icontains=search)       |
+            Q(job__title__icontains=search)
+        )
+
+    # ── enrich objects ───────────────────────────────────────────────────
+    apps = []
+    for app in qs:
+        # guarantee profile object
+        profile, _ = StudentProfile.objects.get_or_create(user=app.student)
+        app.student.studentprofile = profile
+
+        app.skills_list = [s.strip() for s in (profile.skills or "").split(",") if s.strip()]
+        apps.append(app)
+
+    # ── pagination ───────────────────────────────────────────────────────
+    paginator  = Paginator(apps, 8)
+    page_obj   = paginator.get_page(request.GET.get("page"))
+
+    # ── quick stats ───────────────────────────────────────────────────────
+    stats = {
+        'total':        qs.count(),
+        'pending':      qs.filter(status="pending").count(),
+        'shortlisted':  qs.filter(status="shortlisted").count(),
+        'hired':        qs.filter(status="hired").count(),
+        'rejected':     qs.filter(status="rejected").count(),
+    }
+
+    context = dict(
+        company           = company,
+        applications      = page_obj,
+        company_jobs      = Job.objects.filter(company=company).order_by("-created_at"),
+        total_applications= stats['total'],
+        pending_applications     = stats['pending'],
+        shortlisted_applications = stats['shortlisted'],
+        hired_applications       = stats['hired'],
+        rejected_applications    = stats['rejected'],
+        job_filter        = job_filter,
+        status_filter     = status_filter,
+        search_filter     = search,
+        is_paginated      = page_obj.has_other_pages(),
+        page_obj          = page_obj,
+    )
+    return render(request, "companies/view_applications.html", context)
 
 @login_required
-def update_application_status(request):
-    """Update application status via AJAX"""
+def application_detail(request, application_id):
+    """Get detailed application information via AJAX"""
+    try:
+        company = Company.objects.get(user=request.user)
+        application = JobApplication.objects.select_related(
+            'job', 
+            'student'
+        ).get(
+            id=application_id,
+            job__company=company
+        )
+        
+        # Get student profile if exists
+        student_profile = None
+        try:
+            student_profile = StudentProfile.objects.get(user=application.student)
+        except StudentProfile.DoesNotExist:
+            pass
+        
+        # Format the response data
+        data = {
+            'success': True,
+            'application': {
+                'id': application.id,
+                'cover_letter': application.cover_letter,
+                'resume': application.resume.url if application.resume else None,
+                'portfolio_url': application.portfolio_url,
+                'applied_date': application.applied_at.strftime('%B %d, %Y at %I:%M %p'),
+                'status': application.status,
+                'notes': application.notes or '',
+                'days_since_applied': application.days_since_applied,
+                'student': {
+                    'name': application.student.get_full_name() or application.student.username,
+                    'email': application.student.email,
+                    'username': application.student.username,
+                    'profile_picture': student_profile.profile_picture.url if (student_profile and student_profile.profile_picture) else None,
+                    'profile': {
+                        'bio': student_profile.bio if student_profile else None,
+                        'education': student_profile.education if student_profile else None,
+                        'experience': student_profile.experience if student_profile else None,
+                        'skills': student_profile.skills if student_profile else None,
+                        'projects': student_profile.projects if student_profile else None,
+                        'phone': student_profile.phone if student_profile else None,
+                        'location': student_profile.location if student_profile else None,
+                    } if student_profile else None
+                },
+                'job': {
+                    'title': application.job.title,
+                    'company': application.job.company.company_name,
+                    'location': application.job.location,
+                    'job_type': application.job.get_job_type_display()
+                }
+            }
+        }
+        return JsonResponse(data)
+        
+    except (Company.DoesNotExist, JobApplication.DoesNotExist):
+        return JsonResponse({
+            'success': False, 
+            'message': 'Application not found or access denied.'
+        })
+
+@login_required
+def update_application_status(request, pk):
+    """AJAX – change status from the board"""
+    if request.method != "POST" or not request.headers.get("x-requested-with") == "XMLHttpRequest":
+        return JsonResponse({"success": False, "message": "Bad request"}, status=400)
+
+    application = get_object_or_404(JobApplication, pk=pk, job__company__user=request.user)
+    data        = json.loads(request.body or "{}")
+    new_status  = data.get("status")
+
+    if new_status not in {"pending","shortlisted","interviewed","hired","rejected"}:
+        return JsonResponse({"success": False, "message": "Invalid status"}, status=422)
+
+    application.status      = new_status
+    application.reviewed_at = timezone.now()
+    application.save(update_fields=["status","reviewed_at"])
+
+    return JsonResponse({"success": True, "message": f"Status set to {new_status.title()}."})
+
+@login_required
+def save_application_notes(request, application_id):
+    """Save internal notes for an application"""
     if request.method == 'POST':
         try:
-            data = json.loads(request.body)
-            application_id = data.get('application_id')
-            status = data.get('status')
-            
-            # Verify company owns this application
             company = Company.objects.get(user=request.user)
-            application = get_object_or_404(JobApplication, 
+            application = JobApplication.objects.get(
                 id=application_id,
                 job__company=company
             )
             
-            # Update status if Application model has status field
-            if hasattr(application, 'status'):
-                application.status = status
-                application.save()
-                
-                # Send email notification to applicant (optional)
-                messages.success(request, f'Application status updated to {status}')
-                return JsonResponse({
-                    'success': True,
-                    'message': f'Application status updated to {status}'
-                })
-            else:
-                return JsonResponse({
-                    'success': False, 
-                    'error': 'Status field not available'
-                })
+            data = json.loads(request.body)
+            notes = data.get('notes', '')
+            
+            application.notes = notes
+            application.save()
+            
+            return JsonResponse({
+                'success': True, 
+                'message': 'Notes saved successfully.'
+            })
                 
         except (Company.DoesNotExist, JobApplication.DoesNotExist):
             return JsonResponse({
                 'success': False, 
-                'error': 'Application not found'
+                'message': 'Application not found or access denied.'
             })
-        except Exception as e:
+        except json.JSONDecodeError:
             return JsonResponse({
                 'success': False, 
-                'error': str(e)
+                'message': 'Invalid JSON data.'
             })
     
-    return JsonResponse({
-        'success': False, 
-        'error': 'Invalid request method'
-    })
+    return JsonResponse({'success': False, 'message': 'Invalid request method'})
+
+@login_required
+def save_application_notes(request, application_id):
+    """Save internal notes for an application"""
+    if request.method == 'POST':
+        try:
+            company = Company.objects.get(user=request.user)
+            application = JobApplication.objects.get(
+                id=application_id,
+                job__company=company
+            )
+            
+            data = json.loads(request.body)
+            notes = data.get('notes', '')
+            
+            # Update notes
+            application.notes = notes
+            application.save()
+            
+            return JsonResponse({
+                'success': True, 
+                'message': 'Notes saved successfully.'
+            })
+                
+        except (Company.DoesNotExist, JobApplication.DoesNotExist):
+            return JsonResponse({
+                'success': False, 
+                'message': 'Application not found or access denied.'
+            })
+        except json.JSONDecodeError:
+            return JsonResponse({
+                'success': False, 
+                'message': 'Invalid JSON data.'
+            })
+    
+    return JsonResponse({'success': False, 'message': 'Invalid request method.'})
+
+@login_required
+def bulk_update_applications(request):
+    """Bulk update multiple applications (optional advanced feature)"""
+    if request.method == 'POST':
+        try:
+            company = Company.objects.get(user=request.user)
+            data = json.loads(request.body)
+            
+            application_ids = data.get('application_ids', [])
+            new_status = data.get('status')
+            
+            if not application_ids or not new_status:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Missing application IDs or status.'
+                })
+            
+            # Update applications
+            updated_count = JobApplication.objects.filter(
+                id__in=application_ids,
+                job__company=company
+            ).update(
+                status=new_status,
+                reviewed_at=timezone.now(),
+                reviewed_by=request.user
+            )
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Successfully updated {updated_count} applications to {new_status}.',
+                'updated_count': updated_count
+            })
+            
+        except Company.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Company not found.'
+            })
+    
+    return JsonResponse({'success': False, 'message': 'Invalid request method.'})
+
+
 
 def company_logout(request):
     """Company logout view"""

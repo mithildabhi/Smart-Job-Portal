@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Job, JobApplication, JobBookmark
+from .models import Job, JobApplication
 
 @admin.register(Job)
 class JobAdmin(admin.ModelAdmin):
@@ -69,16 +69,4 @@ class JobApplicationAdmin(admin.ModelAdmin):
         return f"{obj.days_since_applied} days ago"
     days_since_applied.short_description = 'Applied'
 
-@admin.register(JobBookmark)
-class JobBookmarkAdmin(admin.ModelAdmin):
-    list_display = ['student', 'job_title', 'company_name', 'bookmarked_at']
-    list_filter = ['bookmarked_at', 'job__company']
-    search_fields = ['student__username', 'job__title', 'job__company__company_name']
-    
-    def job_title(self, obj):
-        return obj.job.title
-    job_title.short_description = 'Job'
-    
-    def company_name(self, obj):
-        return obj.job.company.company_name
-    company_name.short_description = 'Company'
+

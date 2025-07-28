@@ -12,6 +12,8 @@ import json
 from .models import Job, JobApplication, JobBookmark
 from .forms import JobApplicationForm, JobForm
 from companies.models import Company
+from django.views.decorators.http import require_http_methods  # ✅ Added missing import
+
 
 def main(request):
     """Main page with featured jobs and companies"""
@@ -115,15 +117,15 @@ def job_list(request):
     page_obj = paginator.get_page(page_number)
     
     # Get applied jobs for current user
-    applied_jobs = []
+    student_application = []
     if request.user.is_authenticated:
-        applied_jobs = JobApplication.objects.filter(
+        student_application = JobApplication.objects.filter(
             student=request.user
         ).values_list('job_id', flat=True)
     
     context = {
         'jobs': page_obj,
-        'applied_jobs': applied_jobs,
+        'student_application': student_application,
         'is_paginated': page_obj.has_other_pages(),
         'page_obj': page_obj,
     }
@@ -133,33 +135,46 @@ def job_list(request):
 def apply_job(request):
     """Handle job application submission"""
     if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        job_id = request.POST.get('job_id')
-        job = get_object_or_404(Job, id=job_id, is_active=True)
-        
-        # Check if already applied
-        if JobApplication.objects.filter(student=request.user, job=job).exists():
-            return JsonResponse({
-                'success': False,
-                'message': 'You have already applied for this job.'
-            })
-        
-        # Create application
-        form = JobApplicationForm(request.POST, request.FILES)
-        if form.is_valid():
-            application = form.save(commit=False)
-            application.student = request.user
-            application.job = job
-            application.save()
+        try:
+            job_id = request.POST.get('job_id')
+            if not job_id:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Job ID is required.'
+                })
             
-            return JsonResponse({
-                'success': True,
-                'message': f'Successfully applied for {job.title} at {job.company.company_name}!'
-            })
-        else:
+            job = get_object_or_404(Job, id=job_id, is_active=True)
+            
+            # Check if already applied
+            if JobApplication.objects.filter(student=request.user, job=job).exists():
+                return JsonResponse({
+                    'success': False,
+                    'message': 'You have already applied for this job.'
+                })
+            
+            # Create application
+            form = JobApplicationForm(request.POST, request.FILES)
+            if form.is_valid():
+                application = form.save(commit=False)
+                application.student = request.user
+                application.job = job
+                application.save()
+                
+                return JsonResponse({
+                    'success': True,
+                    'message': f'Successfully applied for {job.title} at {job.company.company_name}!'
+                })
+            else:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Please correct the errors below.',
+                    'errors': form.errors
+                })
+                
+        except Exception as e:
             return JsonResponse({
                 'success': False,
-                'message': 'Please correct the errors below.',
-                'errors': form.errors
+                'message': 'An error occurred while processing your application. Please try again.'
             })
     
     return JsonResponse({'success': False, 'message': 'Invalid request'})
