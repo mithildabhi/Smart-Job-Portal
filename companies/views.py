@@ -9,9 +9,10 @@ from django.utils import timezone
 
 from django.core.paginator import Paginator
 from django.db.models import Q, Count
-
+import os
 from datetime import timedelta
 import json
+from django.views.decorators.http import require_POST
 
 from jobs.models import Job, JobApplication  # From jobs app
 from .models import Company               # Local companies app
@@ -174,7 +175,72 @@ def post_job(request):
     except Company.DoesNotExist:
         messages.error(request, 'Company profile not found.')
         return redirect('companies:company_dashboard')
+  
+@login_required
+@require_POST
+def upload_company_logo(request):
+    """Handle company logo upload"""
+    try:
+        company = Company.objects.get(user=request.user)
+        
+        if 'logo' in request.FILES:
+            # Delete old logo if exists
+            if company.logo:
+                if os.path.isfile(company.logo.path):
+                    os.remove(company.logo.path)
+            
+            # Save new logo
+            company.logo = request.FILES['logo']
+            company.save()
+            
+            messages.success(request, 'Company logo updated successfully!')
+        else:
+            messages.error(request, 'No logo file provided.')
+            
+    except Company.DoesNotExist:
+        messages.error(request, 'Company profile not found.')
+    except Exception as e:
+        messages.error(request, f'Error uploading logo: {str(e)}')
     
+    return redirect('companies:company_profile')
+
+@login_required
+@require_POST
+def delete_company_logo(request):
+    """Handle company logo deletion"""
+    try:
+        company = Company.objects.get(user=request.user)
+        
+        if company.logo:
+            # Delete file from filesystem
+            if os.path.isfile(company.logo.path):
+                os.remove(company.logo.path)
+            
+            # Remove from database
+            company.logo = None
+            company.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Logo removed successfully!'
+            })
+        else:
+            return JsonResponse({
+                'success': False,
+                'message': 'No logo to remove.'
+            })
+            
+    except Company.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Company profile not found.'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error removing logo: {str(e)}'
+        })
+          
 @login_required
 def manage_jobs(request):
     """Enhanced job management with activate/deactivate/delete functionality"""

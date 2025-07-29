@@ -14,6 +14,6 @@ class Company(models.Model):
     founded_year = models.IntegerField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
+    logo = models.ImageField(upload_to='company_logos/%Y/%m/', blank=True, null=True)
     def __str__(self):
         return self.company_name

@@ -25,7 +25,8 @@ urlpatterns = [
     path('application/<int:application_id>/detail/', views.application_detail, name='application_detail'),
     path('application/<int:application_id>/update-status/', views.update_application_status, name='update_application_status'),
     path('application/<int:application_id>/save-notes/', views.save_application_notes, name='save_application_notes'),
-
+    path('upload-logo/', views.upload_company_logo, name='upload_company_logo'),    # ← ADD THIS
+    path('delete-logo/', views.delete_company_logo, name='delete_company_logo'),    # ← ADD THIS
     
     
 ]
