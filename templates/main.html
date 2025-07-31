@@ -419,7 +419,7 @@
   <h2 class="section-title">Latest Job Opportunities</h2>
   
   <!-- Dynamic content - replace with actual job data from your Django views -->
-  {% if latest_jobs %}
+  {% comment %} {% if latest_jobs %}
     {% for job in latest_jobs %}
     <div class="job-card">
       <div class="job-title">{{ job.title }}</div>
@@ -462,7 +462,7 @@
       </div>
     </div>
   {% endif %}
-  
+   {% endcomment %}
   <div class="text-center mt-4">
     <a href="{% url 'jobs:job_list' %}" class="btn-hero btn-primary-hero">
       <i class="fas fa-eye me-2"></i>View All Jobs
