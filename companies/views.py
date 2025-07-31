@@ -17,6 +17,7 @@ from django.views.decorators.http import require_POST
 from jobs.models import Job, JobApplication  # From jobs app
 from .models import Company               # Local companies app
 from students.models import StudentProfile  # Import StudentProfile model
+from django.views.decorators.http import require_http_methods
 
 
 
@@ -337,40 +338,6 @@ def delete_job(request, job_id):
     
     return redirect('companies:manage_jobs')
 
-# companies/views.py
-@login_required
-def post_job(request):
-    """Post a new job using company field"""
-    if request.method == 'POST':
-        try:
-            company = Company.objects.get(user=request.user)
-            
-            # ✅ FIXED: Create job with company, not recruiter
-            job = Job.objects.create(
-                title=request.POST['title'],
-                description=request.POST['description'],
-                company=company,  # ← Use company instead of recruiter
-                location=request.POST['location'],
-                salary=request.POST.get('salary', ''),
-                requirements=request.POST.get('requirements', ''),
-                job_type=request.POST.get('job_type', 'full_time'),
-                deadline=request.POST.get('deadline'),
-                is_active=True
-            )
-            
-            messages.success(request, f'Job "{job.title}" posted successfully!')
-            return redirect('companies:manage_jobs')
-            
-        except Company.DoesNotExist:
-            messages.error(request, 'Company profile not found.')
-            return redirect('companies:company_register')
-    
-    try:
-        company = Company.objects.get(user=request.user)
-        return render(request, 'jobs/post_job.html', {'company': company})
-    except Company.DoesNotExist:
-        messages.error(request, 'Company profile not found.')
-        return redirect('companies:company_register')
     
 @login_required
 def company_profile(request):
@@ -546,7 +513,7 @@ def view_applications(request):
     return render(request, "companies/view_applications.html", context)
 
 @login_required
-def application_detail(request, application_id):
+def application_detail(request, application_id):  # ✅ Changed parameter name
     """Get detailed application information via AJAX"""
     try:
         company = Company.objects.get(user=request.user)
@@ -575,8 +542,7 @@ def application_detail(request, application_id):
                 'portfolio_url': application.portfolio_url,
                 'applied_date': application.applied_at.strftime('%B %d, %Y at %I:%M %p'),
                 'status': application.status,
-                'notes': application.notes or '',
-                'days_since_applied': application.days_since_applied,
+                'notes': getattr(application, 'notes', '') or '',
                 'student': {
                     'name': application.student.get_full_name() or application.student.username,
                     'email': application.student.email,
@@ -608,27 +574,9 @@ def application_detail(request, application_id):
             'message': 'Application not found or access denied.'
         })
 
-@login_required
-def update_application_status(request, pk):
-    """AJAX – change status from the board"""
-    if request.method != "POST" or not request.headers.get("x-requested-with") == "XMLHttpRequest":
-        return JsonResponse({"success": False, "message": "Bad request"}, status=400)
-
-    application = get_object_or_404(JobApplication, pk=pk, job__company__user=request.user)
-    data        = json.loads(request.body or "{}")
-    new_status  = data.get("status")
-
-    if new_status not in {"pending","shortlisted","interviewed","hired","rejected"}:
-        return JsonResponse({"success": False, "message": "Invalid status"}, status=422)
-
-    application.status      = new_status
-    application.reviewed_at = timezone.now()
-    application.save(update_fields=["status","reviewed_at"])
-
-    return JsonResponse({"success": True, "message": f"Status set to {new_status.title()}."})
 
 @login_required
-def save_application_notes(request, application_id):
+def save_application_notes(request, application_id):  # ✅ Changed parameter name
     """Save internal notes for an application"""
     if request.method == 'POST':
         try:
@@ -659,48 +607,18 @@ def save_application_notes(request, application_id):
                 'success': False, 
                 'message': 'Invalid JSON data.'
             })
-    
-    return JsonResponse({'success': False, 'message': 'Invalid request method'})
-
-@login_required
-def save_application_notes(request, application_id):
-    """Save internal notes for an application"""
-    if request.method == 'POST':
-        try:
-            company = Company.objects.get(user=request.user)
-            application = JobApplication.objects.get(
-                id=application_id,
-                job__company=company
-            )
-            
-            data = json.loads(request.body)
-            notes = data.get('notes', '')
-            
-            # Update notes
-            application.notes = notes
-            application.save()
-            
-            return JsonResponse({
-                'success': True, 
-                'message': 'Notes saved successfully.'
-            })
-                
-        except (Company.DoesNotExist, JobApplication.DoesNotExist):
+        except Exception as e:
             return JsonResponse({
                 'success': False, 
-                'message': 'Application not found or access denied.'
-            })
-        except json.JSONDecodeError:
-            return JsonResponse({
-                'success': False, 
-                'message': 'Invalid JSON data.'
+                'message': f'Error saving notes: {str(e)}'
             })
     
     return JsonResponse({'success': False, 'message': 'Invalid request method.'})
 
+
 @login_required
 def bulk_update_applications(request):
-    """Bulk update multiple applications (optional advanced feature)"""
+    """Bulk update multiple applications"""
     if request.method == 'POST':
         try:
             company = Company.objects.get(user=request.user)
@@ -721,8 +639,7 @@ def bulk_update_applications(request):
                 job__company=company
             ).update(
                 status=new_status,
-                reviewed_at=timezone.now(),
-                reviewed_by=request.user
+                reviewed_at=timezone.now()
             )
             
             return JsonResponse({
@@ -735,6 +652,11 @@ def bulk_update_applications(request):
             return JsonResponse({
                 'success': False,
                 'message': 'Company not found.'
+            })
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': f'Error updating applications: {str(e)}'
             })
     
     return JsonResponse({'success': False, 'message': 'Invalid request method.'})
@@ -794,3 +716,79 @@ def delete_company_account(request):
     except Company.DoesNotExist:
         messages.error(request, 'Company profile not found.')
         return redirect('companies:company_dashboard')
+
+
+@login_required
+def get_application_statistics(request):
+    """Get application statistics for dashboard charts"""
+    try:
+        company = Company.objects.get(user=request.user)
+        
+        # Monthly application trends
+        monthly_stats = JobApplication.objects.filter(
+            job__company=company,
+            applied_at__gte=timezone.now() - timedelta(days=365)
+        ).extra(
+            select={'month': 'EXTRACT(month FROM applied_at)'}
+        ).values('month').annotate(
+            count=Count('id')
+        ).order_by('month')
+        
+        # Status distribution
+        status_stats = JobApplication.objects.filter(
+            job__company=company
+        ).values('status').annotate(
+            count=Count('id')
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'monthly_stats': list(monthly_stats),
+            'status_stats': list(status_stats)
+        })
+        
+    except Company.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Company not found'
+        })
+
+@login_required
+@require_http_methods(["POST"])
+def update_application_status(request, application_id):  # ✅ Changed from 'pk' to 'application_id'
+    """AJAX – change status from the board"""
+    if not request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return JsonResponse({"success": False, "message": "Bad request"}, status=400)
+
+    try:
+        application = get_object_or_404(JobApplication, pk=application_id, job__company__user=request.user)
+        data = json.loads(request.body or "{}")
+        new_status = data.get("status")
+
+        if new_status not in {"pending", "shortlisted", "interviewed", "hired", "rejected"}:
+            return JsonResponse({"success": False, "message": "Invalid status"}, status=422)
+
+        application.status = new_status
+        application.reviewed_at = timezone.now()
+        application.save(update_fields=["status", "reviewed_at"])
+
+        # Status messages for better UX
+        status_messages = {
+            'pending': f'{application.student.get_full_name() or application.student.username} moved back to pending review',
+            'shortlisted': f'{application.student.get_full_name() or application.student.username} has been shortlisted',
+            'interviewed': f'Interview scheduled for {application.student.get_full_name() or application.student.username}',
+            'hired': f'Congratulations! {application.student.get_full_name() or application.student.username} has been hired!',
+            'rejected': f'Application from {application.student.get_full_name() or application.student.username} has been rejected'
+        }
+
+        return JsonResponse({
+            "success": True,
+            "message": status_messages.get(new_status, f"Status updated to {new_status.title()}"),
+            "new_status": new_status,
+            "application_id": application.id
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({"success": False, "message": "Invalid JSON data"}, status=400)
+    except Exception as e:
+        return JsonResponse({"success": False, "message": f"Error updating status: {str(e)}"}, status=500)

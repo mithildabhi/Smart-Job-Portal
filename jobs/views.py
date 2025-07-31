@@ -195,7 +195,7 @@ def job_detail(request, job_id):
         'job': job,
         'has_applied': has_applied,
     }
-    return render(request, 'jobs/job_detail.html', context)
+    return render(request, 'jobs/job_details.html', context)
 
 @login_required
 def bookmark_job(request):
