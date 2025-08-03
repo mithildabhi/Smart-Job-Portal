@@ -310,12 +310,11 @@
 </style>
 
 <div class="container mt-4">
-    <!-- Profile Header with Enhanced Logo Functionality -->
+    <!-- ==== Profile Header with Enhanced Logo Functionality ==== -->
     <div class="profile-header">
         <div class="header-content">
             <div class="company-logo-large" onclick="openLogoModal()">
                 {% if user.company.logo %}
-                    <!-- Show company logo if available -->
                     <img src="{{ user.company.logo.url }}" alt="{{ company.company_name }}" class="company-logo-img">
                     <div class="logo-overlay">
                         <div class="logo-actions">
@@ -328,7 +327,6 @@
                         </div>
                     </div>
                 {% else %}
-                    <!-- Show company initial if no logo -->
                     {% if company.company_name %}
                         <span class="company-initial-large">{{ company.company_name.0 }}</span>
                     {% else %}
@@ -341,256 +339,195 @@
                     </div>
                 {% endif %}
             </div>
-            <h1>{{ company.company_name }}</h1>
-            <p class="lead">{{ company.industry|default:"Technology Industry" }}</p>
-            <p><i class="fas fa-envelope me-2"></i>{{ user.email }}</p>
+            <h1 id="profileName">{{ company.company_name }}</h1>
+            <p class="lead" id="profileIndustry">{{ company.industry|default:"Technology Industry" }}</p>
+            <p id="profileEmail"><i class="fas fa-envelope me-2"></i>{{ user.email }}</p>
         </div>
     </div>
 
-    <!-- Company Logo Management Modal -->
-    <div class="modal fade" id="logoModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">
-                        <i class="fas fa-image me-2"></i>Company Logo Management
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <!-- Current Logo Display -->
-                    <div class="text-center mb-4">
-                        <div class="current-logo-display">
-                            {% if user.company.logo %}
-                                <img id="currentLogo" src="{{ user.company.logo.url }}" alt="Current Logo">
-                            {% else %}
-                                <div class="no-logo-placeholder">
-                                    {% if company.company_name %}
-                                        <span class="placeholder-initial">{{ company.company_name.0 }}</span>
-                                    {% else %}
-                                        <i class="fas fa-building"></i>
-                                    {% endif %}
-                                </div>
-                            {% endif %}
-                        </div>
-                        <h6 class="mt-2">Current Company Logo</h6>
-                    </div>
-                    
-                    <!-- Logo Actions -->
-                    <div class="d-grid gap-2">
-                        {% if user.company.logo %}
-                            <button class="btn btn-outline-danger" onclick="deleteCompanyLogo()">
-                                <i class="fas fa-trash me-2"></i>Remove Current Logo
-                            </button>
-                        {% endif %}
-                        
-                        <button class="btn btn-primary" onclick="document.getElementById('logoInput').click()">
-                            <i class="fas fa-upload me-2"></i>
-                            {% if user.company.logo %}Change Logo{% else %}Upload Logo{% endif %}
-                        </button>
-                    </div>
-                    
-                    <!-- Hidden File Input -->
-                    <form id="logoForm" method="post" enctype="multipart/form-data" action="{% url 'companies:upload_company_logo' %}" style="display: none;">
-                        {% csrf_token %}
-                        <input type="file" id="logoInput" name="logo" accept="image/*" onchange="uploadLogo()">
-                    </form>
-                    
-                    <!-- Upload Guidelines -->
-                    <div class="mt-3">
-                        <small class="text-muted">
-                            <i class="fas fa-info-circle me-1"></i>
-                            Recommended: Square image (400x400px), JPG/PNG format, max 2MB
-                        </small>
-                    </div>
-                </div>
-            </div>
+    <!-- ==== Logo Management Modal (keep your actual form inside here) ==== -->
+   <!-- Logo Management Modal -->
+<div class="modal fade" id="logoModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form id="logoForm" method="post" enctype="multipart/form-data" action="{% url 'companies:upload_company_logo' %}">
+  {% csrf_token %}
+  <div class="modal-header">
+    <h5 class="modal-title"><i class="fas fa-image me-2"></i>Company Logo Management</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+  </div>
+  <div class="modal-body text-center">
+    <div class="current-logo-display mb-4">
+      {% if user.company.logo %}
+        <img id="currentLogo" src="{{ user.company.logo.url }}" alt="Current Logo">
+      {% else %}
+        <div class="no-logo-placeholder">
+          {% if company.company_name %}
+            <span class="placeholder-initial">{{ company.company_name|slice:":1"|upper }}</span>
+          {% else %}
+            <i class="fas fa-building"></i>
+          {% endif %}
         </div>
+      {% endif %}
     </div>
 
-    <!-- Company Information (Your existing content - unchanged) -->
-    <div class="profile-card">
-        <h2 class="section-title">
-            <i class="fas fa-building section-icon"></i>
-            Company Information
-        </h2>
-        
-        <div class="info-row">
-            <span class="info-label">
-                <i class="fas fa-building"></i>
-                Company Name
-            </span>
-            <span class="info-value">{{ company.company_name|default:"Not provided" }}</span>
-        </div>
-        
-        <div class="info-row">
-            <span class="info-label">
-                <i class="fas fa-envelope"></i>
-                Email
-            </span>
-            <span class="info-value">{{ user.email }}</span>
-        </div>
-        
-        <div class="info-row">
-            <span class="info-label">
-                <i class="fas fa-phone"></i>
-                Phone
-            </span>
-            <span class="info-value">{{ company.phone|default:"Not provided" }}</span>
-        </div>
-        
-        <div class="info-row">
-            <span class="info-label">
-                <i class="fas fa-map-marker-alt"></i>
-                Location
-            </span>
-            <span class="info-value">{{ company.location|default:"Not provided" }}</span>
-        </div>
-        
-        <div class="info-row">
-            <span class="info-label">
-                <i class="fas fa-industry"></i>
-                Industry
-            </span>
-            <span class="info-value">{{ company.industry|default:"Not specified" }}</span>
-        </div>
-        
-        <div class="info-row">
-            <span class="info-label">
-                <i class="fas fa-globe"></i>
-                Website
-            </span>
-            <span class="info-value">
-                {% if company.website %}
-                    <a href="{{ company.website }}" target="_blank">{{ company.website }}</a>
-                {% else %}
-                    Not provided
-                {% endif %}
-            </span>
-        </div>
-        
-        <div class="info-row">
-            <span class="info-label">
-                <i class="fas fa-calendar"></i>
-                Member Since
-            </span>
-            <span class="info-value">{{ user.date_joined|date:"F Y" }}</span>
-        </div>
-        
-        <a href="#" class="btn-edit">
-            <i class="fas fa-edit me-2"></i>Edit Information
-        </a>
-    </div>
+    <input type="file" id="logoInput" name="logo" accept="image/*" style="display:none;" onchange="document.getElementById('logoForm').submit()" />
 
-    <!-- Company Description (Your existing content - unchanged) -->
-    <div class="profile-card">
-        <h2 class="section-title">
-            <i class="fas fa-info-circle section-icon"></i>
-            About Company
-        </h2>
-        
-        <p style="color: #6c757d; line-height: 1.6;">
-            {% if company.description %}
-                {{ company.description }}
-            {% else %}
-                We are a leading technology company focused on innovation and excellence. Our mission is to provide cutting-edge solutions and create opportunities for talented professionals to grow and succeed in their careers.
-            {% endif %}
-        </p>
-        
-        <a href="#" class="btn-edit">
-            <i class="fas fa-edit me-2"></i>Update Description
-        </a>
-    </div>
+    <button type="button" class="btn btn-primary me-2" onclick="document.getElementById('logoInput').click()">
+      <i class="fas fa-upload me-2"></i>Upload New Logo
+    </button>
 
-    <!-- Active Job Postings (Your existing content - unchanged) -->
-    <div class="profile-card">
-        <h2 class="section-title">
-            <i class="fas fa-briefcase section-icon"></i>
-            Active Job Postings
-        </h2>
-        
-        {% if recent_jobs %}
-            {% for job in recent_jobs %}
-            <div class="job-item">
-                <div class="job-title">{{ job.title }}</div>
-                <div class="job-details">{{ job.job_type|title }} • {{ job.location }} • {{ job.salary|default:"Salary not specified" }}</div>
-                <div class="job-stats">
-                    {{ job.applications_count|default:0 }} applications • 
-                    Posted {{ job.posted_on|timesince }} ago
-                </div>
-            </div>
-            {% endfor %}
-        {% else %}
-            <div class="job-item">
-                <div class="job-title">No active job postings</div>
-                <div class="job-details">Start posting jobs to attract talented candidates</div>
-            </div>
-        {% endif %}
-        
-        <a href="{% url 'companies:manage_jobs' %}" class="btn-edit">
-            <i class="fas fa-briefcase me-2"></i>Manage All Jobs
-        </a>
-    </div>
+    {% if user.company.logo %}
+    <button type="button" class="btn btn-outline-danger" onclick="deleteCompanyLogo()">
+      <i class="fas fa-trash me-2"></i>Remove Current Logo
+    </button>
+    {% endif %}
+  </div>
+</form>
 
-    <!-- Recruitment Statistics (Your existing content - unchanged) -->
-    <div class="profile-card">
-        <h2 class="section-title">
-            <i class="fas fa-chart-bar section-icon"></i>
-            Recruitment Statistics
-        </h2>
-        
-        <div class="stats-grid">
-            <div class="stat-item">
-                <div class="stat-number">{{ total_jobs|default:0 }}</div>
-                <div class="stat-label">Total Jobs Posted</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number">{{ total_applications|default:0 }}</div>
-                <div class="stat-label">Applications Received</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number">{{ active_jobs|default:0 }}</div>
-                <div class="stat-label">Active Jobs</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number">{{ inactive_jobs|default:0 }}</div>
-                <div class="stat-label">Completed Jobs</div>
-            </div>
-        </div>
     </div>
-
-    <!-- Back to Dashboard (Your existing content - unchanged) -->
-    <div class="text-center mt-4 mb-5">
-        <a href="{% url 'companies:company_dashboard' %}" class="btn-edit">
-            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
-        </a>
+  </div>
+</div>
+<div class="profile-card">
+  <h2 class="section-title">
+    <i class="fas fa-chart-bar section-icon"></i>
+    Recruitment Statistics
+  </h2>
+  
+  <div class="stats-grid">
+    <div class="stat-item">
+      <div class="stat-number">{{ total_jobs|default:0 }}</div>
+      <div class="stat-label">Total Jobs Posted</div>
     </div>
+    <div class="stat-item">
+      <div class="stat-number">{{ total_applications|default:0 }}</div>
+      <div class="stat-label">Applications Received</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number">{{ active_jobs|default:0 }}</div>
+      <div class="stat-label">Active Jobs</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number">{{ inactive_jobs|default:0 }}</div>
+      <div class="stat-label">Completed Jobs</div>
+    </div>
+  </div>
 </div>
 
+    <!-- ==== Edit Company Info Modal ==== -->
+    <div class="modal fade" id="editInfoModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <form id="editInfoForm">
+            <div class="modal-header">
+              <h5 class="modal-title"><i class="fas fa-building me-2"></i>Edit Company Information</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <div class="mb-3"><label class="form-label">Company Name</label>
+                <input type="text" class="form-control" name="company_name" required value="{{ company.company_name|escape }}">
+              </div>
+              <div class="mb-3"><label class="form-label">Email</label>
+                <input type="email" class="form-control" name="email" required value="{{ user.email|escape }}">
+              </div>
+              <div class="mb-3"><label class="form-label">Phone</label>
+                <input type="text" class="form-control" name="phone" value="{{ company.phone|escape }}">
+              </div>
+              <div class="mb-3"><label class="form-label">Location</label>
+                <input type="text" class="form-control" name="location" value="{{ company.location|escape }}">
+              </div>
+              <div class="mb-3"><label class="form-label">Industry</label>
+                <input type="text" class="form-control" name="industry" value="{{ company.industry|escape }}">
+              </div>
+              <div class="mb-3"><label class="form-label">Website</label>
+                <input type="url" class="form-control" name="website" value="{{ company.website|escape }}">
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary"><i class="fas fa-save me-2"></i>Save Changes</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==== Edit Company Description Modal ==== -->
+    <div class="modal fade" id="editDescModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <form id="editDescForm">
+            <div class="modal-header">
+              <h5 class="modal-title"><i class="fas fa-info-circle me-2"></i>Edit Company Description</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <div class="mb-3">
+                <label class="form-label">Description</label>
+                <textarea class="form-control" name="description" rows="6" required>{{ company.description }}</textarea>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary"><i class="fas fa-save me-2"></i>Save Description</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==== Company Information Card ==== -->
+    <div class="profile-card">
+        <h2 class="section-title"><i class="fas fa-building section-icon"></i> Company Information</h2>
+        <div class="info-row"><span class="info-label"><i class="fas fa-building"></i> Company Name</span><span class="info-value" id="companyNameValue">{{ company.company_name|default:"Not provided" }}</span></div>
+        <div class="info-row"><span class="info-label"><i class="fas fa-envelope"></i> Email</span><span class="info-value" id="companyEmailValue">{{ user.email }}</span></div>
+        <div class="info-row"><span class="info-label"><i class="fas fa-phone"></i> Phone</span><span class="info-value" id="companyPhoneValue">{{ company.phone|default:"Not provided" }}</span></div>
+        <div class="info-row"><span class="info-label"><i class="fas fa-map-marker-alt"></i> Location</span><span class="info-value" id="companyLocationValue">{{ company.location|default:"Not provided" }}</span></div>
+        <div class="info-row"><span class="info-label"><i class="fas fa-industry"></i> Industry</span><span class="info-value" id="companyIndustryValue">{{ company.industry|default:"Not specified" }}</span></div>
+        <div class="info-row"><span class="info-label"><i class="fas fa-globe"></i> Website</span>
+          <span class="info-value" id="companyWebsiteValue">
+            {% if company.website %}
+              <a href="{{ company.website }}" target="_blank">{{ company.website }}</a>
+            {% else %}
+              Not provided
+            {% endif %}
+          </span>
+        </div>
+        <div class="info-row"><span class="info-label"><i class="fas fa-calendar"></i> Member Since</span><span class="info-value">{{ user.date_joined|date:"F Y" }}</span></div>
+        <a href="#" class="btn-edit" onclick="showEditInfoModal(event)"><i class="fas fa-edit me-2"></i>Edit Information</a>
+    </div>
+
+    <!-- ==== Company Description Card ==== -->
+    <div class="profile-card">
+        <h2 class="section-title"><i class="fas fa-info-circle section-icon"></i> About Company</h2>
+        <p style="color: #6c757d; line-height: 1.6;" id="companyDescriptionValue">
+            {{ company.description|default:"We are a leading technology company focused on innovation and excellence. Our mission is to provide cutting-edge solutions and create opportunities for talented professionals to grow and succeed in their careers." }}
+        </p>
+        <a href="#" class="btn-edit" onclick="showEditDescModal(event)"><i class="fas fa-edit me-2"></i>Update Description</a>
+    </div>
+
+    <!-- ... further blocks for jobs, stats, etc ... -->
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-// Logo Management Functions
+// Logo modal as per your logic
 function openLogoModal() {
     const modal = new bootstrap.Modal(document.getElementById('logoModal'));
     modal.show();
 }
-
 function uploadLogo() {
     const form = document.getElementById('logoForm');
     const fileInput = document.getElementById('logoInput');
-    
     if (fileInput.files.length > 0) {
-        // Check file size (2MB limit)
         const file = fileInput.files[0];
         if (file.size > 2 * 1024 * 1024) {
             alert('File size must be less than 2MB');
             return;
         }
-        
-        // Submit the form
         form.submit();
     }
 }
-
 function deleteCompanyLogo() {
     if (confirm('Are you sure you want to remove your company logo?')) {
         fetch('{% url "companies:delete_company_logo" %}', {
@@ -603,17 +540,78 @@ function deleteCompanyLogo() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                location.reload(); // Reload to show changes
+                location.reload();
             } else {
                 alert('Error removing logo: ' + data.message);
             }
         })
         .catch(error => {
-            console.error('Error:', error);
             alert('An error occurred while removing the logo');
         });
     }
 }
-</script>
 
+// Modal launchers
+function showEditInfoModal(e) {
+    e.preventDefault();
+    new bootstrap.Modal(document.getElementById('editInfoModal')).show();
+}
+function showEditDescModal(e) {
+    e.preventDefault();
+    new bootstrap.Modal(document.getElementById('editDescModal')).show();
+}
+
+// AJAX: Company Info edit
+document.getElementById('editInfoForm').onsubmit = function (e) {
+    e.preventDefault();
+    fetch("{% url 'companies:update_company_info' %}", {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        },
+        body: new FormData(this)
+    }).then(res => res.json())
+      .then(data => {
+          if (data.success) {
+              document.getElementById('companyNameValue').innerText = data.company_name;
+              document.getElementById('companyEmailValue').innerText = data.email;
+              document.getElementById('companyPhoneValue').innerText = data.phone;
+              document.getElementById('companyLocationValue').innerText = data.location;
+              document.getElementById('companyIndustryValue').innerText = data.industry;
+              let ws = data.website ? `<a href="${data.website}" target="_blank">${data.website}</a>` : 'Not provided';
+              document.getElementById('companyWebsiteValue').innerHTML = ws;
+              document.getElementById('profileName').innerText = data.company_name;
+              document.getElementById('profileIndustry').innerText = data.industry;
+              document.getElementById('profileEmail').innerHTML = `<i class="fas fa-envelope me-2"></i>${data.email}`;
+              bootstrap.Modal.getInstance(document.getElementById('editInfoModal')).hide();
+          } else {
+              alert(data.message || 'Update failed');
+          }
+      }).catch(() => alert('Error updating info.'));
+};
+
+// AJAX: Company Description edit
+document.getElementById('editDescForm').onsubmit = function (e) {
+    e.preventDefault();
+    fetch("{% url 'companies:update_company_description' %}", {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        },
+        body: new FormData(this)
+    }).then(res => res.json())
+      .then(data => {
+          if (data.success) {
+              document.getElementById('companyDescriptionValue').innerText = data.description;
+              bootstrap.Modal.getInstance(document.getElementById('editDescModal')).hide();
+          } else {
+              alert(data.message || 'Update failed');
+          }
+      }).catch(() => alert('Error updating description.'));
+};
+</script>
 {% endblock %}

@@ -207,6 +207,73 @@ def upload_company_logo(request):
 
 @login_required
 @require_POST
+def update_company_info(request):
+    user = request.user
+    company = getattr(user, 'company', None)
+    if not company:
+        return JsonResponse({'success': False, 'message': 'Company not found'})
+
+    # Extract fields from POST
+    company_name = request.POST.get('company_name')
+    email = request.POST.get('email')
+    phone = request.POST.get('phone')
+    location = request.POST.get('location')
+    industry = request.POST.get('industry')
+    website = request.POST.get('website')
+
+    # Validate and update fields (add your validation as needed)
+    if company_name:
+        company.company_name = company_name
+    if phone is not None:
+        company.phone = phone
+    if location is not None:
+        company.location = location
+    if industry is not None:
+        company.industry = industry
+    if website is not None:
+        company.website = website
+
+    try:
+        company.save()
+        # Also update user email
+        if email:
+            user.email = email
+            user.save()
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)})
+
+    return JsonResponse({
+        'success': True,
+        'company_name': company.company_name,
+        'email': user.email,
+        'phone': company.phone or '',
+        'location': company.location or '',
+        'industry': company.industry or '',
+        'website': company.website or '',
+    })
+
+
+@login_required
+@require_POST
+def update_company_description(request):
+    user = request.user
+    company = getattr(user, 'company', None)
+    if not company:
+        return JsonResponse({'success': False, 'message': 'Company not found'})
+
+    description = request.POST.get('description')
+    if description is not None:
+        company.description = description
+        try:
+            company.save()
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)})
+        return JsonResponse({'success': True, 'description': company.description})
+
+    return JsonResponse({'success': False, 'message': 'No description provided'})
+
+@login_required
+@require_POST
 def delete_company_logo(request):
     """Handle company logo deletion"""
     try:

@@ -33,4 +33,7 @@ urlpatterns = [
     # Advanced Features
     path('applications/bulk-update/', views.bulk_update_applications, name='bulk_update_applications'),
     path('statistics/', views.get_application_statistics, name='get_application_statistics'),
+    
+    path('update-info/', views.update_company_info, name='update_company_info'),
+    path('update-description/', views.update_company_description, name='update_company_description'),
 ]
