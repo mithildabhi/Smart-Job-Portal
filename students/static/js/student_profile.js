@@ -1,21 +1,24 @@
-// Student Profile JavaScript Functions - Complete Merged Version
+// ===================
+// Student Profile JavaScript - Fully Integrated
+// ===================
 
-// Global URL variables
+// ------- Global Variables -------
 let deleteProfilePictureUrl = '';
 let uploadProfilePictureUrl = '';
+let studentProfileUrl = '';
 
-// MERGED: Profile click handler from student_base.html
+// ------- Profile Click Handler -------
 function handleProfileClick(event) {
   if (!event.target.closest('.profile-dropdown-menu')) {
     window.location.href = studentProfileUrl || '/students/profile/';
   }
 }
 
-// Initialize URLs
+// ------- Initialize URLs -------
 function initializeUrls() {
   deleteProfilePictureUrl = window.profileUrls?.deleteProfilePicture || '';
   uploadProfilePictureUrl = window.profileUrls?.uploadProfilePicture || '';
-  
+  studentProfileUrl = window.profileUrls?.studentProfile || '';
   if (!deleteProfilePictureUrl || !uploadProfilePictureUrl) {
     console.error('Profile URLs not properly configured');
     return false;
@@ -23,18 +26,31 @@ function initializeUrls() {
   return true;
 }
 
-// Profile Picture Management
+// ------- Image Modal -------
 function openImageModal() {
   const modal = new bootstrap.Modal(document.getElementById('imageUploadModal'));
   modal.show();
 }
 
+// ------- Header Live Avatar Update -------
+function updateHeaderAvatar(imageUrl) {
+  // This ID must match your base template: id="student-header-avatar"
+  const headerIcon = document.getElementById('student-header-avatar');
+  if (!headerIcon) return;
+  if (imageUrl) {
+    headerIcon.innerHTML = `<img src="${imageUrl}" alt="Avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+  } else {
+    // You can use a global window.studentInitial set from backend for true initial.
+    headerIcon.innerHTML = `<span class="student-initial">U</span>`;
+  }
+}
+
+// ------- Delete Profile Picture -------
 function deleteProfilePicture() {
   if (!deleteProfilePictureUrl) {
     alert('Delete URL not configured. Please refresh the page.');
     return;
   }
-  
   if (confirm('Are you sure you want to delete your profile picture?')) {
     fetch(deleteProfilePictureUrl, {
       method: 'POST',
@@ -46,7 +62,7 @@ function deleteProfilePicture() {
     .then(response => response.json())
     .then(data => {
       if (data.success) {
-        // Update UI to show default avatar
+        // Profile page avatar
         const container = document.getElementById('profile-avatar-container');
         container.innerHTML = `
           <i class="fas fa-user-graduate" id="default-avatar"></i>
@@ -56,6 +72,8 @@ function deleteProfilePicture() {
             </button>
           </div>
         `;
+        updateHeaderAvatar(null); // -------- live update header icon
+
         showAlert('success', data.message);
       } else {
         showAlert('danger', data.message);
@@ -68,15 +86,13 @@ function deleteProfilePicture() {
   }
 }
 
-// Image Upload Functions
+// ------- Upload Image, Preview, and Submit -------
 function initializeImageUpload() {
-  // Check if URLs are configured
   if (!initializeUrls()) {
     console.error('Cannot initialize image upload: URLs not configured');
     return;
   }
-  
-  // Handle image preview
+  // Preview selected image before upload
   const pictureInput = document.getElementById('profile-picture-input');
   if (pictureInput) {
     pictureInput.addEventListener('change', function(e) {
@@ -92,38 +108,33 @@ function initializeImageUpload() {
     });
   }
 
-  // Handle form submission
+  // AJAX upload on form submit
   const profileForm = document.getElementById('profile-picture-form');
   if (profileForm) {
     profileForm.addEventListener('submit', function(e) {
       e.preventDefault();
-      
       if (!uploadProfilePictureUrl) {
         alert('Upload URL not configured. Please refresh the page.');
         return;
       }
-      
       const formData = new FormData(this);
       const uploadBtn = document.getElementById('upload-btn');
       const uploadBtnText = document.getElementById('upload-btn-text');
       const uploadSpinner = document.getElementById('upload-spinner');
-      
-      // Show loading state
+
       uploadBtn.disabled = true;
       uploadBtnText.textContent = 'Uploading...';
       uploadSpinner.style.display = 'inline-block';
-      
+
       fetch(uploadProfilePictureUrl, {
         method: 'POST',
-        headers: {
-          'X-Requested-With': 'XMLHttpRequest',
-        },
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
         body: formData
       })
       .then(response => response.json())
       .then(data => {
         if (data.success) {
-          // Update UI with new image
+          // Profile page avatar
           const container = document.getElementById('profile-avatar-container');
           container.innerHTML = `
             <img src="${data.image_url}" alt="Profile Picture" id="profile-image">
@@ -138,14 +149,13 @@ function initializeImageUpload() {
               </div>
             </div>
           `;
-          
-          // Close modal
+          updateHeaderAvatar(data.image_url); // ------ live update header icon
+
           const modal = bootstrap.Modal.getInstance(document.getElementById('imageUploadModal'));
-          modal.hide();
-          
+          if (modal) modal.hide();
+
           showAlert('success', data.message);
         } else {
-          // Show errors
           const errorDiv = document.getElementById('upload-errors');
           errorDiv.innerHTML = Object.values(data.errors).flat().join('<br>');
           errorDiv.style.display = 'block';
@@ -156,7 +166,6 @@ function initializeImageUpload() {
         showAlert('danger', 'An error occurred while uploading the picture.');
       })
       .finally(() => {
-        // Reset loading state
         uploadBtn.disabled = false;
         uploadBtnText.textContent = 'Upload Picture';
         uploadSpinner.style.display = 'none';
@@ -164,14 +173,13 @@ function initializeImageUpload() {
     });
   }
 
-  // Reset modal when closed
+  // Clear preview/errors on modal close
   const imageModal = document.getElementById('imageUploadModal');
   if (imageModal) {
     imageModal.addEventListener('hidden.bs.modal', function () {
       const form = document.getElementById('profile-picture-form');
       const previewContainer = document.getElementById('image-preview-container');
       const errors = document.getElementById('upload-errors');
-      
       if (form) form.reset();
       if (previewContainer) previewContainer.style.display = 'none';
       if (errors) errors.style.display = 'none';
@@ -179,21 +187,20 @@ function initializeImageUpload() {
   }
 }
 
-// MERGED: Enhanced hover effects from student_base.html
+// ------- Dropdown Hover Effect -------
 function initializeDropdownEffects() {
   const dropdownItems = document.querySelectorAll('.dropdown-item-custom');
   dropdownItems.forEach(item => {
     item.addEventListener('mouseenter', function() {
       this.style.transform = 'translateX(5px)';
     });
-    
     item.addEventListener('mouseleave', function() {
       this.style.transform = 'translateX(0)';
     });
   });
 }
 
-// Alert System
+// ------- Alert System -------
 function showAlert(type, message) {
   const alertHtml = `
     <div class="alert alert-${type} alert-dismissible fade show" role="alert">
@@ -201,13 +208,9 @@ function showAlert(type, message) {
       <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
   `;
-  
-  // Add alert to the top of the page
   const alertContainer = document.createElement('div');
   alertContainer.innerHTML = alertHtml;
   document.body.insertBefore(alertContainer.firstElementChild, document.body.firstChild);
-  
-  // Auto-dismiss after 5 seconds
   setTimeout(() => {
     const alert = document.querySelector('.alert');
     if (alert) {
@@ -217,73 +220,16 @@ function showAlert(type, message) {
   }, 5000);
 }
 
-// Animation Functions
-function initializeProgressBarAnimations() {
-  const progressBars = document.querySelectorAll('.progress-fill');
-  
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const width = entry.target.style.width;
-        entry.target.style.width = '0%';
-        setTimeout(() => {
-          entry.target.style.width = width;
-        }, 100);
-        observer.unobserve(entry.target);
-      }
-    });
-  });
-
-  progressBars.forEach(bar => observer.observe(bar));
-}
-
-function initializeStatsAnimations() {
-  const statNumbers = document.querySelectorAll('.stat-number');
-  
-  const animateValue = (element, start, end, duration) => {
-    let startTimestamp = null;
-    const step = (timestamp) => {
-      if (!startTimestamp) startTimestamp = timestamp;
-      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-      const currentValue = Math.floor(progress * (end - start) + start);
-      element.textContent = currentValue + (element.textContent.includes('%') ? '%' : '');
-      if (progress < 1) {
-        window.requestAnimationFrame(step);
-      }
-    };
-    window.requestAnimationFrame(step);
-  };
-
-  const statsObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const text = entry.target.textContent;
-        const number = parseInt(text.replace(/\D/g, ''));
-        animateValue(entry.target, 0, number, 1500);
-        statsObserver.unobserve(entry.target);
-      }
-    });
-  });
-
-  statNumbers.forEach(stat => statsObserver.observe(stat));
-}
-
-// Main initialization function
+// ------- Initialization -------
 function initializeStudentProfile() {
-  console.log('Initializing student profile...');
-  
-  // Initialize image upload functionality
   initializeImageUpload();
-  
-  // Initialize dropdown effects (merged from base)
   initializeDropdownEffects();
-  
-  // Initialize animations
-  initializeProgressBarAnimations();
-  initializeStatsAnimations();
-  
-  console.log('Student profile initialized successfully');
 }
 
-// Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', initializeStudentProfile);
+
+// ------- Expose functions for HTML ------
+window.openImageModal = openImageModal;
+window.deleteProfilePicture = deleteProfilePicture;
+window.updateHeaderAvatar = updateHeaderAvatar;
+window.handleProfileClick = handleProfileClick;

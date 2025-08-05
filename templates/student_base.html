@@ -29,18 +29,19 @@
         {% if user.is_authenticated %}
           <!-- Student Profile Symbol with CSS Hover Dropdown -->
           <div class="dropdown-hover">
-            <div class="student-profile-symbol" onclick="handleProfileClick(event)">
-              {% if user.first_name %}
-                <!-- Show first letter of first name -->
+            <div class="student-profile-symbol" id="student-header-avatar" onclick="handleProfileClick(event)">
+              {% if user.profile.profile_picture %}
+                <img src="{{ user.profile.profile_picture.url }}" alt="Avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+              {% elif user.first_name %}
                 <span class="student-initial">{{ user.first_name.0 }}</span>
               {% elif user.username %}
-                <!-- Show first letter of username -->
                 <span class="student-initial">{{ user.username.0 }}</span>
               {% else %}
-                <!-- Fallback icon -->
                 <i class="fas fa-user-graduate"></i>
               {% endif %}
             </div>
+
+
             
             <!-- Dropdown Menu -->
             <ul class="profile-dropdown-menu">
