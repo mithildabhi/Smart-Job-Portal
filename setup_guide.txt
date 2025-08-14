@@ -1,5 +1,15 @@
+    ✅ Setting Up a Clean Django Project with Git and Virtual Environment
 
-✅ Setting Up a Clean Django Project with Git and Virtual Environment
+Most Imp Thing to be note
+1. Django installation
+    django-admin startproject projectname
+2. Create app in django 
+    python manage.py startapp appname
+3. Runserver and migrations 
+    python manage.py makemigrations appname
+    python manage.py migrate
+    python manage.py runserver
+
 
 🔹 1. Create Virtual Environment
 python -m venv jobenv

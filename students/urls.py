@@ -18,5 +18,7 @@ urlpatterns = [
     path('profile/delete-picture/', views.delete_profile_picture, name='delete_profile_picture'),
     path('profile/', views.student_profile, name='student_profile'),
     path('delete-account/', views.delete_student_account, name='delete_account'),
+    
+    path('profile/api/update/', views.update_student_profile, name='update_student_profile'),
 
 ]

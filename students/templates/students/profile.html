@@ -140,8 +140,17 @@
         {% if profile.linkedin_url %}{{ profile.linkedin_url }}{% else %}Not provided{% endif %}
       </span>
     </div>
+    <div class="info-row">
+      <span class="info-label">
+        <i class="fas fa-linkedin"></i>
+        College Name
+      </span>
+      <span class="info-value">
+        {% if profile.college %}{{ profile.college }}{% else %}Not provided{% endif %}
+      </span>
+    </div>
     
-    <a href="#" class="btn-edit">
+    <a href="#" class="btn-edit" onclick="showEditStudentInfoModal(event)">
       <i class="fas fa-edit me-2"></i>Edit Information
     </a>
   </div>
@@ -310,6 +319,46 @@
   </a>
 </div>
 
+<div class="modal fade" id="editStudentInfoModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form id="editStudentInfoForm">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fas fa-user-graduate me-2"></i>Edit Student Information</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Phone</label>
+            <input type="text" class="form-control" name="phone" value="{{ profile.phone }}">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Location</label>
+            <input type="text" class="form-control" name="location" value="{{ profile.location }}">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Date of Birth</label>
+            <input type="date" class="form-control" name="date_of_birth" value="{{ profile.date_of_birth|date:'Y-m-d' }}">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">LinkedIn URL</label>
+            <input type="url" class="form-control" name="linkedin_url" value="{{ profile.linkedin_url }}">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">College</label>
+            <input type="text" class="form-control" name="college" value="{{ profile.college }}">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary"><i class="fas fa-save me-2"></i>Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
 
 {% block extra_js %}
@@ -321,4 +370,42 @@ window.profileUrls = {
 };
 </script>
 <script src="{% static 'js/student_profile.js' %}"></script>
+
+
+<script>
+function showEditStudentInfoModal(e) {
+  e.preventDefault();
+  new bootstrap.Modal(document.getElementById('editStudentInfoModal')).show();
+}
+
+document.getElementById('editStudentInfoForm').onsubmit = function(e) {
+  e.preventDefault();
+  fetch('/students/profile/api/update/', {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': '{{ csrf_token }}',
+      'X-Requested-With': 'XMLHttpRequest',
+      'Accept': 'application/json'
+    },
+    body: new FormData(this)
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      // Update info in card instantly, just like company edit:
+      document.querySelector('[id=studentPhoneValue]').innerText = data.phone || "Not provided";
+      document.querySelector('[id=studentLocationValue]').innerText = data.location || "Not provided";
+      document.querySelector('[id=studentDOBValue]').innerText = data.date_of_birth || "Not provided";
+      document.querySelector('[id=studentLinkedInValue]').innerText = data.linkedin_url || "Not provided";
+      document.querySelector('[id=studentCollegeValue]').innerText = data.college || "Not provided";
+      bootstrap.Modal.getInstance(document.getElementById('editStudentInfoModal')).hide();
+    } else {
+      alert(data.message || 'Update failed');
+    }
+  })
+  .catch(() => alert('Error updating info.'));
+};
+
+</script>
+
 {% endblock %}

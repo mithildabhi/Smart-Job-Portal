@@ -351,3 +351,36 @@ def withdraw_application(request, application_id):
         'success': False,
         'error': 'Invalid request method'
     })
+
+@login_required
+@require_POST
+def update_student_profile(request):
+    try:
+        profile = request.user.studentprofile  # or get with StudentProfile.objects.get(user=request.user)
+        profile.phone = request.POST.get("phone", "")
+        profile.location = request.POST.get("location", "")
+        profile.date_of_birth = request.POST.get("date_of_birth", "")
+        profile.linkedin_url = request.POST.get("linkedin_url", "")
+        profile.college = request.POST.get("college", "")
+        profile.save()
+
+        user = request.user
+        full_name = request.POST.get("full_name")  # optional
+        email = request.POST.get("email", "")
+        if full_name:
+            parts = full_name.split()
+            user.first_name = parts[0] if len(parts) > 0 else ""
+            user.last_name = " ".join(parts[1:]) if len(parts) > 1 else ""
+        if email: user.email = email
+        user.save()
+
+        return JsonResponse({
+            "success": True,
+            "phone": profile.phone,
+            "location": profile.location,
+            "date_of_birth": str(profile.date_of_birth) if profile.date_of_birth else "",
+            "linkedin_url": profile.linkedin_url,
+            "college": profile.college,
+        })
+    except Exception as e:
+        return JsonResponse({"success": False, "message": str(e)})
