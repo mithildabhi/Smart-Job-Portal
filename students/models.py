@@ -64,10 +64,10 @@ class StudentProfile(models.Model):
         return f"{self.user.username}'s Profile"
 
 # Keep your existing Student model if needed
-class Student(models.Model):
-    name = models.CharField(max_length=100)
-    email = models.EmailField(unique=True)
-    password = models.CharField(max_length=100)
+# class Student(models.Model):
+#     name = models.CharField(max_length=100)
+#     email = models.EmailField(unique=True)
+#     password = models.CharField(max_length=100)
 
     def __str__(self):
         return self.name

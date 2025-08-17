@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import StudentProfile, Student
+from .models import StudentProfile
 
 @admin.register(StudentProfile)
 class StudentProfileAdmin(admin.ModelAdmin):
@@ -58,10 +58,3 @@ class StudentProfileAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
-
-# ✅ UNCOMMENTED: Student admin if you need it
-@admin.register(Student)
-class StudentAdmin(admin.ModelAdmin):
-    list_display = ['name', 'email']
-    search_fields = ['name', 'email']
-    list_filter = ['name']
