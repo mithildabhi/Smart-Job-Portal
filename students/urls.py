@@ -20,5 +20,7 @@ urlpatterns = [
     path('delete-account/', views.delete_student_account, name='delete_account'),
     
     path('profile/api/update/', views.update_student_profile, name='update_student_profile'),
+    path('profile/api/skills/update/', views.update_skills, name='update_skills'),
+
 
 ]

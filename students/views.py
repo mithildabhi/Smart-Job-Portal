@@ -195,12 +195,20 @@ def student_dashboard(request):
     context = {'profile': profile}
     return render(request, 'students/student_dashboard.html', context)
 
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from .models import StudentProfile
+
 @login_required
 def student_profile(request):
-    profile, created = StudentProfile.objects.get_or_create(user=request.user)
+    # Load the existing profile. If it doesn't exist, raise 404 so you can spot it.
+    profile = get_object_or_404(StudentProfile.objects.select_related('user'), user=request.user)
+
     context = {
         'profile': profile,
         'has_profile_picture': bool(profile.profile_picture and profile.profile_picture.name),
+        # cache-buster so updated images show immediately in templates during dev
+        'image_cache_bust': int(profile.updated_at.timestamp()) if getattr(profile, 'updated_at', None) else None,
     }
     return render(request, 'students/profile.html', context)
 
@@ -356,31 +364,85 @@ def withdraw_application(request, application_id):
 @require_POST
 def update_student_profile(request):
     try:
-        profile = request.user.studentprofile  # or get with StudentProfile.objects.get(user=request.user)
-        profile.phone = request.POST.get("phone", "")
-        profile.location = request.POST.get("location", "")
-        profile.date_of_birth = request.POST.get("date_of_birth", "")
-        profile.linkedin_url = request.POST.get("linkedin_url", "")
-        profile.college = request.POST.get("college", "")
-        profile.save()
+        profile = StudentProfile.objects.get(user=request.user)
+    except StudentProfile.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Profile not found'}, status=404)
 
-        user = request.user
-        full_name = request.POST.get("full_name")  # optional
-        email = request.POST.get("email", "")
-        if full_name:
-            parts = full_name.split()
-            user.first_name = parts[0] if len(parts) > 0 else ""
-            user.last_name = " ".join(parts[1:]) if len(parts) > 1 else ""
-        if email: user.email = email
+    # Read fields (accept both names for robustness)
+    phone = request.POST.get('phone', '').strip()
+    location = request.POST.get('location', '').strip()
+    date_of_birth = request.POST.get('date_of_birth', '').strip()
+    linkedin_url = request.POST.get('linkedin_url', '').strip()
+    college_name = request.POST.get('college_name', '').strip() or request.POST.get('college', '').strip()
+    email = request.POST.get('email', '').strip()
+
+    # Update profile fields
+    profile.phone = phone
+    profile.location = location
+    profile.linkedin_url = linkedin_url
+    if date_of_birth:
+        try:
+            from django.utils.dateparse import parse_date
+            profile.date_of_birth = parse_date(date_of_birth)
+        except Exception:
+            profile.date_of_birth = None
+    profile.college_name = college_name
+    profile.save()
+
+    # Optionally update user email and name if provided
+    user = request.user
+    if email:
+        user.email = email
         user.save()
 
+    return JsonResponse({
+        'success': True,
+        'phone': profile.phone,
+        'location': profile.location,
+        'date_of_birth': profile.date_of_birth.isoformat() if profile.date_of_birth else '',
+        'linkedin_url': profile.linkedin_url,
+        'college_name': profile.college_name,
+        'email': user.email,
+    })
+
+
+import json
+ 
+@login_required
+@require_POST
+def update_skills(request):
+    """
+    Expects either:
+    - form-data with 'skills' string (comma-separated), OR
+    - JSON body: {"skills": ["Python", "Django", "React"]}
+    Returns JSON with updated skills list.
+    """
+    try:
+        # prefer JSON if content-type is application/json
+        if request.content_type and 'application/json' in request.content_type:
+            payload = json.loads(request.body.decode('utf-8') or '{}')
+            skills_input = payload.get('skills', [])
+            # skills_input should be a list; if a string, split it
+            if isinstance(skills_input, str):
+                skill_list = [s.strip() for s in skills_input.split(',') if s.strip()]
+            else:
+                skill_list = [str(s).strip() for s in skills_input]
+        else:
+            # fallback to form submission
+            skills_raw = request.POST.get('skills', '')
+            # If skills sent as CSV
+            skill_list = [s.strip() for s in skills_raw.split(',') if s.strip()]
+
+        profile = StudentProfile.objects.get(user=request.user)
+
+        # Save
+        profile.set_skills_list(skill_list)
+
         return JsonResponse({
-            "success": True,
-            "phone": profile.phone,
-            "location": profile.location,
-            "date_of_birth": str(profile.date_of_birth) if profile.date_of_birth else "",
-            "linkedin_url": profile.linkedin_url,
-            "college": profile.college,
+            'success': True,
+            'skills': profile.get_skills_list()
         })
+    except StudentProfile.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Profile not found'}, status=404)
     except Exception as e:
-        return JsonResponse({"success": False, "message": str(e)})
+        return JsonResponse({'success': False, 'message': str(e)}, status=400)

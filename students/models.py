@@ -50,11 +50,30 @@ class StudentProfile(models.Model):
             self.profile_picture = None
             self.save()
     
-    def get_skills_list(self):
-        """Return skills as a list"""
-        if self.skills:
-            return [skill.strip() for skill in self.skills.split(',') if skill.strip()]
-        return []
+# inside StudentProfile (models.py)
+def get_skills_list(self):
+    """Return skills as a list (cleaned)."""
+    if self.skills:
+        return [s.strip() for s in self.skills.split(',') if s.strip()]
+    return []
+
+def set_skills_list(self, skill_list):
+    """Accept a list of strings and store as comma-separated string."""
+    # normalize: remove empties, strip spaces, unique preserving order
+    seen = set()
+    normalized = []
+    for s in skill_list:
+        s = s.strip()
+        if not s:
+            continue
+        key = s.lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        normalized.append(s)
+    self.skills = ', '.join(normalized)
+    self.save()
+
     
     def get_full_name(self):
         """Return user's full name"""
@@ -69,5 +88,5 @@ class StudentProfile(models.Model):
 #     email = models.EmailField(unique=True)
 #     password = models.CharField(max_length=100)
 
-    def __str__(self):
-        return self.user.username
+    # def __str__(self):
+    #     return self.user.username

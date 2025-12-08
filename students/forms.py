@@ -200,3 +200,6 @@ class BasicInfoForm(forms.ModelForm):
             'last_name': forms.TextInput(attrs={'class': 'form-control'}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
         }
+
+class SkillsForm(forms.Form):
+    skills = forms.CharField(widget=forms.HiddenInput(), required=False)
