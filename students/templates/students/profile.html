@@ -98,55 +98,56 @@
         <i class="fas fa-envelope"></i>
         Email
       </span>
-      <span class="info-value">{{ user.email }}</span>
+      <span class="info-value" id="studentEmailValue">{{ user.email }}</span>
     </div>
-    
+
     <div class="info-row">
       <span class="info-label">
         <i class="fas fa-phone"></i>
         Phone
       </span>
-      <span class="info-value">
+      <span class="info-value" id="studentPhoneValue">
         {% if profile.phone %}{{ profile.phone }}{% else %}Not provided{% endif %}
       </span>
     </div>
-    
+
     <div class="info-row">
       <span class="info-label">
         <i class="fas fa-map-marker-alt"></i>
         Location
       </span>
-      <span class="info-value">
+      <span class="info-value" id="studentLocationValue">
         {% if profile.location %}{{ profile.location }}{% else %}Not provided{% endif %}
       </span>
     </div>
-    
+
     <div class="info-row">
       <span class="info-label">
         <i class="fas fa-birthday-cake"></i>
         Date of Birth
       </span>
-      <span class="info-value">
+      <span class="info-value" id="studentDOBValue">
         {% if profile.date_of_birth %}{{ profile.date_of_birth }}{% else %}Not provided{% endif %}
       </span>
     </div>
-    
+
     <div class="info-row">
       <span class="info-label">
         <i class="fas fa-linkedin"></i>
         LinkedIn
       </span>
-      <span class="info-value">
+      <span class="info-value" id="studentLinkedInValue">
         {% if profile.linkedin_url %}{{ profile.linkedin_url }}{% else %}Not provided{% endif %}
       </span>
     </div>
+
     <div class="info-row">
       <span class="info-label">
-        <i class="fas fa-linkedin"></i>
+        <i class="fas fa-university"></i>
         College Name
       </span>
-      <span class="info-value">
-        {% if profile.college %}{{ profile.college }}{% else %}Not provided{% endif %}
+      <span class="info-value" id="studentCollegeValue">
+        {% if profile.college_name %}{{ profile.college_name }}{% else %}Not provided{% endif %}
       </span>
     </div>
     
@@ -228,7 +229,7 @@
     <div class="education-item">
       <div class="item-title">Bachelor of Engineering in Computer Science</div>
       <div class="item-subtitle">
-        {% if profile.college %}{{ profile.college }}{% else %}Mumbai University{% endif %}
+          {% if profile.college_name %}{{ profile.college_name }}{% else %}Mumbai University{% endif %}
       </div>
       <div class="item-duration">2020 - 2024 • Expected</div>
       <div class="item-description">
@@ -378,34 +379,145 @@ function showEditStudentInfoModal(e) {
   new bootstrap.Modal(document.getElementById('editStudentInfoModal')).show();
 }
 
+<script>
+// Helper to read CSRF token from cookies
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';')[0];
+}
+
+function showEditStudentInfoModal(e) {
+  e.preventDefault();
+  new bootstrap.Modal(document.getElementById('editStudentInfoModal')).show();
+}
+
 document.getElementById('editStudentInfoForm').onsubmit = function(e) {
   e.preventDefault();
-  fetch('/students/profile/api/update/', {
+
+  const url = "{% url 'students:update_student_profile' %}";
+  const formData = new FormData(this);
+
+  fetch(url, {
     method: 'POST',
     headers: {
-      'X-CSRFToken': '{{ csrf_token }}',
-      'X-Requested-With': 'XMLHttpRequest',
-      'Accept': 'application/json'
+      "X-CSRFToken": getCookie("csrftoken"),
+      "X-Requested-With": "XMLHttpRequest",
+      "Accept": "application/json",
     },
-    body: new FormData(this)
+    body: formData,
   })
   .then(res => res.json())
   .then(data => {
     if (data.success) {
-      // Update info in card instantly, just like company edit:
-      document.querySelector('[id=studentPhoneValue]').innerText = data.phone || "Not provided";
-      document.querySelector('[id=studentLocationValue]').innerText = data.location || "Not provided";
-      document.querySelector('[id=studentDOBValue]').innerText = data.date_of_birth || "Not provided";
-      document.querySelector('[id=studentLinkedInValue]').innerText = data.linkedin_url || "Not provided";
-      document.querySelector('[id=studentCollegeValue]').innerText = data.college || "Not provided";
-      bootstrap.Modal.getInstance(document.getElementById('editStudentInfoModal')).hide();
-    } else {
-      alert(data.message || 'Update failed');
+
+      // Update front-end instantly
+      const fields = {
+        studentPhoneValue: data.phone,
+        studentLocationValue: data.location,
+        studentDOBValue: data.date_of_birth,
+        studentLinkedInValue: data.linkedin_url,
+        studentCollegeValue: data.college_name || "Not provided",
+        studentEmailValue: data.email || "{{ user.email }}",
+      };
+
+      Object.keys(fields).forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = fields[id] || "Not provided";
+      });
+
+      // Close modal
+      bootstrap.Modal.getInstance(
+        document.getElementById('editStudentInfoModal')
+      ).hide();
+    }
+    else {
+      alert(data.message || "Update failed");
     }
   })
-  .catch(() => alert('Error updating info.'));
+  .catch(err => {
+    console.error(err);
+    alert("Error updating profile");
+  });
 };
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
 
+  // helper: read CSRF cookie
+  function getCookie(name) {
+    const v = `; ${document.cookie}`;
+    const parts = v.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return null;
+  }
+
+  // open modal helper (keep your existing button handler)
+  window.showEditStudentInfoModal = function(e) {
+    e.preventDefault();
+    new bootstrap.Modal(document.getElementById('editStudentInfoModal')).show();
+  };
+
+  const form = document.getElementById('editStudentInfoForm');
+  if (!form) {
+    console.warn('Edit Student Info form not found');
+    return;
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const url = "{% url 'students:update_student_profile' %}"; // make sure URL name exists
+    const formData = new FormData(form);
+
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRFToken': getCookie('csrftoken'),
+        'Accept': 'application/json'
+      },
+      body: formData
+    })
+    .then(resp => {
+      if (!resp.ok) throw new Error('Network response not ok: ' + resp.status);
+      return resp.json();
+    })
+    .then(data => {
+      if (data.success) {
+        // update page values (IDs must exist in template)
+        const setText = (id, value) => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = value || 'Not provided';
+        };
+
+        setText('studentPhoneValue', data.phone);
+        setText('studentLocationValue', data.location);
+        setText('studentDOBValue', data.date_of_birth);
+        setText('studentLinkedInValue', data.linkedin_url);
+        // server returns college_name — map to DOM id
+        setText('studentCollegeValue', data.college_name || data.college || '');
+        setText('studentEmailValue', data.email || '{{ user.email }}');
+
+        // close modal
+        const modalEl = document.getElementById('editStudentInfoModal');
+        bootstrap.Modal.getInstance(modalEl).hide();
+
+        // small success feedback
+        // you can replace with toast/snackbar
+        alert('Profile updated successfully');
+      } else {
+        alert(data.message || 'Update failed. See console for details.');
+        console.log('Update response:', data);
+      }
+    })
+    .catch(err => {
+      console.error('Profile update failed:', err);
+      alert('Error updating profile (see console).');
+    });
+  });
+
+});
 </script>
 
 {% endblock %}
