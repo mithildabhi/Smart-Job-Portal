@@ -41,3 +41,13 @@ media/
 # ============================
 .DS_Store
 Thumbs.db
+# Docker
+.dockerignore
+Dockerfile
+docker-compose.yml
+
+
+# Migrations
+students/migrations/
+
+*/migrations/

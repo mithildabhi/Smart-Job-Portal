@@ -233,3 +233,45 @@ window.openImageModal = openImageModal;
 window.deleteProfilePicture = deleteProfilePicture;
 window.updateHeaderAvatar = updateHeaderAvatar;
 window.handleProfileClick = handleProfileClick;
+
+
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.getElementById('profile-picture-form');
+  const fileInput = document.getElementById('profile-picture-input');
+
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const file = fileInput.files[0];
+    if (!file) {
+      alert('Please choose a file first.');
+      return;
+    }
+
+    const fd = new FormData();
+    fd.append('profile_picture', file); // <-- MUST match Django view
+
+    fetch('/students/profile/upload-picture/', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+      },
+      body: fd
+    })
+    .then(resp => resp.json())
+    .then(data => {
+      if (data.success) {
+        // update image preview
+        const img = document.getElementById('profile-image');
+        if (img) img.src = data.image_url;
+        alert('Upload success');
+      } else {
+        alert('Upload failed: ' + (data.message || 'unknown'));
+      }
+    })
+    .catch(err => {
+      console.error('Upload error', err);
+      alert('Upload error - see console');
+    });
+  });
+});

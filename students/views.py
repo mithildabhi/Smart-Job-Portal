@@ -212,37 +212,49 @@ def student_profile(request):
     }
     return render(request, 'students/profile.html', context)
 
+from .supabase_storage import upload_profile_picture as supabase_upload_profile_picture
+
 @login_required
-def upload_profile_picture(request):
-    profile, created = StudentProfile.objects.get_or_create(user=request.user)
-    
-    if request.method == 'POST':
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            form = ProfilePictureForm(request.POST, request.FILES, instance=profile)
-            if form.is_valid():
-                # Delete old picture manually instead of using the method
-                if profile.profile_picture:
-                    try:
-                        import os
-                        if os.path.isfile(profile.profile_picture.path):
-                            os.remove(profile.profile_picture.path)
-                    except (ValueError, OSError):
-                        pass  # File doesn't exist or can't be deleted
-                
-                form.save()
-                return JsonResponse({
-                    'success': True,
-                    'message': 'Profile picture uploaded successfully!',
-                    'image_url': profile.profile_picture.url,
-                    'has_image': True
-                })
-            else:
-                return JsonResponse({
-                    'success': False,
-                    'errors': form.errors
-                })
-    
-    return JsonResponse({'success': False, 'message': 'Invalid request'})
+def upload_profile_picture_view(request):
+    """
+    POST endpoint: '/students/profile/upload-picture/'
+    Expects multipart/form-data with field name 'profile_picture'.
+    Returns JSON.
+    """
+    if request.method != "POST":
+        return JsonResponse({'success': False, 'message': 'Invalid method'}, status=405)
+
+    # DEBUG: uncomment to log what's in request.FILES
+    # print("FILES keys:", list(request.FILES.keys()))
+    uploaded_file = request.FILES.get('profile_picture')  # <- IMPORTANT: use request.FILES
+
+    if not uploaded_file:
+        # If no file present, return a readable JSON error (avoid 500)
+        return JsonResponse({'success': False, 'message': 'No file provided in request.FILES with key "profile_picture".'}, status=400)
+
+    try:
+        # Upload (this will call supabase_storage.upload_profile_picture and return a URL or path)
+        public_url = supabase_upload_profile_picture(uploaded_file, bucket='public', user_path=f'users/{request.user.id}')
+
+        # Save the resulting URL/path into the profile model
+        profile, created = StudentProfile.objects.get_or_create(user=request.user)
+        # If your model uses a URLField named 'profile_picture_url', use that:
+        if hasattr(profile, 'profile_picture_url'):
+            profile.profile_picture_url = public_url
+        else:
+            # fallback: try to set profile_picture (if it's a CharField/URLField)
+            try:
+                profile.profile_picture = public_url
+            except Exception:
+                # last resort: attach as an attribute (not recommended)
+                profile.profile_picture_url = public_url
+        profile.save()
+
+        return JsonResponse({'success': True, 'image_url': public_url})
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
 @login_required
 @require_POST
