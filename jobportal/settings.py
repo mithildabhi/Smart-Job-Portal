@@ -76,11 +76,15 @@ WSGI_APPLICATION = 'jobportal.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
+import os
 from decouple import config
 import dj_database_url
 
+# Supabase keys
 SUPABASE_URL = config('SUPABASE_URL', default=os.environ.get('SUPABASE_URL'))
 SUPABASE_KEY = config('SUPABASE_KEY', default=os.environ.get('SUPABASE_KEY'))
+
+# Use DATABASE_URL if provided (recommended on Render)
 DATABASE_URL = config('DATABASE_URL', default=None)
 
 if DATABASE_URL:
@@ -88,19 +92,18 @@ if DATABASE_URL:
         'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=True)
     }
 else:
-    # Fallback to individual env vars (keeps your existing code working)
+    # Fallback to individual env vars
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': config('DB_NAME', default='postgres'),
-            'USER': config('DB_USER', default='postgres'),
-            'PASSWORD': config('DB_PASSWORD', default=''),
-            'HOST': config('DB_HOST', default='localhost'),
-            'PORT': config('DB_PORT', default='5432'),
+            'NAME': config('DB_NAME', default=os.environ.get('DB_NAME', 'postgres')),
+            'USER': config('DB_USER', default=os.environ.get('DB_USER', 'postgres')),
+            'PASSWORD': config('DB_PASSWORD', default=os.environ.get('DB_PASSWORD', '')),
+            'HOST': config('DB_HOST', default=os.environ.get('DB_HOST', 'localhost')),
+            'PORT': config('DB_PORT', default=os.environ.get('DB_PORT', '5432')),
             'OPTIONS': {'sslmode': 'require'},   # Supabase requires ssl
         }
     }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
