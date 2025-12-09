@@ -47,7 +47,7 @@ Dockerfile
 docker-compose.yml
 
 
-# Migrations
-students/migrations/
+# # Migrations
+# students/migrations/
 
-*/migrations/
+# */migrations/
