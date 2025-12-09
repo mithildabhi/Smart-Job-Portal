@@ -21,6 +21,9 @@ from django.conf.urls.static import static
 
 from django.contrib.auth import views as auth_views
 
+# temporary import for debug
+from debug.views import debug_env
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('jobs.urls')),
@@ -31,6 +34,7 @@ urlpatterns = [
     path('companies/', include('companies.urls')),
     path('api/', include('students.urls')),
     path('jobs/', include('jobs.urls')),
+    path('debug/env/', debug_env),
 ]
 
 
