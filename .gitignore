@@ -51,3 +51,5 @@ docker-compose.yml
 # students/migrations/
 
 # */migrations/
+
+staticfiles/

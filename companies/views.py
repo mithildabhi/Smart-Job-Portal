@@ -314,39 +314,44 @@ def manage_jobs(request):
     """Enhanced job management with activate/deactivate/delete functionality"""
     try:
         company = Company.objects.get(user=request.user)
-        # ✅ FIXED: Use created_at instead of posted_on
         jobs = Job.objects.filter(company=company).order_by('-created_at')
         
         # Handle job actions (activate/deactivate/delete)
         if request.method == 'POST':
             action = request.POST.get('action')
             job_id = request.POST.get('job_id')
+            print("DEBUG POST RECEIVED:", request.POST)
+
+            job = get_object_or_404(Job, id=job_id, company=company)
+            print("BEFORE action:", job.id, job.title, "is_active=", job.is_active)
+
+            if action == 'activate':
+                job.is_active = True
+                job.save()
+                messages.success(request, f'Job "{job.title}" has been activated.')
             
-            try:
-                job = get_object_or_404(Job, id=job_id, company=company)
-                
-                if action == 'activate':
-                    job.is_active = True
-                    job.save()
-                    messages.success(request, f'Job "{job.title}" activated successfully!')
-                elif action == 'deactivate':
-                    job.is_active = False
-                    job.save()
-                    messages.success(request, f'Job "{job.title}" deactivated successfully!')
-                elif action == 'delete':
-                    job_title = job.title
-                    job.delete()
-                    messages.success(request, f'Job "{job_title}" deleted successfully!')
-                    
-            except Job.DoesNotExist:
-                messages.error(request, 'Job not found.')
-                
+            elif action == 'deactivate':
+                job.is_active = False       # 👈 set to False for deactivate
+                job.save()
+                messages.success(request, f'Job "{job.title}" has been deactivated.')
+
+            elif action == 'delete':
+                job_title = job.title
+                job.delete()
+                messages.success(request, f'Job "{job_title}" has been deleted.')
+
+            # Debug after save/delete
+            if action in ['activate', 'deactivate']:
+                job.refresh_from_db()
+                print("AFTER action:", job.id, job.title, "is_active=", job.is_active)
+            else:
+                print(f"AFTER delete: job {job_id} deleted")
+
             return redirect('companies:manage_jobs')
         
         # Get statistics for each job
         job_stats = []
         for job in jobs:
-            # ✅ FIXED: Use JobApplication instead of Application
             applications_count = JobApplication.objects.filter(job=job).count()
             recent_applications = JobApplication.objects.filter(job=job).order_by('-applied_at')[:3]
             job_stats.append({
@@ -361,14 +366,13 @@ def manage_jobs(request):
             'total_jobs': jobs.count(),
             'active_jobs': jobs.filter(is_active=True).count(),
             'inactive_jobs': jobs.filter(is_active=False).count(),
-            'total_applications': sum([stat['applications_count'] for stat in job_stats])
+            'total_applications': sum(stat['applications_count'] for stat in job_stats),
         }
         return render(request, 'companies/manage_jobs.html', context)
         
     except Company.DoesNotExist:
         messages.error(request, 'Company profile not found.')
         return redirect('companies:company_register')
-
 
 @login_required
 def toggle_job_status(request, job_id):
