@@ -419,42 +419,27 @@ def update_student_profile(request):
 
 
 import json
- 
+from django.http import JsonResponse, HttpResponseBadRequest
+
 @login_required
 @require_POST
 def update_skills(request):
-    """
-    Expects either:
-    - form-data with 'skills' string (comma-separated), OR
-    - JSON body: {"skills": ["Python", "Django", "React"]}
-    Returns JSON with updated skills list.
-    """
     try:
-        # prefer JSON if content-type is application/json
-        if request.content_type and 'application/json' in request.content_type:
-            payload = json.loads(request.body.decode('utf-8') or '{}')
-            skills_input = payload.get('skills', [])
-            # skills_input should be a list; if a string, split it
-            if isinstance(skills_input, str):
-                skill_list = [s.strip() for s in skills_input.split(',') if s.strip()]
-            else:
-                skill_list = [str(s).strip() for s in skills_input]
-        else:
-            # fallback to form submission
-            skills_raw = request.POST.get('skills', '')
-            # If skills sent as CSV
-            skill_list = [s.strip() for s in skills_raw.split(',') if s.strip()]
+        data = json.loads(request.body.decode('utf-8'))
+        skills = data.get('skills', [])
+    except Exception:
+        return HttpResponseBadRequest('Invalid JSON')
 
-        profile = StudentProfile.objects.get(user=request.user)
+    profile = request.user.studentprofile  # adjust relation name
+    # If you only store names in DB keep previous behavior:
+    # names = [s.get('name','').strip() for s in skills if s.get('name')]
+    # profile.set_skills_list(names)
 
-        # Save
-        profile.set_skills_list(skill_list)
+    # If you want to keep percent in DB you must change model (recommended)
+    # For now we'll store names only to be backwards compatible:
+    names = [s.get('name','').strip() for s in skills if s.get('name')]
+    profile.set_skills_list(names)
 
-        return JsonResponse({
-            'success': True,
-            'skills': profile.get_skills_list()
-        })
-    except StudentProfile.DoesNotExist:
-        return JsonResponse({'success': False, 'message': 'Profile not found'}, status=404)
-    except Exception as e:
-        return JsonResponse({'success': False, 'message': str(e)}, status=400)
+    # respond with the server-side representation
+    saved = [{'name': n, 'percent':  (next((s['percent'] for s in skills if s['name']==n), 0))} for n in names]
+    return JsonResponse({'success': True, 'skills': saved})

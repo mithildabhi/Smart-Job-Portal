@@ -50,31 +50,54 @@ class StudentProfile(models.Model):
             self.profile_picture = None
             self.save()
     
-# inside StudentProfile (models.py)
-def get_skills_list(self):
-    """Return skills as a list (cleaned)."""
-    if self.skills:
-        return [s.strip() for s in self.skills.split(',') if s.strip()]
-    return []
+    skills = models.TextField(blank=True, null=True)  # ensure this field exists
 
-def set_skills_list(self, skill_list):
-    """Accept a list of strings and store as comma-separated string."""
-    # normalize: remove empties, strip spaces, unique preserving order
-    seen = set()
-    normalized = []
-    for s in skill_list:
-        s = s.strip()
-        if not s:
-            continue
-        key = s.lower()
-        if key in seen:
-            continue
-        seen.add(key)
-        normalized.append(s)
-    self.skills = ', '.join(normalized)
-    self.save()
+    def get_skills_list(self):
+        """
+        Return list of dicts: [{'name': 'Python', 'percent': 90}, ...]
+        If stored 'skills' currently contains only names (comma separated), percent will be 0.
+        """
+        if not self.skills:
+            return []
+        items = []
+        for item in self.skills.split(','):
+            it = item.strip()
+            if not it:
+                continue
+            # support "name||percent" legacy format if present:
+            if '||' in it:
+                name, pct = it.split('||', 1)
+                try:
+                    pct = int(pct)
+                except Exception:
+                    pct = 0
+                items.append({'name': name.strip(), 'percent': pct})
+            else:
+                # just name stored
+                items.append({'name': it, 'percent': 0})
+        return items
 
-    
+    def set_skills_list(self, skills_list):
+        """
+        Accepts either:
+         - ['Python','Django']  OR
+         - [{'name':'Python','percent':90}, ...]
+        Normalizes and stores as comma-separated names (backwards compatible).
+        If you later change DB to store separate Skill rows, update this.
+        """
+        normalized_names = []
+        for s in skills_list:
+            if isinstance(s, dict):
+                name = s.get('name', '').strip()
+            else:
+                name = str(s or '').strip()
+            if name:
+                normalized_names.append(name)
+        # store names as comma separated string (backwards compatible)
+        self.skills = ', '.join(normalized_names)
+        self.save()
+
+        
     def get_full_name(self):
         """Return user's full name"""
         return self.user.get_full_name() or self.user.username
