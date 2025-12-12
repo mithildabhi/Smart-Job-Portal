@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 import os
-
+import json
 class StudentProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     phone = models.CharField(max_length=15, blank=True, null=True)
@@ -104,6 +104,70 @@ class StudentProfile(models.Model):
             
     def __str__(self):
         return f"{self.user.username}'s Profile"
+    
+    def get_education_list(self):
+        """
+        Returns a list of education dicts:
+        [
+           {
+             "degree": "Bachelor of Engineering in Computer Science",
+             "institute": "FNOKSNGO",
+             "start_year": "2020",
+             "end_year": "2024",
+             "cgpa": "8.5/10",
+             "description": "Relevant coursework: Data Structures, Algorithms..."
+           },
+           ...
+        ]
+        If the stored value is empty or invalid, returns [].
+        """
+        if not getattr(self, 'education', None):
+            return []
+        try:
+            data = json.loads(self.education)
+            if isinstance(data, list):
+                return data
+            return []
+        except Exception:
+            # fallback: try parsing comma-separated old format as simple items
+            try:
+                items = [s.strip() for s in self.education.split(',') if s.strip()]
+                return [{'degree': it, 'institute': '', 'start_year': '', 'end_year': '', 'cgpa': '', 'description': ''} for it in items]
+            except Exception:
+                return []
+
+    def set_education_list(self, edu_list):
+        """
+        Accepts a list of education dicts (see get_education_list format) and stores JSON.
+        """
+        # normalize
+        cleaned = []
+        for e in edu_list:
+            if not isinstance(e, dict):
+                continue
+            degree = str(e.get('degree','')).strip()
+            institute = str(e.get('institute','')).strip()
+            start_year = str(e.get('start_year','')).strip()
+            end_year = str(e.get('end_year','')).strip()
+            cgpa = str(e.get('cgpa','')).strip()
+            description = str(e.get('description','')).strip()
+            if degree or institute or description:
+                cleaned.append({
+                    'degree': degree,
+                    'institute': institute,
+                    'start_year': start_year,
+                    'end_year': end_year,
+                    'cgpa': cgpa,
+                    'description': description
+                })
+        try:
+            self.education = json.dumps(cleaned)
+            self.save()
+        except Exception:
+            # last resort: store an empty list
+            self.education = '[]'
+            self.save()
+
 
 # Keep your existing Student model if needed
 # class Student(models.Model):

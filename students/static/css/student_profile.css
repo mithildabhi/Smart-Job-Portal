@@ -22,6 +22,8 @@
   background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
   animation: float 6s ease-in-out infinite;
 }
+.education-row { background: #fff; border: 1px solid rgba(100,100,255,0.08); }
+.education-editor { background: #fafafa; border-top: 1px dashed #eee; padding-top: 10px; }
 
 @keyframes float {
   0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
@@ -466,4 +468,54 @@
     align-items: flex-start;
     gap: 0.5rem;
   }
+}
+/* Skills as list (experience-like) */
+#skills-list .skill-row {
+  padding: 1rem;
+  background: linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%);
+  border-radius: 12px;
+  margin-bottom: 0.75rem;
+  border-left: 4px solid #667eea;
+}
+
+.skill-name-display {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+/* small gap for editor */
+.skill-editor { padding-top: 0.5rem; }
+
+/* keep chips look */
+.skill-chip { cursor: pointer; }
+
+
+/* EDUCATION */
+/* Make Education entries look like Experience items */
+.experience-item, .education-row {
+  background: linear-gradient(135deg,#f8f9ff 0%, #f1f6ff 100%);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  border-left: 4px solid #667eea;
+}
+
+.item-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #263146;
+}
+
+.item-subtitle {
+  font-weight: 600;
+  color: #4b6bf6;
+}
+
+.item-duration {
+  color: #6b7280;
+}
+
+.item-description {
+  color: #6b7280;
+  margin-top: 0.5rem;
 }

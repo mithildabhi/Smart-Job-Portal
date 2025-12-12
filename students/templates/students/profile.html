@@ -151,9 +151,11 @@
       </span>
     </div>
     
-    <a href="#" class="btn-edit" onclick="showEditStudentInfoModal(event)">
-      <i class="fas fa-edit me-2"></i>Edit Information
-    </a>
+  <button type="button" class="btn-edit"
+          data-bs-toggle="modal" data-bs-target="#editStudentInfoModal">
+    <i class="fas fa-edit me-2"></i>Edit Information
+  </button>
+
   </div>
 
 <div class="profile-card" id="skills-card">
@@ -162,34 +164,27 @@
     Skills & Expertise
   </h2>
 
+  <!-- simple list-like UI (no percent) -->
   <div id="skills-list">
     {% for s in profile.get_skills_list %}
-      <div class="skill-row"
-           data-skill-index="{{ forloop.counter0 }}"
-           data-skill-name="{{ s.name }}"
-           data-skill-percent="{{ s.percent }}">
-        <div class="progress-label d-flex justify-content-between">
-          <span class="skill-name-display">{{ s.name }}</span>
-          <span class="skill-percent-display">{{ s.percent }}%</span>
+      <div class="skill-row d-flex justify-content-between align-items-center" data-index="{{ forloop.counter0 }}" data-skill-name="{{ s.name }}">
+        <div>
+          <div class="skill-name-display">{{ s.name }}</div>
+        </div>
+        <div class="text-end">
+          <button class="btn btn-sm btn-outline-secondary skill-edit-btn"><i class="fas fa-edit"></i></button>
+          <button class="btn btn-sm btn-outline-danger skill-delete-btn"><i class="fas fa-trash"></i></button>
         </div>
 
-        <div class="progress-bar">
-          <div class="progress-fill" style="width: {{ s.percent }}%"></div>
-        </div>
-
-        <div class="skill-editor mt-2" style="display:none;">
+        <!-- inline editor hidden by default -->
+        <div class="skill-editor mt-2 w-100" style="display:none;">
           <div class="row g-2 align-items-center">
-            <div class="col-md-5">
+            <div class="col-md-8">
               <input type="text" class="form-control form-control-sm skill-name-input" value="{{ s.name }}">
             </div>
-            <div class="col-md-5">
-              <input type="range" min="0" max="100" class="form-range skill-range-input" value="{{ s.percent }}">
-              <div class="small text-muted">Percentage: <span class="skill-range-value">{{ s.percent }}</span>%</div>
-            </div>
-            <div class="col-md-2 text-end">
+            <div class="col-md-4 text-end">
               <button class="btn btn-sm btn-success skill-save-btn"><i class="fas fa-check"></i></button>
               <button class="btn btn-sm btn-secondary skill-cancel-btn"><i class="fas fa-times"></i></button>
-              <button class="btn btn-sm btn-danger skill-delete-btn" title="Delete"><i class="fas fa-trash"></i></button>
             </div>
           </div>
         </div>
@@ -206,22 +201,18 @@
   </div>
 
   <div class="mt-3">
-    <button id="add-skill-btn" class="btn btn-gradient">
+    <button id="add-skill-btn" class="btn-edit">
       <i class="fas fa-plus me-2"></i> Add Skill
     </button>
   </div>
 
-  <!-- Hidden add-skill inline row (single copy) -->
+  <!-- Single add-skill input (name only) -->
   <div id="add-skill-row" style="display:none;" class="mt-3">
     <div class="row g-2 align-items-center">
-      <div class="col-md-5">
+      <div class="col-md-8">
         <input id="new-skill-name" class="form-control" placeholder="Skill name (e.g. Node.js)">
       </div>
-      <div class="col-md-5">
-        <input id="new-skill-range" type="range" min="0" max="100" value="70" class="form-range">
-        <div class="small text-muted">Percentage: <span id="new-skill-range-value">70</span>%</div>
-      </div>
-      <div class="col-md-2">
+      <div class="col-md-4 text-end">
         <button id="new-skill-save" class="btn btn-sm btn-primary"><i class="fas fa-check"></i></button>
         <button id="new-skill-cancel" class="btn btn-sm btn-secondary"><i class="fas fa-times"></i></button>
       </div>
@@ -235,28 +226,100 @@
   window.SKILLS_UPDATE_URL = "{% url 'students:update_skills' %}";
 </script>
 
-  <!-- Education -->
-  <div class="profile-card">
-    <h2 class="section-title">
-      <i class="fas fa-graduation-cap section-icon"></i>
-      Education
-    </h2>
-    
-    <div class="education-item">
-      <div class="item-title">Bachelor of Engineering in Computer Science</div>
-      <div class="item-subtitle">
-          {% if profile.college_name %}{{ profile.college_name }}{% else %}Mumbai University{% endif %}
+<!-- Education (experience-like display + edit controls) -->
+<div class="profile-card" id="education-card">
+  <h2 class="section-title">
+    <i class="fas fa-graduation-cap section-icon"></i>
+    Education
+  </h2>
+
+  <div id="education-list">
+    {% for edu in profile.get_education_list %}
+      <div class="education-row mb-3 p-3 rounded experience-item" data-index="{{ forloop.counter0 }}"
+           data-degree="{{ edu.degree }}" data-institute="{{ edu.institute }}" data-start="{{ edu.start_year }}"
+           data-end="{{ edu.end_year }}" data-cgpa="{{ edu.cgpa }}" data-desc="{{ edu.description }}">
+
+        <!-- Display (matches Experience card styling) -->
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <div class="item-title edu-degree">{{ edu.degree }}</div>
+            <div class="item-subtitle edu-institute text-primary mb-1">{{ edu.institute }}</div>
+            <div class="item-duration text-muted small">{{ edu.start_year }} - {{ edu.end_year }} &nbsp;•&nbsp; CGPA: {{ edu.cgpa }}</div>
+            <div class="item-description edu-desc mt-2 text-muted">{{ edu.description }}</div>
+          </div>
+
+          <div class="text-end">
+            <button class="btn btn-sm btn-outline-secondary edu-edit-btn" title="Edit"><i class="fas fa-edit"></i></button>
+            <button class="btn btn-sm btn-outline-danger edu-delete-btn" title="Delete"><i class="fas fa-trash"></i></button>
+          </div>
+        </div>
+
+        <!-- inline editor (hidden by default) - unchanged so existing JS continues to work -->
+        <div class="education-editor mt-3" style="display:none;">
+          <div class="row g-2">
+            <div class="col-md-6">
+              <input type="text" class="form-control form-control-sm edu-input-degree" placeholder="Degree / Course" value="{{ edu.degree }}">
+            </div>
+            <div class="col-md-6">
+              <input type="text" class="form-control form-control-sm edu-input-institute" placeholder="Institute" value="{{ edu.institute }}">
+            </div>
+            <div class="col-md-3">
+              <input type="text" class="form-control form-control-sm edu-input-start" placeholder="Start Year" value="{{ edu.start_year }}">
+            </div>
+            <div class="col-md-3">
+              <input type="text" class="form-control form-control-sm edu-input-end" placeholder="End Year" value="{{ edu.end_year }}">
+            </div>
+            <div class="col-md-3">
+              <input type="text" class="form-control form-control-sm edu-input-cgpa" placeholder="CGPA (e.g. 8.5/10)" value="{{ edu.cgpa }}">
+            </div>
+            <div class="col-md-12 mt-2">
+              <textarea class="form-control form-control-sm edu-input-desc" placeholder="Description / coursework" rows="2">{{ edu.description }}</textarea>
+            </div>
+            <div class="col-md-12 text-end mt-2">
+              <button class="btn btn-sm btn-success edu-save-btn"><i class="fas fa-check"></i> Save</button>
+              <button class="btn btn-sm btn-secondary edu-cancel-btn"><i class="fas fa-times"></i> Cancel</button>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="item-duration">2020 - 2024 • Expected</div>
-      <div class="item-description">
-        CGPA: 8.5/10 • Relevant coursework: Data Structures, Algorithms, Web Development, Database Management, Software Engineering
+    {% empty %}
+      <p class="text-muted">No education entries yet — click "Add Education" to add.</p>
+    {% endfor %}
+  </div>
+
+  <div class="mt-3">
+    <button id="add-edu-btn" class="btn-edit"><i class="fas fa-plus me-2"></i> Add Education</button>
+  </div>
+
+  <div id="add-edu-row" style="display:none;" class="mt-3">
+    <div class="row g-2">
+      <div class="col-md-6">
+        <input id="new-edu-degree" class="form-control" placeholder="Degree / Course">
+      </div>
+      <div class="col-md-6">
+        <input id="new-edu-institute" class="form-control" placeholder="Institute">
+      </div>
+      <div class="col-md-3">
+        <input id="new-edu-start" class="form-control" placeholder="Start Year">
+      </div>
+      <div class="col-md-3">
+        <input id="new-edu-end" class="form-control" placeholder="End Year">
+      </div>
+      <div class="col-md-3">
+        <input id="new-edu-cgpa" class="form-control" placeholder="CGPA">
+      </div>
+      <div class="col-md-12 mt-2">
+        <textarea id="new-edu-desc" class="form-control" placeholder="Description / coursework" rows="2"></textarea>
+      </div>
+      <div class="col-md-12 text-end mt-2">
+        <button id="new-edu-save" class="btn btn-primary btn-sm"><i class="fas fa-check"></i> Save</button>
+        <button id="new-edu-cancel" class="btn btn-secondary btn-sm"><i class="fas fa-times"></i> Cancel</button>
       </div>
     </div>
-    
-    <a href="#" class="btn-edit">
-      <i class="fas fa-plus me-2"></i>Add Education
-    </a>
   </div>
+</div>
+
+
 
   <!-- Experience -->
   <div class="profile-card">
@@ -393,5 +456,15 @@
   window.SKILLS_UPDATE_URL = "{% url 'students:update_skills' %}";
 </script>
 
+
+{# expose initial data to JS via json_script #}
+{{ profile.get_education_list|json_script:"initial-education" }}
+<script>
+  window.INITIAL_EDUCATION = JSON.parse(document.getElementById('initial-education').textContent || '[]');
+  window.EDU_UPDATE_URL = "{% url 'students:update_education' %}";
+</script>
+
+
 <script src="{% static 'js/student_profile.js' %}"></script>
+
 {% endblock %}

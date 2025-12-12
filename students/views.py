@@ -424,22 +424,143 @@ from django.http import JsonResponse, HttpResponseBadRequest
 @login_required
 @require_POST
 def update_skills(request):
+    """
+    Accepts payload:
+      {"skills": ["python", "django"]}   OR
+      {"skills": [{"name":"python"}, {"name":"django", "percent": 0}]}
+
+    Saves only names (backwards compatible). Returns:
+      { "success": True, "skills": [{"name":"python"}, ...] }
+    """
     try:
         data = json.loads(request.body.decode('utf-8'))
-        skills = data.get('skills', [])
     except Exception:
         return HttpResponseBadRequest('Invalid JSON')
 
-    profile = request.user.studentprofile  # adjust relation name
-    # If you only store names in DB keep previous behavior:
-    # names = [s.get('name','').strip() for s in skills if s.get('name')]
-    # profile.set_skills_list(names)
+    incoming = data.get('skills', [])
+    if not isinstance(incoming, list):
+        return HttpResponseBadRequest('skills must be a list')
 
-    # If you want to keep percent in DB you must change model (recommended)
-    # For now we'll store names only to be backwards compatible:
-    names = [s.get('name','').strip() for s in skills if s.get('name')]
-    profile.set_skills_list(names)
+    # Normalize to a list of names (strings)
+    names = []
+    for item in incoming:
+        if isinstance(item, str):
+            n = item.strip()
+            if n:
+                names.append(n)
+        elif isinstance(item, dict):
+            n = str(item.get('name', '')).strip()
+            if n:
+                names.append(n)
+        else:
+            # ignore unexpected types
+            continue
 
-    # respond with the server-side representation
-    saved = [{'name': n, 'percent':  (next((s['percent'] for s in skills if s['name']==n), 0))} for n in names]
-    return JsonResponse({'success': True, 'skills': saved})
+    # get profile
+    profile = getattr(request.user, 'studentprofile', None)
+    if profile is None:
+        return JsonResponse({'success': False, 'message': 'Profile not found'}, status=404)
+
+    # Save names (use model helper if available, else write to field)
+    if hasattr(profile, 'set_skills_list') and callable(profile.set_skills_list):
+        profile.set_skills_list(names)
+    else:
+        profile.skills = ', '.join(names)
+        profile.save()
+
+    # Return normalized server-side representation
+    resp = [{'name': n} for n in names]
+    return JsonResponse({'success': True, 'skills': resp})
+
+
+@login_required
+@require_POST
+def update_education(request):
+    """
+    AJAX endpoint to update education list.
+    Expects JSON body: { "education": [ {degree,institute,start_year,end_year,cgpa,description}, ... ] }
+
+    Validation:
+      - 'education' must be a list
+      - Each item must be a dict
+      - cgpa, if provided, must be numeric
+      - At most 2 education entries allowed
+      - (currently requires at least 1; change to 2 if you want strict minimum 2)
+    """
+    import json
+    from django.http import JsonResponse, HttpResponseBadRequest
+
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        edu = data.get('education', [])
+        if not isinstance(edu, list):
+            return HttpResponseBadRequest('education must be a list')
+    except Exception:
+        return HttpResponseBadRequest('Invalid JSON')
+
+    # Normalize and validate entries
+    cleaned = []
+    for e in edu:
+        if not isinstance(e, dict):
+            # ignore non-dict entries
+            continue
+        degree = str(e.get('degree', '') or '').strip()
+        institute = str(e.get('institute', '') or '').strip()
+        description = str(e.get('description', '') or '').strip()
+        start_year = str(e.get('start_year', '') or '').strip()
+        end_year = str(e.get('end_year', '') or '').strip()
+        cgpa_raw = e.get('cgpa', '')
+        cgpa = str(cgpa_raw).strip() if cgpa_raw is not None else ''
+
+        # Validate cgpa numeric if present (allow decimals)
+        if cgpa:
+            try:
+                # allow numeric values like "8.5" or "8"
+                _ = float(cgpa)
+            except Exception:
+                return JsonResponse({
+                    'success': False,
+                    'message': f'CGPA must be a number for entry "{degree or institute}".'
+                }, status=400)
+
+        # consider entry valid if degree or institute or description present
+        if degree or institute or description:
+            cleaned.append({
+                'degree': degree,
+                'institute': institute,
+                'start_year': start_year,
+                'end_year': end_year,
+                'cgpa': cgpa,
+                'description': description
+            })
+
+    # Enforce maximum 2 entries
+    if len(cleaned) > 2:
+        return JsonResponse({
+            'success': False,
+            'message': 'You can only save up to 2 education entries.'
+        }, status=400)
+
+    # Optionally enforce a minimum (currently requiring at least 1)
+    if len(cleaned) < 1:
+        return JsonResponse({
+            'success': False,
+            'message': 'Please add at least one education entry before saving.'
+        }, status=400)
+
+    profile = getattr(request.user, 'studentprofile', None)
+    if profile is None:
+        return JsonResponse({'success': False, 'message': 'Profile not found'}, status=404)
+
+    # Save using model helper if available (recommended)
+    if hasattr(profile, 'set_education_list') and callable(profile.set_education_list):
+        profile.set_education_list(cleaned)
+    else:
+        try:
+            profile.education = json.dumps(cleaned)
+            profile.save()
+        except Exception:
+            return JsonResponse({'success': False, 'message': 'Could not save education'}, status=500)
+
+    saved = profile.get_education_list() if hasattr(profile, 'get_education_list') else cleaned
+    return JsonResponse({'success': True, 'education': saved})
