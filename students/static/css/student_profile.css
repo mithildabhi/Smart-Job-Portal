@@ -519,3 +519,6 @@
   color: #6b7280;
   margin-top: 0.5rem;
 }
+
+.project-row .project-editor { background: #fafafa; border-top: 1px dashed #eee; padding: 10px; }
+.project-row .item-subtitle { color: #4b6bf6; font-weight:600; }

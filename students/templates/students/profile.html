@@ -8,6 +8,7 @@
 {% endblock %}
 
 {% block content %}
+
 <!-- Profile Header -->
 <div class="profile-header">
   <div class="profile-content">
@@ -321,46 +322,139 @@
 
 
 
-  <!-- Experience -->
-  <div class="profile-card">
-    <h2 class="section-title">
-      <i class="fas fa-briefcase section-icon"></i>
-      Experience
-    </h2>
-    
-    <div class="experience-item">
-      <div class="item-title">Web Development Intern</div>
-      <div class="item-subtitle">TechStart Solutions</div>
-      <div class="item-duration">June 2023 - August 2023 • 3 months</div>
-      <div class="item-description">
-        Developed responsive web applications using Django and React. Collaborated with senior developers to implement new features and optimize database queries.
+<!-- Experience (editable, max 4) -->
+<div class="profile-card" id="experience-card">
+  <h2 class="section-title">
+    <i class="fas fa-briefcase section-icon"></i>
+    Experience
+  </h2>
+
+  <div id="experience-list">
+    {% for exp in profile.get_experience_list %}
+      <div class="experience-row mb-3 p-3 rounded experience-item" data-index="{{ forloop.counter0 }}"
+           data-title="{{ exp.title }}" data-company="{{ exp.company }}"
+           data-start="{{ exp.start }}" data-end="{{ exp.end }}"
+           data-duration="{{ exp.duration }}" data-desc="{{ exp.description }}">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <div class="item-title">{{ exp.title }}</div>
+            <div class="item-subtitle">{{ exp.company }}</div>
+            <div class="item-duration text-muted small">{{ exp.start }} - {{ exp.end }} &nbsp;•&nbsp; {{ exp.duration }}</div>
+            <div class="item-description mt-2 text-muted">{{ exp.description }}</div>
+          </div>
+          <div class="text-end">
+            <button class="btn btn-sm btn-outline-secondary exp-edit-btn"><i class="fas fa-edit"></i></button>
+            <button class="btn btn-sm btn-outline-danger exp-delete-btn"><i class="fas fa-trash"></i></button>
+          </div>
+        </div>
+
+        <!-- inline editor -->
+        <div class="experience-editor mt-3" style="display:none;">
+          <div class="row g-2">
+            <div class="col-md-6"><input type="text" class="form-control form-control-sm exp-input-title" placeholder="Title/Role" value="{{ exp.title }}"></div>
+            <div class="col-md-6"><input type="text" class="form-control form-control-sm exp-input-company" placeholder="Company" value="{{ exp.company }}"></div>
+            <div class="col-md-3"><input type="text" class="form-control form-control-sm exp-input-start datepicker" placeholder="Start date" value="{{ exp.start }}"></div>
+            <div class="col-md-3"><input type="text" class="form-control form-control-sm exp-input-end datepicker" placeholder="End date (leave blank for Present)" value="{{ exp.end }}"></div>
+            <div class="col-md-6"><input type="text" class="form-control form-control-sm exp-input-duration" placeholder="Duration (e.g. 3 months)" value="{{ exp.duration }}"></div>
+            <div class="col-md-12 mt-2"><textarea class="form-control form-control-sm exp-input-desc" placeholder="Description / responsibilities" rows="2">{{ exp.description }}</textarea></div>
+            <div class="col-md-12 text-end mt-2">
+              <button class="btn btn-sm btn-success exp-save-btn"><i class="fas fa-check"></i> Save</button>
+              <button class="btn btn-sm btn-secondary exp-cancel-btn"><i class="fas fa-times"></i> Cancel</button>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-    
-    <a href="#" class="btn-edit">
-      <i class="fas fa-plus me-2"></i>Add Experience
-    </a>
+    {% empty %}
+      <p class="text-muted">No experience yet — click "Add Experience" to add one.</p>
+    {% endfor %}
   </div>
 
-  <!-- Projects -->
-  <div class="profile-card">
+  <div class="mt-3">
+    <button id="add-exp-btn" class="btn-edit"><i class="fas fa-plus me-2"></i> Add Experience</button>
+  </div>
+
+  <div id="add-exp-row" style="display:none;" class="mt-3">
+    <div class="row g-2">
+      <div class="col-md-6"><input id="new-exp-title" class="form-control" placeholder="Title / Role"></div>
+      <div class="col-md-6"><input id="new-exp-company" class="form-control" placeholder="Company"></div>
+      <div class="col-md-3"><input id="new-exp-start" class="form-control datepicker" placeholder="Start"></div>
+      <div class="col-md-3"><input id="new-exp-end" class="form-control datepicker" placeholder="End"></div>
+      <div class="col-md-6"><input id="new-exp-duration" class="form-control" placeholder="Duration (e.g. 3 months)"></div>
+      <div class="col-md-12 mt-2"><textarea id="new-exp-desc" class="form-control" placeholder="Description" rows="2"></textarea></div>
+      <div class="col-md-12 text-end mt-2">
+        <button id="new-exp-save" class="btn btn-primary btn-sm"><i class="fas fa-check"></i> Save</button>
+        <button id="new-exp-cancel" class="btn btn-secondary btn-sm"><i class="fas fa-times"></i> Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# expose initial experience to JS #}
+{{ profile.get_experience_list|json_script:"initial-experience" }}
+<script>
+  window.INITIAL_EXPERIENCE = JSON.parse(document.getElementById('initial-experience').textContent || '[]');
+  window.EXP_UPDATE_URL = "{% url 'students:update_experience' %}";
+</script>
+
+  <!-- Projects (editable, max 3) -->
+  <div class="profile-card" id="projects-card">
     <h2 class="section-title">
       <i class="fas fa-code section-icon"></i>
       Projects
     </h2>
-    
-    <div class="experience-item">
-      <div class="item-title">E-Commerce Platform</div>
-      <div class="item-subtitle">Django, React, PostgreSQL</div>
-      <div class="item-duration">March 2024 - May 2024</div>
-      <div class="item-description">
-        Built a full-stack e-commerce platform with user authentication, product catalog, shopping cart, and payment integration.
+
+    <div id="projects-list">
+      {% for proj in profile.get_projects_list %}
+        <div class="project-row mb-3 p-3 rounded experience-item" data-index="{{ forloop.counter0 }}"
+             data-title="{{ proj.title }}" data-tech="{{ proj.technologies }}"
+             data-start="{{ proj.start }}" data-end="{{ proj.end }}" data-desc="{{ proj.description }}">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <div class="item-title">{{ proj.title }}</div>
+              <div class="item-subtitle">{{ proj.technologies }}</div>
+              <div class="item-duration text-muted small">{{ proj.start }} - {{ proj.end }}</div>
+              <div class="item-description mt-2 text-muted">{{ proj.description }}</div>
+            </div>
+            <div class="text-end">
+              <button class="btn btn-sm btn-outline-secondary proj-edit-btn"><i class="fas fa-edit"></i></button>
+              <button class="btn btn-sm btn-outline-danger proj-delete-btn"><i class="fas fa-trash"></i></button>
+            </div>
+          </div>
+
+          <!-- inline editor -->
+          <div class="project-editor mt-3" style="display:none;">
+            <div class="row g-2">
+              <div class="col-md-6"><input type="text" class="form-control form-control-sm proj-input-title" placeholder="Project title" value="{{ proj.title }}"></div>
+              <div class="col-md-6"><input type="text" class="form-control form-control-sm proj-input-tech" placeholder="Technologies (comma separated)" value="{{ proj.technologies }}"></div>
+              <div class="col-md-3"><input type="text" class="form-control form-control-sm proj-input-start datepicker" placeholder="Start date" value="{{ proj.start }}"></div>
+              <div class="col-md-3"><input type="text" class="form-control form-control-sm proj-input-end datepicker" placeholder="End date (leave blank for Present)" value="{{ proj.end }}"></div>
+              <div class="col-md-12 mt-2"><textarea class="form-control form-control-sm proj-input-desc" placeholder="Short description" rows="2">{{ proj.description }}</textarea></div>
+              <div class="col-md-12 text-end mt-2"><button class="btn btn-sm btn-success proj-save-btn"><i class="fas fa-check"></i> Save</button> <button class="btn btn-sm btn-secondary proj-cancel-btn"><i class="fas fa-times"></i> Cancel</button></div>
+            </div>
+          </div>
+        </div>
+      {% empty %}
+        <p class="text-muted">No projects yet — click "Add Project" to add.</p>
+      {% endfor %}
+    </div>
+
+    <div class="mt-3">
+      <button id="add-proj-btn" class="btn-edit"><i class="fas fa-plus me-2"></i> Add Project</button>
+    </div>
+
+    <div id="add-proj-row" style="display:none;" class="mt-3">
+      <div class="row g-2">
+        <div class="col-md-6"><input id="new-proj-title" class="form-control" placeholder="Project title"></div>
+        <div class="col-md-6"><input id="new-proj-tech" class="form-control" placeholder="Technologies (comma separated)"></div>
+        <div class="col-md-3"><input id="new-proj-start" class="form-control datepicker" placeholder="Start"></div>
+        <div class="col-md-3"><input id="new-proj-end" class="form-control datepicker" placeholder="End"></div>
+        <div class="col-md-12 mt-2"><textarea id="new-proj-desc" class="form-control" placeholder="Short description" rows="2"></textarea></div>
+        <div class="col-md-12 text-end mt-2">
+          <button id="new-proj-save" class="btn btn-primary btn-sm"><i class="fas fa-check"></i> Save</button>
+          <button id="new-proj-cancel" class="btn btn-secondary btn-sm"><i class="fas fa-times"></i> Cancel</button>
+        </div>
       </div>
     </div>
-    
-    <a href="#" class="btn-edit">
-      <i class="fas fa-plus me-2"></i>Add Project
-    </a>
   </div>
 
   <!-- Statistics -->
@@ -441,6 +535,12 @@
 
 {% endblock %}
 
+<script>
+  console.log("PROFILE JS: PROJ_UPDATE_URL=", window.PROJ_UPDATE_URL, "EXP_UPDATE_URL=", window.EXP_UPDATE_URL);
+  // Print server cookie presence
+  console.log('document.cookie:', document.cookie);
+</script>
+
 {% block extra_js %}
 <script>
   // Pass Django profile URLs to JS for upload/delete (already present in your template)
@@ -465,6 +565,16 @@
 </script>
 
 
-<script src="{% static 'js/student_profile.js' %}"></script>
+{# expose initial projects to JS #}
+{{ profile.get_projects_list|json_script:"initial-projects" }}
+<script>
+  window.INITIAL_PROJECTS = JSON.parse(document.getElementById('initial-projects').textContent || '[]');
+  window.PROJ_UPDATE_URL = "{% url 'students:update_projects' %}";
+</script>
 
+<!-- flatpickr (date picker) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<script src="{% static 'js/student_profile.js' %}"></script>
 {% endblock %}

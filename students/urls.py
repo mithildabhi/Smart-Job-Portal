@@ -22,6 +22,8 @@ urlpatterns = [
     path('profile/api/update/', views.update_student_profile, name='update_student_profile'),
     path('profile/api/skills/update/', views.update_skills, name='update_skills'),
     path('profile/api/education/update/', views.update_education, name='update_education'),
+    path('profile/api/experience/update/', views.update_experience, name='update_experience'),
+    path('profile/api/project/update/', views.update_projects, name='update_projects'),
 
 
 ]

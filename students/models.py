@@ -29,8 +29,6 @@ class StudentProfile(models.Model):
     skills = models.TextField(blank=True, null=True, help_text="Comma-separated skills (e.g., Python, JavaScript, React)")
     experience = models.TextField(blank=True, null=True, help_text="Work experience details")
     education = models.TextField(blank=True, null=True, help_text="Educational background")
-    projects = models.TextField(blank=True, null=True, help_text="Personal/academic projects")
-    
     def has_profile_picture(self):
         """Check if user has a profile picture"""
         return bool(self.profile_picture and self.profile_picture.name)
@@ -167,6 +165,21 @@ class StudentProfile(models.Model):
             # last resort: store an empty list
             self.education = '[]'
             self.save()
+
+
+    projects = models.TextField(blank=True, default='')    
+    def set_projects_list(self, list_of_dicts):
+        # store as JSON string (simple)
+        import json
+        self.projects = json.dumps(list_of_dicts)
+        self.save()
+
+    def get_projects_list(self):
+        import json
+        try:
+            return json.loads(self.projects or '[]')
+        except Exception:
+            return []
 
 
 # Keep your existing Student model if needed

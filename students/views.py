@@ -564,3 +564,94 @@ def update_education(request):
 
     saved = profile.get_education_list() if hasattr(profile, 'get_education_list') else cleaned
     return JsonResponse({'success': True, 'education': saved})
+
+
+
+@login_required
+@require_POST
+def update_experience(request):
+    """
+    Expects: { "experience": [ {title,company,start,end,duration,description}, ... ] }
+    Enforces max 4 entries.
+    """
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        incoming = data.get('experience', [])
+        if not isinstance(incoming, list):
+            return HttpResponseBadRequest('experience must be a list')
+    except Exception:
+        return HttpResponseBadRequest('Invalid JSON')
+
+    cleaned = []
+    for e in incoming:
+        if not isinstance(e, dict):
+            continue
+        title = str(e.get('title','') or '').strip()
+        company = str(e.get('company','') or '').strip()
+        start = str(e.get('start','') or '').strip()
+        end = str(e.get('end','') or '').strip()
+        duration = str(e.get('duration','') or '').strip()
+        desc = str(e.get('description','') or '').strip()
+        if title or company or desc:
+            cleaned.append({
+                'title': title, 'company': company, 'start': start, 'end': end,
+                'duration': duration, 'description': desc
+            })
+
+    if len(cleaned) > 4:
+        return JsonResponse({'success': False, 'message': 'You can only save up to 4 experience entries.'}, status=400)
+
+    profile = getattr(request.user, 'studentprofile', None)
+    if profile is None:
+        return JsonResponse({'success': False, 'message': 'Profile not found'}, status=404)
+
+    if hasattr(profile, 'set_experience_list') and callable(profile.set_experience_list):
+        profile.set_experience_list(cleaned)
+    else:
+        profile.experience = json.dumps(cleaned)
+        profile.save()
+
+    saved = profile.get_experience_list() if hasattr(profile, 'get_experience_list') else cleaned
+    return JsonResponse({'success': True, 'experience': saved})
+
+
+@login_required
+@require_POST
+def update_projects(request):
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        projects = data.get('projects', [])
+        if not isinstance(projects, list):
+            return HttpResponseBadRequest('projects must be a list')
+    except Exception:
+        return HttpResponseBadRequest('Invalid JSON')
+
+    profile = getattr(request.user, 'studentprofile', None)
+    if not profile:
+        return JsonResponse({'success': False, 'message': 'Profile not found'}, status=404)
+
+    # enforce max 3
+    if len(projects) > 3:
+        return JsonResponse({'success': False, 'message': 'Max 3 projects allowed'}, status=400)
+
+    # sanitize fields: trim and ensure strings
+    cleaned = []
+    for p in projects:
+        title = (p.get('title','') if isinstance(p, dict) else str(p)).strip()
+        tech = (p.get('technologies','') if isinstance(p, dict) else '').strip()
+        start = (p.get('start','') if isinstance(p, dict) else '').strip()
+        end = (p.get('end','') if isinstance(p, dict) else '').strip()
+        desc = (p.get('description','') if isinstance(p, dict) else '').strip()
+        cleaned.append({
+            'title': title,
+            'technologies': tech,
+            'start': start,
+            'end': end,
+            'description': desc
+        })
+
+    # Save using your model helper - implement set_projects_list in StudentProfile
+    profile.set_projects_list(cleaned)   # <-- add this helper in model
+    saved = profile.get_projects_list()
+    return JsonResponse({'success': True, 'projects': saved})
+    
