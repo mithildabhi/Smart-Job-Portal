@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 from pathlib import Path
 from decouple import config
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,12 +22,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-)k1s^to0emk)-d-zv652720%o13f&1-381cici#=n-nvneal8r'
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-)k1s^to0emk)-d-zv652720%o13f&1-381cici#=n-nvneal8r')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = ['*']  # or ['your-app-name.onrender.com']
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=lambda v: [s.strip() for s in v.split(',')])
 
 
 # Application definition
@@ -45,13 +46,14 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'jobportal.middleware.SecurityHeadersMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',   
-    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'jobportal.urls'
@@ -76,9 +78,6 @@ WSGI_APPLICATION = 'jobportal.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-import os
-from decouple import config
-import dj_database_url
 
 # Supabase keys
 SUPABASE_URL = config('SUPABASE_URL', default=os.environ.get('SUPABASE_URL'))
@@ -86,24 +85,32 @@ SUPABASE_KEY = config('SUPABASE_KEY', default=os.environ.get('SUPABASE_KEY'))
 
 # Use DATABASE_URL if provided (recommended on Render)
 DATABASE_URL = config('DATABASE_URL', default=None)
-
-if DATABASE_URL:
-    DATABASES = {
-        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=True)
-    }
-else:
-    # Fallback to individual env vars
+# Prefer sqlite during local development when DEBUG is True, regardless of DATABASE_URL.
+if DEBUG:
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': config('DB_NAME', default=os.environ.get('DB_NAME', 'postgres')),
-            'USER': config('DB_USER', default=os.environ.get('DB_USER', 'postgres')),
-            'PASSWORD': config('DB_PASSWORD', default=os.environ.get('DB_PASSWORD', '')),
-            'HOST': config('DB_HOST', default=os.environ.get('DB_HOST', 'localhost')),
-            'PORT': config('DB_PORT', default=os.environ.get('DB_PORT', '5432')),
-            'OPTIONS': {'sslmode': 'require'},   # Supabase requires ssl
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': str(BASE_DIR / 'db.sqlite3'),
         }
     }
+else:
+    if DATABASE_URL:
+        DATABASES = {
+            'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=True)
+        }
+    else:
+        # Fallback to individual env vars for production/non-debug runs
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': config('DB_NAME', default=os.environ.get('DB_NAME', 'postgres')),
+                'USER': config('DB_USER', default=os.environ.get('DB_USER', 'postgres')),
+                'PASSWORD': config('DB_PASSWORD', default=os.environ.get('DB_PASSWORD', '')),
+                'HOST': config('DB_HOST', default=os.environ.get('DB_HOST', 'localhost')),
+                'PORT': config('DB_PORT', default=os.environ.get('DB_PORT', '5432')),
+                'OPTIONS': {'sslmode': 'require'},   # Supabase requires ssl
+            }
+        }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -146,6 +153,7 @@ STATICFILES_DIRS = [
 ]
 
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -160,6 +168,19 @@ MEDIA_ROOT = BASE_DIR / 'media'
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'recruiter_dashboard'
 
+# Production security settings — use environment variables to toggle
+SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=not DEBUG, cast=bool)
+SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default=not DEBUG, cast=bool)
+CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', default=not DEBUG, cast=bool)
+SESSION_COOKIE_HTTPONLY = config('SESSION_COOKIE_HTTPONLY', default=True, cast=bool)
+SECURE_HSTS_SECONDS = config('SECURE_HSTS_SECONDS', default=31536000 if not DEBUG else 0, cast=int)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = config('SECURE_HSTS_INCLUDE_SUBDOMAINS', default=not DEBUG, cast=bool)
+SECURE_HSTS_PRELOAD = config('SECURE_HSTS_PRELOAD', default=not DEBUG, cast=bool)
+SECURE_CONTENT_TYPE_NOSNIFF = config('SECURE_CONTENT_TYPE_NOSNIFF', default=True, cast=bool)
+SECURE_REFERRER_POLICY = config('SECURE_REFERRER_POLICY', default='same-origin')
+# When behind a proxy/load-balancer that sets X-Forwarded-Proto
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 
 from django.contrib.messages import constants as messages
 MESSAGE_TAGS = {
@@ -168,4 +189,25 @@ MESSAGE_TAGS = {
     messages.SUCCESS: 'alert-success',
     messages.WARNING: 'alert-warning',
     messages.ERROR: 'alert-danger',
+}
+
+# Basic logging for production: console + optional file
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'standard': {
+            'format': '[%(asctime)s] %(levelname)s %(name)s: %(message)s'
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'standard',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
 }

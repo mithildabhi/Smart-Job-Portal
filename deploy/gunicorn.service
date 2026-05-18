@@ -1,0 +1,12 @@
+[Unit]
+Description=gunicorn daemon for jobportal
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/jobportal
+ExecStart=/usr/bin/gunicorn --access-logfile - --workers 3 --bind unix:/run/gunicorn-jobportal.sock jobportal.wsgi:application
+
+[Install]
+WantedBy=multi-user.target

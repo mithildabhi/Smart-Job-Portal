@@ -320,10 +320,8 @@ def manage_jobs(request):
         if request.method == 'POST':
             action = request.POST.get('action')
             job_id = request.POST.get('job_id')
-            print("DEBUG POST RECEIVED:", request.POST)
 
             job = get_object_or_404(Job, id=job_id, company=company)
-            print("BEFORE action:", job.id, job.title, "is_active=", job.is_active)
 
             if action == 'activate':
                 job.is_active = True
@@ -339,13 +337,6 @@ def manage_jobs(request):
                 job_title = job.title
                 job.delete()
                 messages.success(request, f'Job "{job_title}" has been deleted.')
-
-            # Debug after save/delete
-            if action in ['activate', 'deactivate']:
-                job.refresh_from_db()
-                print("AFTER action:", job.id, job.title, "is_active=", job.is_active)
-            else:
-                print(f"AFTER delete: job {job_id} deleted")
 
             return redirect('companies:manage_jobs')
         

@@ -23,6 +23,7 @@ from django.contrib.auth import views as auth_views
 
 # temporary import for debug
 from debug.views import debug_env
+from jobportal.hello import health
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -32,9 +33,8 @@ urlpatterns = [
     # path('accounts/logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
     path('students/', include('students.urls')),
     path('companies/', include('companies.urls')),
-    path('api/', include('students.urls')),
-    path('jobs/', include('jobs.urls')),
     path('debug/env/', debug_env),
+    path('health/', health),
 ]
 
 

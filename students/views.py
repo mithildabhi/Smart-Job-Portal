@@ -50,7 +50,6 @@ def student_register(request):
             user.save()
             
             # ✅ ADD THIS: Create student profile
-            from .models import StudentProfile
             StudentProfile.objects.create(user=user)
             
             messages.success(request, 'Registration successful! Please login.')
@@ -161,7 +160,6 @@ def apply_job(request):
         })
         
     except Exception as e:
-        print(f"Apply job error: {e}")  # Debug print
         return JsonResponse({'success': False, 'message': 'Application failed'})
 
 
@@ -180,7 +178,6 @@ def delete_student_account(request):
         return redirect('/')
         
     except Exception as e:
-        print(f"Delete error: {e}")
         return redirect('students:student_dashboard')
 
 @login_required
@@ -224,8 +221,6 @@ def upload_profile_picture_view(request):
     if request.method != "POST":
         return JsonResponse({'success': False, 'message': 'Invalid method'}, status=405)
 
-    # DEBUG: uncomment to log what's in request.FILES
-    # print("FILES keys:", list(request.FILES.keys()))
     uploaded_file = request.FILES.get('profile_picture')  # <- IMPORTANT: use request.FILES
 
     if not uploaded_file:

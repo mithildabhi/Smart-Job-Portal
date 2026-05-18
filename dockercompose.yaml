@@ -1,0 +1,10 @@
+version: '3'
+services:
+  web:
+    build: .
+    command: bash -c "python manage.py makemigration && python manage.py migrate && python manage.py runserver
+    container_name: jobportal"
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"

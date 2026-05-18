@@ -48,8 +48,6 @@ class StudentProfile(models.Model):
             self.profile_picture = None
             self.save()
     
-    skills = models.TextField(blank=True, null=True)  # ensure this field exists
-
     def get_skills_list(self):
         """
         Return list of dicts: [{'name': 'Python', 'percent': 90}, ...]
@@ -170,23 +168,13 @@ class StudentProfile(models.Model):
     projects = models.TextField(blank=True, default='')    
     def set_projects_list(self, list_of_dicts):
         # store as JSON string (simple)
-        import json
         self.projects = json.dumps(list_of_dicts)
         self.save()
 
     def get_projects_list(self):
-        import json
         try:
             return json.loads(self.projects or '[]')
         except Exception:
             return []
 
 
-# Keep your existing Student model if needed
-# class Student(models.Model):
-#     name = models.CharField(max_length=100)
-#     email = models.EmailField(unique=True)
-#     password = models.CharField(max_length=100)
-
-    # def __str__(self):
-    #     return self.user.username
