@@ -102,32 +102,37 @@ WSGI_APPLICATION = 'jobportal.wsgi.application'
 SUPABASE_URL = config('SUPABASE_URL', default=os.environ.get('SUPABASE_URL'))
 SUPABASE_KEY = config('SUPABASE_KEY', default=os.environ.get('SUPABASE_KEY'))
 
-# Use DATABASE_URL if provided (recommended on Render)
+# Use DATABASE_URL if provided (recommended on Render and for production/Supabase testing)
 DATABASE_URL = config('DATABASE_URL', default=None)
-# Prefer sqlite during local development when DEBUG is True, regardless of DATABASE_URL.
-if DEBUG:
+# Strip redundant variable prefix if set incorrectly (e.g. DATABASE_URL=postgresql://...)
+if DATABASE_URL and DATABASE_URL.startswith('DATABASE_URL='):
+    DATABASE_URL = DATABASE_URL[len('DATABASE_URL='):]
+
+if DATABASE_URL:
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': str(BASE_DIR / 'db.sqlite3'),
-        }
+        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=True)
     }
 else:
-    if DATABASE_URL:
-        DATABASES = {
-            'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=True)
-        }
-    else:
-        # Fallback to individual env vars for production/non-debug runs
+    # If no DATABASE_URL is provided, fallback to individual DB environment variables if DB_NAME is set,
+    # otherwise default to SQLite for effortless local development.
+    DB_NAME = config('DB_NAME', default=None) or os.environ.get('DB_NAME')
+    if DB_NAME:
         DATABASES = {
             'default': {
                 'ENGINE': 'django.db.backends.postgresql',
-                'NAME': config('DB_NAME', default=os.environ.get('DB_NAME', 'postgres')),
+                'NAME': DB_NAME,
                 'USER': config('DB_USER', default=os.environ.get('DB_USER', 'postgres')),
                 'PASSWORD': config('DB_PASSWORD', default=os.environ.get('DB_PASSWORD', '')),
                 'HOST': config('DB_HOST', default=os.environ.get('DB_HOST', 'localhost')),
                 'PORT': config('DB_PORT', default=os.environ.get('DB_PORT', '5432')),
                 'OPTIONS': {'sslmode': 'require'},   # Supabase requires ssl
+            }
+        }
+    else:
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': str(BASE_DIR / 'db.sqlite3'),
             }
         }
 
@@ -188,13 +193,15 @@ LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'recruiter_dashboard'
 
 # Production security settings — use environment variables to toggle
-SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=not DEBUG, cast=bool)
-SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default=not DEBUG, cast=bool)
-CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', default=not DEBUG, cast=bool)
+# Automatically default to True on Render, and False during local development to avoid localhost SSL redirection locks
+IS_ON_RENDER = bool(os.environ.get('RENDER_EXTERNAL_HOSTNAME'))
+SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=IS_ON_RENDER, cast=bool)
+SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default=IS_ON_RENDER, cast=bool)
+CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', default=IS_ON_RENDER, cast=bool)
 SESSION_COOKIE_HTTPONLY = config('SESSION_COOKIE_HTTPONLY', default=True, cast=bool)
-SECURE_HSTS_SECONDS = config('SECURE_HSTS_SECONDS', default=31536000 if not DEBUG else 0, cast=int)
-SECURE_HSTS_INCLUDE_SUBDOMAINS = config('SECURE_HSTS_INCLUDE_SUBDOMAINS', default=not DEBUG, cast=bool)
-SECURE_HSTS_PRELOAD = config('SECURE_HSTS_PRELOAD', default=not DEBUG, cast=bool)
+SECURE_HSTS_SECONDS = config('SECURE_HSTS_SECONDS', default=31536000 if IS_ON_RENDER else 0, cast=int)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = config('SECURE_HSTS_INCLUDE_SUBDOMAINS', default=IS_ON_RENDER, cast=bool)
+SECURE_HSTS_PRELOAD = config('SECURE_HSTS_PRELOAD', default=IS_ON_RENDER, cast=bool)
 SECURE_CONTENT_TYPE_NOSNIFF = config('SECURE_CONTENT_TYPE_NOSNIFF', default=True, cast=bool)
 SECURE_REFERRER_POLICY = config('SECURE_REFERRER_POLICY', default='same-origin')
 # When behind a proxy/load-balancer that sets X-Forwarded-Proto
