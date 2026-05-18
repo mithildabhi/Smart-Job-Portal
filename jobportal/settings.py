@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import os
+from urllib.parse import urlparse
 from pathlib import Path
 from decouple import config
 import dj_database_url
@@ -27,7 +28,25 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-)k1s^to0emk)-d-zv6527
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=lambda v: [s.strip() for s in v.split(',')])
+def _parse_hosts(value):
+    hosts = []
+    for raw_host in value.split(','):
+        host = raw_host.strip()
+        if not host:
+            continue
+        parsed = urlparse(host if '://' in host else f'//{host}')
+        normalized = parsed.netloc or parsed.path
+        normalized = normalized.rstrip('/')
+        if normalized and normalized not in hosts:
+            hosts.append(normalized)
+    return hosts
+
+
+ALLOWED_HOSTS = _parse_hosts(config('ALLOWED_HOSTS', default='localhost,127.0.0.1'))
+
+render_host = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if render_host and render_host not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(render_host)
 
 
 # Application definition
