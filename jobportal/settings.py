@@ -109,8 +109,12 @@ if DATABASE_URL and DATABASE_URL.startswith('DATABASE_URL='):
     DATABASE_URL = DATABASE_URL[len('DATABASE_URL='):]
 
 if DATABASE_URL:
+    db_config = dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=True)
+    # Remove options that psycopg2 does not support but are common in connection string templates (like pgbouncer)
+    if 'OPTIONS' in db_config:
+        db_config['OPTIONS'].pop('pgbouncer', None)
     DATABASES = {
-        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=True)
+        'default': db_config
     }
 else:
     # If no DATABASE_URL is provided, fallback to individual DB environment variables if DB_NAME is set,
